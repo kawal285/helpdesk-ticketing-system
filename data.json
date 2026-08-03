@@ -1,4 +1,13 @@
 {
   "users": [],
-  "tickets": []
+  "tickets": [
+    {
+      "id": 1785746653397,
+      "title": "WiFi not working",
+      "description": "My laptop cannot connect to the office WiFi since this morning.",
+      "status": "New",
+      "aiSuggestion": "Category: Network\nPriority: Medium\nSuggested Response:\nHello,\n\nThank you for reaching out. We're sorry to hear you're having trouble connecting to the office Wi-Fi. \n\nPlease try the following initial troubleshooting steps:\n1. Turn your laptop's Wi-Fi off and back on.\n2. Select the office Wi-Fi network, click \"Forget,\" and attempt to reconnect.\n3. Restart your laptop.\n\nIf you are still unable to connect, please let us know if you see any specific error messages or if other devices (like your phone) can connect to the Wi-Fi. We will be happy to assist you further.\n\nBest regards,  \nIT Support Team",
+      "createdAt": "2026-08-03T08:44:13.397Z"
+    }
+  ]
 }
