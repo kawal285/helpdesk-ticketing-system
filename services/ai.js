@@ -1,28 +1,19 @@
-const OpenAI = require("openai");
+const { GoogleGenerativeAI } = require("@google/generative-ai");
 require("dotenv").config();
 
 const ticketPrompt = require("../prompts/ticketPrompt");
 
-const client = new OpenAI({
-    apiKey: process.env.OPENAI_API_KEY,
-});
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
 async function analyzeTicket(issue) {
-    const response = await client.chat.completions.create({
-        model: "gpt-4o-mini",
-        messages: [
-            {
-                role: "system",
-                content: ticketPrompt,
-            },
-            {
-                role: "user",
-                content: issue,
-            },
-        ],
+    const model = genAI.getGenerativeModel({
+        model: "gemini-flash-latest",
+        systemInstruction: ticketPrompt,
     });
 
-    return response.choices[0].message.content;
+    const result = await model.generateContent(issue);
+
+    return result.response.text();
 }
 
 module.exports = analyzeTicket;
