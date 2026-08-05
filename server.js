@@ -68,3 +68,25 @@ app.get("/tickets/overdue", (req, res) => {
   res.json(overdue);
 });
 
+// Get a single ticket
+app.get("/tickets/:id", (req, res) => {
+  const ticket = tickets.find((t) => t.id === Number(req.params.id));
+  if (!ticket) return res.status(404).json({ error: "Ticket not found" });
+  res.json(ticket);
+});
+
+// Update a ticket (status, priority, assignee, category)
+app.patch("/tickets/:id", (req, res) => {
+  const ticket = tickets.find((t) => t.id === Number(req.params.id));
+  if (!ticket) return res.status(404).json({ error: "Ticket not found" });
+
+  const { status, priority, category, assignee } = req.body;
+  if (status) ticket.status = status;
+  if (category) ticket.category = category;
+  if (assignee) ticket.assignee = assignee;
+  if (priority) {
+    ticket.priority = priority;
+    ticket.dueAt = computeDueAt(priority, ticket.createdAt); // deadline moves with priority
+  }
+  res.json(ticket);
+});
