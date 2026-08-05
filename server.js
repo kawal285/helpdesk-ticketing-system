@@ -23,3 +23,27 @@ function computeDueAt(priority, createdAt) {
   return new Date(createdAt.getTime() + hours * 60 * 60 * 1000);
 }
 
+// Create a ticket
+app.post("/tickets", (req, res) => {
+  const { title, description, requester, priority, category, assignee } = req.body;
+  if (!title) {
+    return res.status(400).json({ error: "title is required" });
+  }
+  const createdAt = new Date();
+  const ticket = {
+    id: nextId++,
+    title,
+    description: description || "",
+    requester: requester || "Unknown",
+    category: category || "Other",
+    priority: priority || "Medium",
+    status: "Open",
+    assignee: assignee || "Unassigned",
+    createdAt,
+    dueAt: computeDueAt(priority || "Medium", createdAt),
+    comments: [],
+  };
+  tickets.push(ticket);
+  res.status(201).json(ticket);
+});
+
