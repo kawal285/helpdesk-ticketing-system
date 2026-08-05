@@ -90,3 +90,28 @@ app.patch("/tickets/:id", (req, res) => {
   }
   res.json(ticket);
 });
+
+// Add a comment to a ticket
+app.post("/tickets/:id/comments", (req, res) => {
+  const ticket = tickets.find((t) => t.id === Number(req.params.id));
+  if (!ticket) return res.status(404).json({ error: "Ticket not found" });
+
+  const { author, text } = req.body;
+  if (!text) return res.status(400).json({ error: "text is required" });
+
+  const comment = { author: author || "Unknown", text, createdAt: new Date() };
+  ticket.comments.push(comment);
+  res.status(201).json(comment);
+});
+
+// List comments on a ticket
+app.get("/tickets/:id/comments", (req, res) => {
+  const ticket = tickets.find((t) => t.id === Number(req.params.id));
+  if (!ticket) return res.status(404).json({ error: "Ticket not found" });
+  res.json(ticket.comments);
+});
+
+const PORT = 4000;
+app.listen(PORT, () => {
+  console.log(`Server running on http://localhost:${PORT}`);
+});
