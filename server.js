@@ -58,3 +58,13 @@ app.get("/tickets", (req, res) => {
   res.json(result);
 });
 
+// Overdue tickets -- MUST be declared before /tickets/:id below, or Express
+// will try to treat "overdue" as an :id and this route will never be reached.
+app.get("/tickets/overdue", (req, res) => {
+  const now = new Date();
+  const overdue = tickets.filter(
+    (t) => t.dueAt < now && t.status !== "Resolved" && t.status !== "Closed"
+  );
+  res.json(overdue);
+});
+
