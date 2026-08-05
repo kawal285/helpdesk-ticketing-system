@@ -1,13 +1,16 @@
 const express = require("express");
 const app = express();
 
+
 // Lets the server read JSON sent in POST/PATCH request bodies.
 // Without this, req.body would be undefined and every POST below would break.
 app.use(express.json());
 
+
 app.get("/", (req, res) => {
   res.send("HelpDesk backend is running!");
 });
+
 
 // ---- In-memory ticket storage ----
 // Just a plain array for now. Fine while you're building and testing --
@@ -110,6 +113,7 @@ app.get("/tickets/:id/comments", (req, res) => {
   if (!ticket) return res.status(404).json({ error: "Ticket not found" });
   res.json(ticket.comments);
 });
+
 
 const PORT = 4000;
 app.listen(PORT, () => {

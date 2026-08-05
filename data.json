@@ -1,0 +1,27 @@
+{
+  "users": [],
+  "tickets": [
+    {
+      "id": 1785915618889,
+      "title": "VPN not connecting",
+      "description": "Cannot connect to VPN from home since yesterday",
+      "category": "General",
+      "subcategory": "",
+      "customer": "Sam Student",
+      "owner": null,
+      "status": "New",
+      "priority": "Medium",
+      "slaWarningAt": "2026-08-07T07:40:18.875Z",
+      "slaFailureAt": "2026-08-08T07:40:18.875Z",
+      "aiSuggestion": "Category: General\nPriority: Medium\nSuggested Response: (AI quota reached - this is a placeholder response for \"Cannot connect to VPN from home since yesterday...\")",
+      "timeline": [
+        {
+          "note": "Ticket created",
+          "at": "2026-08-05T07:40:18.875Z"
+        }
+      ],
+      "createdAt": "2026-08-05T07:40:18.875Z",
+      "updatedAt": "2026-08-05T07:40:18.875Z"
+    }
+  ]
+}
