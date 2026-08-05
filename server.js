@@ -47,3 +47,14 @@ app.post("/tickets", (req, res) => {
   res.status(201).json(ticket);
 });
 
+// List tickets (optionally filter by status/priority/category/assignee)
+app.get("/tickets", (req, res) => {
+  let result = tickets;
+  const { status, priority, category, assignee } = req.query;
+  if (status) result = result.filter((t) => t.status === status);
+  if (priority) result = result.filter((t) => t.priority === priority);
+  if (category) result = result.filter((t) => t.category === category);
+  if (assignee) result = result.filter((t) => t.assignee === assignee);
+  res.json(result);
+});
+
