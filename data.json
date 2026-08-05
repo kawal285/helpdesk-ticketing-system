@@ -2,12 +2,26 @@
   "users": [],
   "tickets": [
     {
-      "id": 1785746653397,
-      "title": "WiFi not working",
-      "description": "My laptop cannot connect to the office WiFi since this morning.",
+      "id": 1785915618889,
+      "title": "VPN not connecting",
+      "description": "Cannot connect to VPN from home since yesterday",
+      "category": "General",
+      "subcategory": "",
+      "customer": "Sam Student",
+      "owner": null,
       "status": "New",
-      "aiSuggestion": "Category: Network\nPriority: Medium\nSuggested Response:\nHello,\n\nThank you for reaching out. We're sorry to hear you're having trouble connecting to the office Wi-Fi. \n\nPlease try the following initial troubleshooting steps:\n1. Turn your laptop's Wi-Fi off and back on.\n2. Select the office Wi-Fi network, click \"Forget,\" and attempt to reconnect.\n3. Restart your laptop.\n\nIf you are still unable to connect, please let us know if you see any specific error messages or if other devices (like your phone) can connect to the Wi-Fi. We will be happy to assist you further.\n\nBest regards,  \nIT Support Team",
-      "createdAt": "2026-08-03T08:44:13.397Z"
+      "priority": "Medium",
+      "slaWarningAt": "2026-08-07T07:40:18.875Z",
+      "slaFailureAt": "2026-08-08T07:40:18.875Z",
+      "aiSuggestion": "Category: General\nPriority: Medium\nSuggested Response: (AI quota reached - this is a placeholder response for \"Cannot connect to VPN from home since yesterday...\")",
+      "timeline": [
+        {
+          "note": "Ticket created",
+          "at": "2026-08-05T07:40:18.875Z"
+        }
+      ],
+      "createdAt": "2026-08-05T07:40:18.875Z",
+      "updatedAt": "2026-08-05T07:40:18.875Z"
     }
   ]
 }
