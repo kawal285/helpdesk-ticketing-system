@@ -35,8 +35,11 @@ module.exports = (sequelize, DataTypes) => {
     }
   );
 
-  // Ticket/Comment associations are added once those models exist (see Commit 5/6).
-  User.associate = () => {};
+  User.associate = (models) => {
+    User.hasMany(models.Ticket, { foreignKey: 'requesterId', as: 'requestedTickets' });
+    User.hasMany(models.Ticket, { foreignKey: 'assigneeId', as: 'assignedTickets' });
+    // Comment association is added once that model exists (see Commit 6).
+  };
 
   return User;
 };
