@@ -38,7 +38,7 @@ module.exports = (sequelize, DataTypes) => {
   User.associate = (models) => {
     User.hasMany(models.Ticket, { foreignKey: 'requesterId', as: 'requestedTickets' });
     User.hasMany(models.Ticket, { foreignKey: 'assigneeId', as: 'assignedTickets' });
-    // Comment association is added once that model exists (see Commit 6).
+    User.hasMany(models.Comment, { foreignKey: 'authorId', as: 'comments' });
   };
 
   return User;

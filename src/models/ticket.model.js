@@ -69,7 +69,7 @@ module.exports = (sequelize, DataTypes) => {
   Ticket.associate = (models) => {
     Ticket.belongsTo(models.User, { foreignKey: 'requesterId', as: 'requester' });
     Ticket.belongsTo(models.User, { foreignKey: 'assigneeId', as: 'assignee' });
-    // Comment association is added once that model exists (see Commit 6).
+    Ticket.hasMany(models.Comment, { foreignKey: 'ticketId', as: 'comments' });
   };
 
   return Ticket;
