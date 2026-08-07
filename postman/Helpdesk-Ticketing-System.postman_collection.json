@@ -1,0 +1,376 @@
+{
+  "info": {
+    "name": "Helpdesk Ticketing System - Backend",
+    "description": "Demo collection for the AI Helpdesk Ticketing System backend. Run requests top-to-bottom (or use Collection Runner) — tokens and IDs are captured automatically into collection variables so nothing needs to be copy-pasted by hand.\n\nBefore running: start the server with `npm run dev` and make sure `adminEmail` / `adminPassword` below match your `.env` ADMIN_EMAIL / ADMIN_PASSWORD (used by `npm run seed`).",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:4000" },
+    { "key": "adminEmail", "value": "admin@example.com" },
+    { "key": "adminPassword", "value": "change_this_password" },
+    { "key": "sharedPassword", "value": "Password123" },
+    { "key": "adminToken", "value": "" },
+    { "key": "customerEmail", "value": "" },
+    { "key": "customerToken", "value": "" },
+    { "key": "customerId", "value": "" },
+    { "key": "customerEmail2", "value": "" },
+    { "key": "customerToken2", "value": "" },
+    { "key": "agentEmail", "value": "" },
+    { "key": "agentToken", "value": "" },
+    { "key": "agentId", "value": "" },
+    { "key": "ticketId", "value": "" }
+  ],
+  "item": [
+    {
+      "name": "1. Health",
+      "item": [
+        {
+          "name": "Health Check",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/health"
+          }
+        }
+      ]
+    },
+    {
+      "name": "2. Auth",
+      "item": [
+        {
+          "name": "Register Customer A",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": { "type": "text/javascript", "exec": [
+                "pm.collectionVariables.set('customerEmail', 'alice_' + Date.now() + '@test.com');"
+              ] }
+            },
+            {
+              "listen": "test",
+              "script": { "type": "text/javascript", "exec": [
+                "pm.test('registered - 201', () => pm.response.code === 201);",
+                "const body = pm.response.json();",
+                "pm.collectionVariables.set('customerToken', body.token);",
+                "pm.collectionVariables.set('customerId', body.user.id);"
+              ] }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}/auth/register",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Alice\",\n  \"email\": \"{{customerEmail}}\",\n  \"password\": \"{{sharedPassword}}\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Register Customer B",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": { "type": "text/javascript", "exec": [
+                "pm.collectionVariables.set('customerEmail2', 'bob_' + Date.now() + '@test.com');"
+              ] }
+            },
+            {
+              "listen": "test",
+              "script": { "type": "text/javascript", "exec": [
+                "pm.test('registered - 201', () => pm.response.code === 201);",
+                "pm.collectionVariables.set('customerToken2', pm.response.json().token);"
+              ] }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}/auth/register",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Bob\",\n  \"email\": \"{{customerEmail2}}\",\n  \"password\": \"{{sharedPassword}}\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Login Customer A",
+          "event": [
+            {
+              "listen": "test",
+              "script": { "type": "text/javascript", "exec": [
+                "pm.test('login ok - 200', () => pm.response.code === 200);",
+                "pm.collectionVariables.set('customerToken', pm.response.json().token);"
+              ] }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}/auth/login",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{customerEmail}}\",\n  \"password\": \"{{sharedPassword}}\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Get My Profile (/auth/me)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{customerToken}}" }],
+            "url": "{{baseUrl}}/auth/me"
+          }
+        }
+      ]
+    },
+    {
+      "name": "3. Admin - User Management",
+      "item": [
+        {
+          "name": "Login Admin",
+          "event": [
+            {
+              "listen": "test",
+              "script": { "type": "text/javascript", "exec": [
+                "pm.test('admin login ok - 200', () => pm.response.code === 200);",
+                "pm.collectionVariables.set('adminToken', pm.response.json().token);"
+              ] }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}/auth/login",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{adminEmail}}\",\n  \"password\": \"{{adminPassword}}\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Create Agent",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": { "type": "text/javascript", "exec": [
+                "pm.collectionVariables.set('agentEmail', 'agent_' + Date.now() + '@test.com');"
+              ] }
+            },
+            {
+              "listen": "test",
+              "script": { "type": "text/javascript", "exec": [
+                "pm.test('agent created - 201', () => pm.response.code === 201);",
+                "pm.collectionVariables.set('agentId', pm.response.json().user.id);"
+              ] }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{adminToken}}" }
+            ],
+            "url": "{{baseUrl}}/users",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"AgentSmith\",\n  \"email\": \"{{agentEmail}}\",\n  \"password\": \"{{sharedPassword}}\",\n  \"role\": \"agent\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Login Agent",
+          "event": [
+            {
+              "listen": "test",
+              "script": { "type": "text/javascript", "exec": [
+                "pm.test('agent login ok - 200', () => pm.response.code === 200);",
+                "pm.collectionVariables.set('agentToken', pm.response.json().token);"
+              ] }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}/auth/login",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{agentEmail}}\",\n  \"password\": \"{{sharedPassword}}\"\n}"
+            }
+          }
+        },
+        {
+          "name": "List All Users (Admin)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }],
+            "url": "{{baseUrl}}/users"
+          }
+        },
+        {
+          "name": "Blocked: Customer Creates a User (expect 403)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{customerToken}}" }
+            ],
+            "url": "{{baseUrl}}/users",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Hacker\",\n  \"email\": \"hacker@test.com\",\n  \"password\": \"{{sharedPassword}}\",\n  \"role\": \"admin\"\n}"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "4. Tickets",
+      "item": [
+        {
+          "name": "Create Ticket (Customer A)",
+          "event": [
+            {
+              "listen": "test",
+              "script": { "type": "text/javascript", "exec": [
+                "pm.test('ticket created - 201', () => pm.response.code === 201);",
+                "pm.collectionVariables.set('ticketId', pm.response.json().ticket.id);"
+              ] }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{customerToken}}" }
+            ],
+            "url": "{{baseUrl}}/tickets",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Wifi not working\",\n  \"description\": \"Cannot connect to the office wifi since this morning.\",\n  \"category\": \"Network\",\n  \"priority\": \"High\"\n}"
+            }
+          }
+        },
+        {
+          "name": "List My Tickets (Customer A)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{customerToken}}" }],
+            "url": "{{baseUrl}}/tickets"
+          }
+        },
+        {
+          "name": "Get Ticket By Id (Customer A)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{customerToken}}" }],
+            "url": "{{baseUrl}}/tickets/{{ticketId}}"
+          }
+        },
+        {
+          "name": "Update Ticket (Customer A)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{customerToken}}" }
+            ],
+            "url": "{{baseUrl}}/tickets/{{ticketId}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"description\": \"Cannot connect to the office wifi since this morning. Tried restarting router, still broken.\"\n}"
+            }
+          }
+        },
+        {
+          "name": "List Overdue Tickets",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }],
+            "url": "{{baseUrl}}/tickets/overdue"
+          }
+        },
+        {
+          "name": "Update Ticket Status (Agent)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{agentToken}}" }
+            ],
+            "url": "{{baseUrl}}/tickets/{{ticketId}}/status",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"In Progress\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Reassign Ticket (Admin)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{adminToken}}" }
+            ],
+            "url": "{{baseUrl}}/tickets/{{ticketId}}/assign",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"assigneeId\": {{agentId}}\n}"
+            }
+          }
+        },
+        {
+          "name": "Blocked: Customer B Views Customer A's Ticket (expect 404)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{customerToken2}}" }],
+            "url": "{{baseUrl}}/tickets/{{ticketId}}"
+          }
+        }
+      ]
+    },
+    {
+      "name": "5. Comments",
+      "item": [
+        {
+          "name": "Add Comment (Customer A)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{customerToken}}" }
+            ],
+            "url": "{{baseUrl}}/tickets/{{ticketId}}/comments",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"text\": \"Any update on this?\"\n}"
+            }
+          }
+        },
+        {
+          "name": "List Comments (Customer A)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{customerToken}}" }],
+            "url": "{{baseUrl}}/tickets/{{ticketId}}/comments"
+          }
+        },
+        {
+          "name": "Blocked: Customer B Comments on Customer A's Ticket (expect 403)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{customerToken2}}" }
+            ],
+            "url": "{{baseUrl}}/tickets/{{ticketId}}/comments",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"text\": \"Trying to peek in\"\n}"
+            }
+          }
+        }
+      ]
+    }
+  ]
+}
