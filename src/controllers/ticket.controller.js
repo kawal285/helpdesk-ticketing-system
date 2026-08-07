@@ -5,6 +5,7 @@ const { computeDueAt } = require('../utils/sla');
 const { isValidTransition } = require('../utils/ticketStatus');
 const { canAccessTicket } = require('../utils/ticketAccess');
 const { pickLeastBusyAgent } = require('../services/routingService');
+const { analyzeTicket } = require('../services/aiAnalysisService');
 const { Ticket, User, sequelize } = require('../models');
 
 // Server-side visibility scope, ignoring/overriding any client-supplied
@@ -21,6 +22,12 @@ const createTicket = catchAsync(async (req, res) => {
   const { title, description, category, priority } = req.body;
   const createdAt = new Date();
 
+  // A human-supplied category/priority always wins; the AI's guess only
+  // fills in what the requester left blank.
+  const ai = await analyzeTicket(description);
+  const finalCategory = category || ai.category;
+  const finalPriority = priority || ai.priority;
+
   // Auto-assignment must happen in the same transaction as the insert so the
   // "fewest open tickets" count and the assignment stay consistent under
   // concurrent ticket creation.
@@ -32,11 +39,15 @@ const createTicket = catchAsync(async (req, res) => {
         {
           title,
           description,
-          category,
-          priority,
+          category: finalCategory,
+          priority: finalPriority,
           requesterId: req.user.id,
           assigneeId,
-          dueAt: computeDueAt(priority || 'Medium', createdAt),
+          dueAt: computeDueAt(finalPriority || 'Medium', createdAt),
+          aiCategory: ai.category,
+          aiPriority: ai.priority,
+          aiSuggestedResponse: ai.suggestedResponse,
+          aiAnalyzedAt: new Date(),
         },
         { transaction: t }
       );
