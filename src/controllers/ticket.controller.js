@@ -1,10 +1,11 @@
-const { Op } = require('sequelize');
+const { Op, Transaction } = require('sequelize');
 const catchAsync = require('../utils/catchAsync');
 const AppError = require('../utils/appError');
 const { computeDueAt } = require('../utils/sla');
 const { isValidTransition } = require('../utils/ticketStatus');
 const { canAccessTicket } = require('../utils/ticketAccess');
-const { Ticket } = require('../models');
+const { pickLeastBusyAgent } = require('../services/routingService');
+const { Ticket, User, sequelize } = require('../models');
 
 // Server-side visibility scope, ignoring/overriding any client-supplied
 // filters that would widen access: customer sees only their own tickets,
@@ -20,14 +21,27 @@ const createTicket = catchAsync(async (req, res) => {
   const { title, description, category, priority } = req.body;
   const createdAt = new Date();
 
-  const ticket = await Ticket.create({
-    title,
-    description,
-    category,
-    priority,
-    requesterId: req.user.id,
-    dueAt: computeDueAt(priority || 'Medium', createdAt),
-  });
+  // Auto-assignment must happen in the same transaction as the insert so the
+  // "fewest open tickets" count and the assignment stay consistent under
+  // concurrent ticket creation.
+  const ticket = await sequelize.transaction(
+    { isolationLevel: Transaction.ISOLATION_LEVELS.SERIALIZABLE },
+    async (t) => {
+      const assigneeId = await pickLeastBusyAgent(t);
+      return Ticket.create(
+        {
+          title,
+          description,
+          category,
+          priority,
+          requesterId: req.user.id,
+          assigneeId,
+          dueAt: computeDueAt(priority || 'Medium', createdAt),
+        },
+        { transaction: t }
+      );
+    }
+  );
 
   res.status(201).json({ ticket });
 });
@@ -122,6 +136,27 @@ const updateTicketStatus = catchAsync(async (req, res, next) => {
   res.status(200).json({ ticket });
 });
 
+const assignTicket = catchAsync(async (req, res, next) => {
+  const ticket = await Ticket.findByPk(req.params.id);
+  if (!ticket) {
+    return next(new AppError('Ticket not found.', 404));
+  }
+
+  const { assigneeId } = req.body;
+  if (assigneeId === null) {
+    ticket.assigneeId = null;
+  } else {
+    const agent = await User.findByPk(assigneeId);
+    if (!agent || agent.role !== 'agent' || !agent.isActive) {
+      return next(new AppError('assigneeId must be an active agent.', 400));
+    }
+    ticket.assigneeId = assigneeId;
+  }
+
+  await ticket.save();
+  res.status(200).json({ ticket });
+});
+
 module.exports = {
   createTicket,
   listTickets,
@@ -129,4 +164,5 @@ module.exports = {
   getTicket,
   updateTicket,
   updateTicketStatus,
+  assignTicket,
 };

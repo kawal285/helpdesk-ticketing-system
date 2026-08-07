@@ -6,6 +6,7 @@ const {
   getTicket,
   updateTicket,
   updateTicketStatus,
+  assignTicket,
 } = require('../controllers/ticket.controller');
 const {
   createTicketValidator,
@@ -13,6 +14,7 @@ const {
   ticketIdValidator,
   updateTicketValidator,
   updateTicketStatusValidator,
+  assignTicketValidator,
 } = require('../validators/ticket.validators');
 const validate = require('../middleware/validate');
 const protect = require('../middleware/protect');
@@ -33,6 +35,13 @@ router.patch(
   updateTicketStatusValidator,
   validate,
   updateTicketStatus
+);
+router.patch(
+  '/:id/assign',
+  authorize('agent', 'admin'),
+  assignTicketValidator,
+  validate,
+  assignTicket
 );
 
 module.exports = router;

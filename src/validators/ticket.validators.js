@@ -34,10 +34,20 @@ const updateTicketStatusValidator = [
   body('status').isIn(STATUSES).withMessage(`status must be one of ${STATUSES.join(', ')}`),
 ];
 
+const assignTicketValidator = [
+  param('id').isInt().withMessage('id must be an integer'),
+  body('assigneeId')
+    .exists({ checkNull: false })
+    .withMessage('assigneeId is required (an integer, or null to unassign)')
+    .custom((value) => value === null || Number.isInteger(value))
+    .withMessage('assigneeId must be an integer or null'),
+];
+
 module.exports = {
   createTicketValidator,
   listTicketsValidator,
   ticketIdValidator,
   updateTicketValidator,
   updateTicketStatusValidator,
+  assignTicketValidator,
 };
