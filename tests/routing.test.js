@@ -2,29 +2,14 @@ jest.mock('../src/services/aiService', () => ({
   getAiSuggestions: jest.fn().mockResolvedValue({ category: null, priority: null, suggestedResponse: null }),
 }));
 
-const request = require('supertest');
 const { Op } = require('sequelize');
-const app = require('../src/app');
 const { sequelize, User, Ticket } = require('../src/models');
 const { createUserWithToken } = require('./helpers/testHelpers');
+const { createTicketAs, assignTicket } = require('./helpers/ticketHelpers');
 
 afterAll(async () => {
   await sequelize.close();
 });
-
-async function createTicketAs(token) {
-  return request(app)
-    .post('/tickets')
-    .set('Authorization', `Bearer ${token}`)
-    .send({ title: 'Cannot access shared drive', description: 'Getting a permissions error on \\\\fileserver\\shared.' });
-}
-
-async function assignTicket(actorToken, ticketId, assigneeId) {
-  return request(app)
-    .patch(`/tickets/${ticketId}/assign`)
-    .set('Authorization', `Bearer ${actorToken}`)
-    .send({ assigneeId });
-}
 
 async function activeAgentOpenCounts(agentIds) {
   return Promise.all(

@@ -2,7 +2,7 @@ const { Op, Transaction } = require('sequelize');
 const catchAsync = require('../utils/catchAsync');
 const AppError = require('../utils/appError');
 const { computeDueAt } = require('../utils/sla');
-const { isValidTransition } = require('../utils/ticketStatus');
+const { isValidTransition, editPermissionError } = require('../utils/ticketStatus');
 const { canAccessTicket } = require('../utils/ticketAccess');
 const { pickLeastBusyAgent } = require('../services/routingService');
 const { getAiSuggestions } = require('../services/aiService');
@@ -16,6 +16,18 @@ function scopeForUser(user) {
   if (user.role === 'admin') return {};
   if (user.role === 'customer') return { requesterId: user.id };
   return { [Op.or]: [{ assigneeId: user.id }, { assigneeId: null }] };
+}
+
+// Shared by every single-ticket endpoint below: loads the ticket and applies
+// the same 404-on-inaccessible rule comment.controller.js uses, so callers
+// just do `if (!ticket) return;` and carry on.
+async function loadAccessibleTicket(req, next) {
+  const ticket = await Ticket.findByPk(req.params.id);
+  if (!ticket || !canAccessTicket(req.user, ticket)) {
+    next(new AppError('Ticket not found.', 404));
+    return null;
+  }
+  return ticket;
 }
 
 const createTicket = catchAsync(async (req, res) => {
@@ -95,25 +107,19 @@ const getOverdueTickets = catchAsync(async (req, res) => {
 });
 
 const getTicket = catchAsync(async (req, res, next) => {
-  const ticket = await Ticket.findByPk(req.params.id);
-  if (!ticket || !canAccessTicket(req.user, ticket)) {
-    return next(new AppError('Ticket not found.', 404));
-  }
+  const ticket = await loadAccessibleTicket(req, next);
+  if (!ticket) return;
 
   res.status(200).json({ ticket });
 });
 
 const updateTicket = catchAsync(async (req, res, next) => {
-  const ticket = await Ticket.findByPk(req.params.id);
-  if (!ticket || !canAccessTicket(req.user, ticket)) {
-    return next(new AppError('Ticket not found.', 404));
-  }
+  const ticket = await loadAccessibleTicket(req, next);
+  if (!ticket) return;
 
-  if (req.user.role === 'customer' && ticket.status !== 'Open') {
-    return next(new AppError('Only open tickets can be edited.', 403));
-  }
-  if (req.user.role === 'agent') {
-    return next(new AppError('You do not have permission to perform this action.', 403));
+  const editError = editPermissionError(req.user, ticket);
+  if (editError) {
+    return next(new AppError(editError, 403));
   }
 
   const { title, description, category, priority } = req.body;
@@ -130,10 +136,8 @@ const updateTicket = catchAsync(async (req, res, next) => {
 });
 
 const updateTicketStatus = catchAsync(async (req, res, next) => {
-  const ticket = await Ticket.findByPk(req.params.id);
-  if (!ticket || !canAccessTicket(req.user, ticket)) {
-    return next(new AppError('Ticket not found.', 404));
-  }
+  const ticket = await loadAccessibleTicket(req, next);
+  if (!ticket) return;
 
   const isAdmin = req.user.role === 'admin';
   const { status } = req.body;
@@ -176,10 +180,8 @@ const assignTicket = catchAsync(async (req, res, next) => {
 });
 
 const aiAnalyzeTicket = catchAsync(async (req, res, next) => {
-  const ticket = await Ticket.findByPk(req.params.id);
-  if (!ticket || !canAccessTicket(req.user, ticket)) {
-    return next(new AppError('Ticket not found.', 404));
-  }
+  const ticket = await loadAccessibleTicket(req, next);
+  if (!ticket) return;
 
   const ai = await getAiSuggestions(ticket.description);
   if (ai.category === null) {

@@ -1,5 +1,8 @@
 'use strict';
 
+const { CATEGORIES, PRIORITIES } = require('../utils/ticketFields');
+const { STATUSES } = require('../utils/ticketStatus');
+
 module.exports = (sequelize, DataTypes) => {
   const Ticket = sequelize.define(
     'Ticket',
@@ -14,17 +17,17 @@ module.exports = (sequelize, DataTypes) => {
         allowNull: false,
       },
       category: {
-        type: DataTypes.ENUM('Hardware', 'Software', 'Network', 'Account', 'Other'),
+        type: DataTypes.ENUM(...CATEGORIES),
         allowNull: false,
         defaultValue: 'Other',
       },
       priority: {
-        type: DataTypes.ENUM('Low', 'Medium', 'High', 'Critical'),
+        type: DataTypes.ENUM(...PRIORITIES),
         allowNull: false,
         defaultValue: 'Medium',
       },
       status: {
-        type: DataTypes.ENUM('Open', 'In Progress', 'Resolved', 'Closed'),
+        type: DataTypes.ENUM(...STATUSES),
         allowNull: false,
         defaultValue: 'Open',
       },

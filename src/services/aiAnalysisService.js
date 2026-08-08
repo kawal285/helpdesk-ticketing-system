@@ -1,10 +1,8 @@
 const { GoogleGenerativeAI } = require('@google/generative-ai');
 const ticketPrompt = require('../prompts/ticketPrompt');
+const { CATEGORIES, PRIORITIES } = require('../utils/ticketFields');
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-
-const VALID_CATEGORIES = ['Hardware', 'Software', 'Network', 'Account', 'Other'];
-const VALID_PRIORITIES = ['Low', 'Medium', 'High', 'Critical'];
 
 // A realistic fallback used only when the AI quota is exhausted, so
 // development isn't blocked by Gemini's free-tier daily limit.
@@ -38,8 +36,8 @@ function parseAnalysis(text) {
   const priority = priorityMatch ? priorityMatch[1].trim() : null;
 
   return {
-    category: VALID_CATEGORIES.includes(category) ? category : 'Other',
-    priority: VALID_PRIORITIES.includes(priority) ? priority : 'Medium',
+    category: CATEGORIES.includes(category) ? category : 'Other',
+    priority: PRIORITIES.includes(priority) ? priority : 'Medium',
     suggestedResponse: responseMatch ? responseMatch[1].trim() : text.trim(),
   };
 }

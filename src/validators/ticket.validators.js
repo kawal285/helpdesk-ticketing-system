@@ -1,8 +1,6 @@
 const { body, param, query } = require('express-validator');
-
-const CATEGORIES = ['Hardware', 'Software', 'Network', 'Account', 'Other'];
-const PRIORITIES = ['Low', 'Medium', 'High', 'Critical'];
-const STATUSES = ['Open', 'In Progress', 'Resolved', 'Closed'];
+const { CATEGORIES, PRIORITIES } = require('../utils/ticketFields');
+const { STATUSES } = require('../utils/ticketStatus');
 
 const createTicketValidator = [
   body('title').trim().notEmpty().withMessage('title is required'),

@@ -1,6 +1,6 @@
-const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const { User } = require('../../src/models');
+const { signToken } = require('../../src/controllers/auth.controller');
 
 let counter = 0;
 function uniqueEmail(prefix) {
@@ -23,15 +23,9 @@ async function createUser({ role = 'customer', name, email, password = 'Password
   return user;
 }
 
-function tokenFor(user) {
-  return jwt.sign({ id: user.id, role: user.role }, process.env.JWT_SECRET, {
-    expiresIn: process.env.JWT_EXPIRES_IN || '1d',
-  });
-}
-
 async function createUserWithToken(opts) {
   const user = await createUser(opts);
-  return { user, token: tokenFor(user) };
+  return { user, token: signToken(user) };
 }
 
-module.exports = { createUser, tokenFor, createUserWithToken, uniqueEmail };
+module.exports = { createUser, createUserWithToken, uniqueEmail };

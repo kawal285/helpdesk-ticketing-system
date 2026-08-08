@@ -50,4 +50,4 @@ const getMe = catchAsync(async (req, res) => {
   res.status(200).json({ user: sanitizeUser(req.user) });
 });
 
-module.exports = { register, login, getMe, sanitizeUser };
+module.exports = { register, login, getMe, sanitizeUser, signToken };
