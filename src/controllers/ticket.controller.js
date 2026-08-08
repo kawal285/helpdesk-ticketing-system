@@ -5,7 +5,7 @@ const { computeDueAt } = require('../utils/sla');
 const { isValidTransition } = require('../utils/ticketStatus');
 const { canAccessTicket } = require('../utils/ticketAccess');
 const { pickLeastBusyAgent } = require('../services/routingService');
-const { analyzeTicket } = require('../services/aiAnalysisService');
+const { getAiSuggestions } = require('../services/aiService');
 const { Ticket, User, sequelize } = require('../models');
 
 // Server-side visibility scope, ignoring/overriding any client-supplied
@@ -22,11 +22,18 @@ const createTicket = catchAsync(async (req, res) => {
   const { title, description, category, priority } = req.body;
   const createdAt = new Date();
 
-  // A human-supplied category/priority always wins; the AI's guess only
-  // fills in what the requester left blank.
-  const ai = await analyzeTicket(description);
-  const finalCategory = category || ai.category;
-  const finalPriority = priority || ai.priority;
+  // Only call the AI if the requester left something blank -- and never let
+  // it block ticket creation: getAiSuggestions never throws, it returns
+  // nulls if the AI is unconfigured, down, or too slow (see aiService.js).
+  const needsAi = !category || !priority;
+  const ai = needsAi
+    ? await getAiSuggestions(description)
+    : { category: null, priority: null, suggestedResponse: null };
+  const aiSucceeded = ai.category !== null;
+
+  // A human-supplied category/priority always wins over the AI's guess.
+  const finalCategory = category || ai.category || 'Other';
+  const finalPriority = priority || ai.priority || 'Medium';
 
   // Auto-assignment must happen in the same transaction as the insert so the
   // "fewest open tickets" count and the assignment stay consistent under
@@ -43,11 +50,11 @@ const createTicket = catchAsync(async (req, res) => {
           priority: finalPriority,
           requesterId: req.user.id,
           assigneeId,
-          dueAt: computeDueAt(finalPriority || 'Medium', createdAt),
+          dueAt: computeDueAt(finalPriority, createdAt),
           aiCategory: ai.category,
           aiPriority: ai.priority,
           aiSuggestedResponse: ai.suggestedResponse,
-          aiAnalyzedAt: new Date(),
+          aiAnalyzedAt: aiSucceeded ? new Date() : null,
         },
         { transaction: t }
       );
@@ -168,6 +175,26 @@ const assignTicket = catchAsync(async (req, res, next) => {
   res.status(200).json({ ticket });
 });
 
+const aiAnalyzeTicket = catchAsync(async (req, res, next) => {
+  const ticket = await Ticket.findByPk(req.params.id);
+  if (!ticket || !canAccessTicket(req.user, ticket)) {
+    return next(new AppError('Ticket not found.', 404));
+  }
+
+  const ai = await getAiSuggestions(ticket.description);
+  if (ai.category === null) {
+    return next(new AppError('AI analysis is currently unavailable. Please try again later.', 503));
+  }
+
+  ticket.aiCategory = ai.category;
+  ticket.aiPriority = ai.priority;
+  ticket.aiSuggestedResponse = ai.suggestedResponse;
+  ticket.aiAnalyzedAt = new Date();
+
+  await ticket.save();
+  res.status(200).json({ ticket });
+});
+
 module.exports = {
   createTicket,
   listTickets,
@@ -176,4 +203,5 @@ module.exports = {
   updateTicket,
   updateTicketStatus,
   assignTicket,
+  aiAnalyzeTicket,
 };
