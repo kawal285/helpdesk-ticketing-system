@@ -7,6 +7,7 @@ const {
   updateTicket,
   updateTicketStatus,
   assignTicket,
+  aiAnalyzeTicket,
 } = require('../controllers/ticket.controller');
 const {
   createTicketValidator,
@@ -19,6 +20,7 @@ const {
 const validate = require('../middleware/validate');
 const protect = require('../middleware/protect');
 const authorize = require('../middleware/authorize');
+const { aiLimiter } = require('../middleware/rateLimiters');
 
 const router = express.Router();
 
@@ -42,6 +44,14 @@ router.patch(
   assignTicketValidator,
   validate,
   assignTicket
+);
+router.post(
+  '/:id/ai-analyze',
+  authorize('agent', 'admin'),
+  aiLimiter,
+  ticketIdValidator,
+  validate,
+  aiAnalyzeTicket
 );
 
 module.exports = router;
