@@ -1,6 +1,6 @@
 {
-  "accuracy": "58.3%",
-  "correct": 14,
+  "accuracy": "87.5%",
+  "correct": 21,
   "total": 24,
   "results": [
     {
@@ -98,77 +98,77 @@
       "id": 14,
       "description": "The CRM software shows a blank screen after I log in.",
       "expected": "Software",
-      "predicted": "Software",
-      "correct": true
+      "predicted": "General",
+      "correct": false
     },
     {
       "id": 15,
       "description": "Unable to access the shared network drive from my laptop.",
       "expected": "Network",
-      "predicted": "UNKNOWN",
-      "correct": false
+      "predicted": "Network",
+      "correct": true
     },
     {
       "id": 16,
       "description": "I want to reset my two-factor authentication device.",
       "expected": "Account",
-      "predicted": "UNKNOWN",
-      "correct": false
+      "predicted": "Account",
+      "correct": true
     },
     {
       "id": 17,
       "description": "My monitor has a flickering screen issue.",
       "expected": "Hardware",
-      "predicted": "UNKNOWN",
-      "correct": false
+      "predicted": "Hardware",
+      "correct": true
     },
     {
       "id": 18,
       "description": "Outlook is not syncing new emails.",
       "expected": "Software",
-      "predicted": "UNKNOWN",
-      "correct": false
+      "predicted": "Software",
+      "correct": true
     },
     {
       "id": 19,
       "description": "Can't connect to the office WiFi with my new laptop.",
       "expected": "Network",
-      "predicted": "UNKNOWN",
-      "correct": false
+      "predicted": "Network",
+      "correct": true
     },
     {
       "id": 20,
       "description": "Requesting a new user account be created for a new starter.",
       "expected": "Account",
-      "predicted": "UNKNOWN",
-      "correct": false
+      "predicted": "Account",
+      "correct": true
     },
     {
       "id": 21,
       "description": "The projector in meeting room 2 won't turn on.",
       "expected": "Hardware",
-      "predicted": "UNKNOWN",
-      "correct": false
+      "predicted": "Hardware",
+      "correct": true
     },
     {
       "id": 22,
       "description": "Getting a licensing error when opening AutoCAD.",
       "expected": "Software",
-      "predicted": "UNKNOWN",
-      "correct": false
+      "predicted": "Software",
+      "correct": true
     },
     {
       "id": 23,
       "description": "VPN connection drops every 10 minutes while working from home.",
       "expected": "Network",
-      "predicted": "UNKNOWN",
+      "predicted": "General",
       "correct": false
     },
     {
       "id": 24,
       "description": "I need admin rights temporarily to install a printer driver.",
       "expected": "Account",
-      "predicted": "UNKNOWN",
+      "predicted": "General",
       "correct": false
     }
   ]
