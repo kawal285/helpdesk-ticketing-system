@@ -13,20 +13,14 @@ module.exports = (sequelize, DataTypes) => {
       },
       passwordHash: { type: DataTypes.STRING, allowNull: false },
       role: {
-        type: DataTypes.ENUM('user', 'staff'),
+        type: DataTypes.ENUM('admin', 'agent', 'customer'),
         allowNull: false,
-        defaultValue: 'user',
-      },
-      organization: {
-        type: DataTypes.ENUM('Future Skills', 'OP'),
-        allowNull: false,
-        defaultValue: 'Future Skills',
+        defaultValue: 'customer',
       },
       isActive: { type: DataTypes.BOOLEAN, allowNull: false, defaultValue: true },
     },
     {
       tableName: 'users',
-      // Never accidentally send the password hash back in an API response.
       defaultScope: {
         attributes: { exclude: ['passwordHash'] },
       },
@@ -35,6 +29,12 @@ module.exports = (sequelize, DataTypes) => {
       },
     }
   );
+
+  User.associate = (models) => {
+    User.hasMany(models.Ticket, { foreignKey: 'requesterId', as: 'requestedTickets' });
+    User.hasMany(models.Ticket, { foreignKey: 'assigneeId', as: 'assignedTickets' });
+    User.hasMany(models.Comment, { foreignKey: 'authorId', as: 'comments' });
+  };
 
   return User;
 };
