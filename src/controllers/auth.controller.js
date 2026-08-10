@@ -66,4 +66,17 @@ async function login(req, res) {
   }
 }
 
-module.exports = { register, login };
+// GET /auth/me
+// Relies on the `protect` middleware having already verified the token
+// and attached the logged-in user to req.user.
+async function getMe(req, res) {
+  try {
+    const user = req.user;
+    user.passwordHash = undefined;
+    res.status(200).json({ status: 'success', data: { user } });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+}
+
+module.exports = { register, login, getMe };
