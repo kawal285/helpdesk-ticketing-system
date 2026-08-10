@@ -5,6 +5,20 @@ const app = express();
 // Without this, req.body would be undefined and every POST below would break.
 app.use(express.json());
 
+// --- Temporary DB sync (Step: actually creating the users table) ---
+const db = require('./src/models');
+
+db.sequelize.sync({ alter: true })
+  .then(() => console.log('Database synced - tables created/updated.'))
+  .catch((err) => console.error('Sync failed:', err.message));
+// --- end temporary sync ---
+
+// --- Auth routes ---
+const authController = require('./src/controllers/auth.controller');
+app.post('/auth/register', authController.register);
+app.post('/auth/login', authController.login);
+// --- end auth routes ---
+
 app.get("/", (req, res) => {
   res.send("HelpDesk backend is running!");
 });
