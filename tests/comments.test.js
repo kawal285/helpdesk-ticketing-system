@@ -6,24 +6,11 @@ const request = require('supertest');
 const app = require('../src/app');
 const { sequelize } = require('../src/models');
 const { createUserWithToken } = require('./helpers/testHelpers');
+const { createTicketAs, assignTicket } = require('./helpers/ticketHelpers');
 
 afterAll(async () => {
   await sequelize.close();
 });
-
-async function createTicketAs(token) {
-  return request(app)
-    .post('/tickets')
-    .set('Authorization', `Bearer ${token}`)
-    .send({ title: 'VPN drops constantly', description: 'Connection drops every few minutes on VPN.' });
-}
-
-async function assignTicket(adminToken, ticketId, assigneeId) {
-  return request(app)
-    .patch(`/tickets/${ticketId}/assign`)
-    .set('Authorization', `Bearer ${adminToken}`)
-    .send({ assigneeId });
-}
 
 describe('POST /tickets/:ticketId/comments', () => {
   it('lets the requester comment on their own ticket', async () => {

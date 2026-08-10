@@ -4,42 +4,37 @@ module.exports = (sequelize, DataTypes) => {
   const User = sequelize.define(
     'User',
     {
-      name: {
-        type: DataTypes.STRING,
-        allowNull: false,
-        validate: { notEmpty: true },
-      },
+      name: { type: DataTypes.STRING, allowNull: false },
       email: {
         type: DataTypes.STRING,
         allowNull: false,
         unique: true,
         validate: { isEmail: true },
       },
-      passwordHash: {
-        type: DataTypes.STRING,
-        allowNull: false,
-      },
+      passwordHash: { type: DataTypes.STRING, allowNull: false },
       role: {
-        type: DataTypes.ENUM('admin', 'agent', 'customer'),
+        type: DataTypes.ENUM('user', 'staff'),
         allowNull: false,
-        defaultValue: 'customer',
+        defaultValue: 'user',
       },
-      isActive: {
-        type: DataTypes.BOOLEAN,
+      organization: {
+        type: DataTypes.ENUM('Future Skills', 'OP'),
         allowNull: false,
-        defaultValue: true,
+        defaultValue: 'Future Skills',
       },
+      isActive: { type: DataTypes.BOOLEAN, allowNull: false, defaultValue: true },
     },
     {
       tableName: 'users',
+      // Never accidentally send the password hash back in an API response.
+      defaultScope: {
+        attributes: { exclude: ['passwordHash'] },
+      },
+      scopes: {
+        withPassword: { attributes: {} },
+      },
     }
   );
-
-  User.associate = (models) => {
-    User.hasMany(models.Ticket, { foreignKey: 'requesterId', as: 'requestedTickets' });
-    User.hasMany(models.Ticket, { foreignKey: 'assigneeId', as: 'assignedTickets' });
-    User.hasMany(models.Comment, { foreignKey: 'authorId', as: 'comments' });
-  };
 
   return User;
 };

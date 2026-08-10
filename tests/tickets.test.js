@@ -6,29 +6,17 @@ const request = require('supertest');
 const app = require('../src/app');
 const { sequelize, Ticket } = require('../src/models');
 const { createUserWithToken } = require('./helpers/testHelpers');
+const { createTicketAs, assignTicket } = require('./helpers/ticketHelpers');
 
 afterAll(async () => {
   await sequelize.close();
 });
-
-async function createTicketAs(token, body = {}) {
-  return request(app)
-    .post('/tickets')
-    .set('Authorization', `Bearer ${token}`)
-    .send({ title: 'Printer not working', description: 'The office printer jams on every print job.', ...body });
-}
 
 // Auto-assignment (Commit 7) picks whichever active agent has the fewest
 // open tickets across the *entire* table, which may include agents created
 // by other test files sharing this DB. Tests that care about a specific
 // assignment state must set it explicitly rather than assume what
 // auto-assignment did at creation time.
-async function assignTicket(adminToken, ticketId, assigneeId) {
-  return request(app)
-    .patch(`/tickets/${ticketId}/assign`)
-    .set('Authorization', `Bearer ${adminToken}`)
-    .send({ assigneeId });
-}
 
 describe('POST /tickets', () => {
   it('creates a ticket with the requester set from the token, dueAt computed from priority', async () => {
