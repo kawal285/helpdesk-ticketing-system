@@ -1,5 +1,9 @@
 const { GoogleGenerativeAI } = require("@google/generative-ai");
 require("dotenv").config();
+if (!process.env.GEMINI_API_KEY) {
+  console.error("ERROR: GEMINI_API_KEY is missing from your .env file. The AI service cannot start without it.");
+  process.exit(1);
+}
 
 const ticketPrompt = require("../prompts/ticketPrompt");
 
