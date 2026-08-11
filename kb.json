@@ -24,7 +24,7 @@
     "tags": ["wifi", "network", "connection"]
   },
   {
-    "id": 5,
+    "id": 5, 
     "title": "Raising a support ticket",
     "content": "Select 'New Ticket', choose the category that best matches your issue, describe the problem in as much detail as possible, and set a priority. You will get an email and portal notification whenever there is an update.",
     "tags": ["ticket", "help", "howto"]
