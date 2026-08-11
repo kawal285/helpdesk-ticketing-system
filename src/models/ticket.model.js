@@ -1,6 +1,6 @@
 'use strict';
 
-const { CATEGORIES, PRIORITIES } = require('../utils/ticketFields');
+const { CATEGORIES, PRIORITIES, INITIAL_FEELINGS, ORIGINS } = require('../utils/ticketFields');
 const { STATUSES } = require('../utils/ticketStatus');
 
 module.exports = (sequelize, DataTypes) => {
@@ -63,6 +63,33 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.DATE,
         allowNull: true,
       },
+      // --- Fields matching the client's CRM "New Case" form ---
+      initialFeeling: {
+        type: DataTypes.ENUM(...INITIAL_FEELINGS),
+        allowNull: true,
+      },
+      origin: {
+        type: DataTypes.ENUM(...ORIGINS),
+        allowNull: true,
+      },
+      location: {
+        type: DataTypes.STRING,
+        allowNull: true,
+      },
+      studentLivingVillageResident: {
+        type: DataTypes.BOOLEAN,
+        allowNull: false,
+        defaultValue: false,
+      },
+      opsvDefect: {
+        type: DataTypes.BOOLEAN,
+        allowNull: false,
+        defaultValue: false,
+      },
+      parentCaseId: {
+        type: DataTypes.INTEGER,
+        allowNull: true,
+      },
     },
     {
       tableName: 'tickets',
@@ -73,6 +100,8 @@ module.exports = (sequelize, DataTypes) => {
     Ticket.belongsTo(models.User, { foreignKey: 'requesterId', as: 'requester' });
     Ticket.belongsTo(models.User, { foreignKey: 'assigneeId', as: 'assignee' });
     Ticket.hasMany(models.Comment, { foreignKey: 'ticketId', as: 'comments' });
+    Ticket.belongsTo(models.Ticket, { foreignKey: 'parentCaseId', as: 'parentCase' });
+    Ticket.hasMany(models.Ticket, { foreignKey: 'parentCaseId', as: 'childCases' });
   };
 
   return Ticket;
