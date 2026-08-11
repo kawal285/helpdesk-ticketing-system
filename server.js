@@ -62,8 +62,6 @@ app.get("/tickets", (req, res) => {
   res.json(result);
 });
 
-// Overdue tickets -- MUST be declared before /tickets/:id below, or Express
-// will try to treat "overdue" as an :id and this route will never be reached.
 app.get("/tickets/overdue", (req, res) => {
   const now = new Date();
   const overdue = tickets.filter(
@@ -72,14 +70,12 @@ app.get("/tickets/overdue", (req, res) => {
   res.json(overdue);
 });
 
-// Get a single ticket
 app.get("/tickets/:id", (req, res) => {
   const ticket = tickets.find((t) => t.id === Number(req.params.id));
   if (!ticket) return res.status(404).json({ error: "Ticket not found" });
   res.json(ticket);
 });
 
-// Update a ticket (status, priority, assignee, category)
 app.patch("/tickets/:id", (req, res) => {
   const ticket = tickets.find((t) => t.id === Number(req.params.id));
   if (!ticket) return res.status(404).json({ error: "Ticket not found" });
@@ -90,12 +86,11 @@ app.patch("/tickets/:id", (req, res) => {
   if (assignee) ticket.assignee = assignee;
   if (priority) {
     ticket.priority = priority;
-    ticket.dueAt = computeDueAt(priority, ticket.createdAt); // deadline moves with priority
+    ticket.dueAt = computeDueAt(priority, ticket.createdAt);
   }
   res.json(ticket);
 });
 
-// Add a comment to a ticket
 app.post("/tickets/:id/comments", (req, res) => {
   const ticket = tickets.find((t) => t.id === Number(req.params.id));
   if (!ticket) return res.status(404).json({ error: "Ticket not found" });
@@ -108,7 +103,6 @@ app.post("/tickets/:id/comments", (req, res) => {
   res.status(201).json(comment);
 });
 
-// List comments on a ticket
 app.get("/tickets/:id/comments", (req, res) => {
   const ticket = tickets.find((t) => t.id === Number(req.params.id));
   if (!ticket) return res.status(404).json({ error: "Ticket not found" });

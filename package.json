@@ -4,7 +4,9 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    
+    "start": "node server.js",
+    "test:ai": "node tests/aiTest.js",
+    "test:accuracy": "node testAccuracy.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
@@ -20,8 +22,9 @@
   "homepage": "https://github.com/kawal285/helpdesk-ticketing-system#readme",
   "dependencies": {
     "@google/generative-ai": "^0.24.1",
+    "bcryptjs": "^2.4.3",
     "dotenv": "^17.4.2",
     "express": "^5.2.1",
-    "openai": "^7.3.0"
+    "jsonwebtoken": "^9.0.2"
   }
 }
