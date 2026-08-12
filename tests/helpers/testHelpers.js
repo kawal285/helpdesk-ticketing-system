@@ -1,6 +1,6 @@
 const bcrypt = require('bcryptjs');
 const { User } = require('../../src/models');
-const { signToken } = require('../../src/controllers/auth.controller');
+const { signToken } = require('../../src/utils/token');
 
 let counter = 0;
 function uniqueEmail(prefix) {
