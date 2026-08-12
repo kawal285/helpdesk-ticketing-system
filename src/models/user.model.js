@@ -1,5 +1,7 @@
 'use strict';
 
+const { ORGANIZATIONS } = require('../utils/organizations');
+
 module.exports = (sequelize, DataTypes) => {
   const User = sequelize.define(
     'User',
@@ -16,6 +18,11 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.ENUM('admin', 'agent', 'customer'),
         allowNull: false,
         defaultValue: 'customer',
+      },
+      organization: {
+        type: DataTypes.ENUM(...ORGANIZATIONS),
+        allowNull: false,
+        defaultValue: ORGANIZATIONS[0],
       },
       isActive: { type: DataTypes.BOOLEAN, allowNull: false, defaultValue: true },
     },

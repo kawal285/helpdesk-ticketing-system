@@ -2,54 +2,81 @@
 
 const bcrypt = require('bcryptjs');
 const { User } = require('../models');
-const catchAsync = require('../utils/catchAsync');
-const AppError = require('../utils/appError');
-const { signToken: signJwt } = require('../utils/token');
+const { signToken } = require('../utils/token');
 
+// User.create() returns an instance carrying every attribute you set on it,
+// including passwordHash -- the model's defaultScope only excludes that
+// column from SELECT-based queries (findOne/findAll), not from an instance
+// built in memory. Strip it before any user object goes into a response.
 function sanitizeUser(user) {
-  const plain = typeof user.toJSON === 'function' ? user.toJSON() : { ...user };
-  delete plain.passwordHash;
-  return plain;
+  const json = user.toJSON();
+  delete json.passwordHash;
+  return json;
 }
 
-function signToken(user) {
-  return signJwt(user.id);
+// POST /auth/register
+async function register(req, res) {
+  try {
+    const { name, email, password, organization } = req.body;
+
+    if (!name || !email || !password) {
+      return res.status(400).json({ error: 'name, email and password are required.' });
+    }
+    if (password.length < 8) {
+      return res.status(400).json({ error: 'Password must be at least 8 characters.' });
+    }
+
+    const existing = await User.findOne({ where: { email } });
+    if (existing) {
+      return res.status(400).json({ error: 'An account with that email already exists.' });
+    }
+
+    const passwordHash = await bcrypt.hash(password, 12);
+
+    const user = await User.create({
+      name,
+      email,
+      passwordHash,
+      organization: organization || 'Future Skills',
+    });
+
+    const token = signToken(user.id);
+    res.status(201).json({ status: 'success', token, data: { user: sanitizeUser(user) } });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 }
 
-const register = catchAsync(async (req, res, next) => {
-  const { name, email, password } = req.body;
+// POST /auth/login
+async function login(req, res) {
+  try {
+    const { email, password } = req.body;
 
-  const existing = await User.findOne({ where: { email } });
-  if (existing) {
-    return next(new AppError('An account with that email already exists.', 409));
+    if (!email || !password) {
+      return res.status(400).json({ error: 'email and password are required.' });
+    }
+
+    const user = await User.scope('withPassword').findOne({ where: { email } });
+
+    const passwordCorrect = user && (await bcrypt.compare(password, user.passwordHash));
+
+    if (!passwordCorrect) {
+      return res.status(401).json({ error: 'Incorrect email or password.' });
+    }
+    if (!user.isActive) {
+      return res.status(401).json({ error: 'This account has been deactivated.' });
+    }
+
+    const token = signToken(user.id);
+    res.status(200).json({ status: 'success', token, data: { user: sanitizeUser(user) } });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
   }
+}
 
-  const passwordHash = await bcrypt.hash(password, 12);
-  const user = await User.create({ name, email, passwordHash, role: 'customer' });
+// GET /auth/me
+async function getMe(req, res) {
+  res.status(200).json({ status: 'success', data: { user: req.user } });
+}
 
-  const token = signToken(user);
-  res.status(201).json({ token, user: sanitizeUser(user) });
-});
-
-const login = catchAsync(async (req, res, next) => {
-  const { email, password } = req.body;
-
-  const user = await User.scope('withPassword').findOne({ where: { email } });
-  const passwordCorrect = user && (await bcrypt.compare(password, user.passwordHash));
-
-  if (!passwordCorrect) {
-    return next(new AppError('Incorrect email or password.', 401));
-  }
-  if (!user.isActive) {
-    return next(new AppError('This account has been deactivated.', 401));
-  }
-
-  const token = signToken(user);
-  res.status(200).json({ token, user: sanitizeUser(user) });
-});
-
-const getMe = catchAsync(async (req, res) => {
-  res.status(200).json({ user: sanitizeUser(req.user) });
-});
-
-module.exports = { register, login, getMe, signToken, sanitizeUser };
+module.exports = { register, login, getMe, sanitizeUser };
