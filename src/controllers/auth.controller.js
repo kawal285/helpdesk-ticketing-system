@@ -66,4 +66,9 @@ async function login(req, res) {
   }
 }
 
-module.exports = { register, login };
+// GET /auth/me
+async function getMe(req, res) {
+  res.status(200).json({ status: 'success', data: { user: req.user } });
+}
+
+module.exports = { register, login, getMe };
