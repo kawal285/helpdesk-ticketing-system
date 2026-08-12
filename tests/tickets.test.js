@@ -267,6 +267,44 @@ describe('GET /tickets pagination', () => {
   });
 });
 
+describe('ticket organization', () => {
+  it('stamps a new ticket with the organization of its requester', async () => {
+    const { token } = await createUserWithToken({ role: 'customer', organization: 'OP' });
+
+    const res = await createTicketAs(token);
+
+    expect(res.status).toBe(201);
+    expect(res.body.ticket.organization).toBe('OP');
+  });
+
+  it('lets staff see tickets from both organizations in one list, and filter by organization', async () => {
+    const { token: fsCustomer } = await createUserWithToken({ role: 'customer', organization: 'Future Skills' });
+    const { token: opCustomer } = await createUserWithToken({ role: 'customer', organization: 'OP' });
+    const { token: adminToken } = await createUserWithToken({ role: 'admin' });
+
+    const fsTicket = await createTicketAs(fsCustomer, { title: 'FS ticket' });
+    const opTicket = await createTicketAs(opCustomer, { title: 'OP ticket' });
+
+    const unfiltered = await request(app).get('/tickets').set('Authorization', `Bearer ${adminToken}`);
+    expect(unfiltered.status).toBe(200);
+    const ids = unfiltered.body.tickets.map((t) => t.id);
+    expect(ids).toEqual(expect.arrayContaining([fsTicket.body.ticket.id, opTicket.body.ticket.id]));
+
+    const opOnly = await request(app).get('/tickets?organization=OP').set('Authorization', `Bearer ${adminToken}`);
+    expect(opOnly.status).toBe(200);
+    expect(opOnly.body.tickets.every((t) => t.organization === 'OP')).toBe(true);
+    expect(opOnly.body.tickets.some((t) => t.id === opTicket.body.ticket.id)).toBe(true);
+    expect(opOnly.body.tickets.some((t) => t.id === fsTicket.body.ticket.id)).toBe(false);
+  });
+
+  it('rejects an invalid organization filter with 400', async () => {
+    const { token } = await createUserWithToken({ role: 'customer' });
+
+    const res = await request(app).get('/tickets?organization=NotAnOrg').set('Authorization', `Bearer ${token}`);
+    expect(res.status).toBe(400);
+  });
+});
+
 describe('GET /tickets/overdue', () => {
   it('returns only tickets whose dueAt is in the past and still open', async () => {
     const { token } = await createUserWithToken({ role: 'customer' });
