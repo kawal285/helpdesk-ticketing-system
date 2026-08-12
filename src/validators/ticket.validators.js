@@ -30,6 +30,11 @@ const updateTicketValidator = [
   body('description').optional().trim().notEmpty().withMessage('description cannot be empty'),
   body('category').optional().isIn(CATEGORIES).withMessage(`category must be one of ${CATEGORIES.join(', ')}`),
   body('priority').optional().isIn(PRIORITIES).withMessage(`priority must be one of ${PRIORITIES.join(', ')}`),
+  body('status').optional().isIn(STATUSES).withMessage(`status must be one of ${STATUSES.join(', ')}`),
+  body('assigneeId')
+    .optional({ nullable: true })
+    .custom((value) => value === null || Number.isInteger(value))
+    .withMessage('assigneeId must be an integer or null'),
 ];
 
 const updateTicketStatusValidator = [

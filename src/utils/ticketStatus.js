@@ -15,10 +15,11 @@ function isValidTransition(from, to, isAdmin = false) {
 
 // Who may edit a ticket's own fields (title/description/category/priority),
 // as opposed to just its status (see isValidTransition above). Returns an
-// error message if editing isn't allowed, or null if it is.
+// error message if editing isn't allowed, or null if it is. Agents are
+// scoped to accessible tickets upstream (see canAccessTicket), so they may
+// edit details on any ticket they can already see.
 function editPermissionError(user, ticket) {
-  if (user.role === 'admin') return null;
-  if (user.role === 'agent') return 'You do not have permission to perform this action.';
+  if (user.role === 'admin' || user.role === 'agent') return null;
   if (ticket.status !== 'Open') return 'Only open tickets can be edited.';
   return null;
 }
