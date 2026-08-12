@@ -4,6 +4,16 @@ const bcrypt = require('bcryptjs');
 const { User } = require('../models');
 const { signToken } = require('../utils/token');
 
+// User.create() returns an instance carrying every attribute you set on it,
+// including passwordHash -- the model's defaultScope only excludes that
+// column from SELECT-based queries (findOne/findAll), not from an instance
+// built in memory. Strip it before any user object goes into a response.
+function sanitizeUser(user) {
+  const json = user.toJSON();
+  delete json.passwordHash;
+  return json;
+}
+
 // POST /auth/register
 async function register(req, res) {
   try {
@@ -31,7 +41,7 @@ async function register(req, res) {
     });
 
     const token = signToken(user.id);
-    res.status(201).json({ status: 'success', token, data: { user } });
+    res.status(201).json({ status: 'success', token, data: { user: sanitizeUser(user) } });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -57,10 +67,8 @@ async function login(req, res) {
       return res.status(401).json({ error: 'This account has been deactivated.' });
     }
 
-    user.passwordHash = undefined;
-
     const token = signToken(user.id);
-    res.status(200).json({ status: 'success', token, data: { user } });
+    res.status(200).json({ status: 'success', token, data: { user: sanitizeUser(user) } });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -71,4 +79,4 @@ async function getMe(req, res) {
   res.status(200).json({ status: 'success', data: { user: req.user } });
 }
 
-module.exports = { register, login, getMe };
+module.exports = { register, login, getMe, sanitizeUser };
