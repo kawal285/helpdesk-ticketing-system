@@ -1,6 +1,7 @@
 const { body, param, query } = require('express-validator');
 const { CATEGORIES, PRIORITIES } = require('../utils/ticketFields');
 const { STATUSES } = require('../utils/ticketStatus');
+const { ORGANIZATIONS } = require('../utils/organizations');
 
 const createTicketValidator = [
   body('title').trim().notEmpty().withMessage('title is required'),
@@ -13,6 +14,10 @@ const listTicketsValidator = [
   query('status').optional().isIn(STATUSES).withMessage(`status must be one of ${STATUSES.join(', ')}`),
   query('priority').optional().isIn(PRIORITIES).withMessage(`priority must be one of ${PRIORITIES.join(', ')}`),
   query('category').optional().isIn(CATEGORIES).withMessage(`category must be one of ${CATEGORIES.join(', ')}`),
+  query('organization')
+    .optional()
+    .isIn(ORGANIZATIONS)
+    .withMessage(`organization must be one of ${ORGANIZATIONS.join(', ')}`),
   query('page').optional().isInt({ min: 1 }).withMessage('page must be a positive integer'),
   query('limit').optional().isInt({ min: 1, max: 100 }).withMessage('limit must be between 1 and 100'),
 ];

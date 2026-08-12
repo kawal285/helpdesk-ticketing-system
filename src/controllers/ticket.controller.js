@@ -61,6 +61,7 @@ const createTicket = catchAsync(async (req, res) => {
           category: finalCategory,
           priority: finalPriority,
           requesterId: req.user.id,
+          organization: req.user.organization,
           assigneeId,
           dueAt: computeDueAt(finalPriority, createdAt),
           aiCategory: ai.category,
@@ -81,6 +82,7 @@ const listTickets = catchAsync(async (req, res) => {
   if (req.query.status) where.status = req.query.status;
   if (req.query.priority) where.priority = req.query.priority;
   if (req.query.category) where.category = req.query.category;
+  if (req.query.organization) where.organization = req.query.organization;
 
   const page = parseInt(req.query.page, 10) || 1;
   const limit = Math.min(parseInt(req.query.limit, 10) || 20, 100);
