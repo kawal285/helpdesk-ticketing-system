@@ -1,5 +1,7 @@
 'use strict';
 
+const { ORGANIZATIONS } = require('../utils/organizations');
+
 module.exports = (sequelize, DataTypes) => {
   const User = sequelize.define(
     'User',
@@ -13,14 +15,14 @@ module.exports = (sequelize, DataTypes) => {
       },
       passwordHash: { type: DataTypes.STRING, allowNull: false },
       role: {
-        type: DataTypes.ENUM('user', 'staff'),
+        type: DataTypes.ENUM('admin', 'agent', 'customer'),
         allowNull: false,
-        defaultValue: 'user',
+        defaultValue: 'customer',
       },
       organization: {
-        type: DataTypes.ENUM('Future Skills', 'OP'),
+        type: DataTypes.ENUM(...ORGANIZATIONS),
         allowNull: false,
-        defaultValue: 'Future Skills',
+        defaultValue: ORGANIZATIONS[0],
       },
       isActive: { type: DataTypes.BOOLEAN, allowNull: false, defaultValue: true },
     },
