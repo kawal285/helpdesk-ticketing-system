@@ -28,7 +28,6 @@ module.exports = (sequelize, DataTypes) => {
     },
     {
       tableName: 'users',
-      // Never accidentally send the password hash back in an API response.
       defaultScope: {
         attributes: { exclude: ['passwordHash'] },
       },
@@ -37,6 +36,12 @@ module.exports = (sequelize, DataTypes) => {
       },
     }
   );
+
+  User.associate = (models) => {
+    User.hasMany(models.Ticket, { foreignKey: 'requesterId', as: 'requestedTickets' });
+    User.hasMany(models.Ticket, { foreignKey: 'assigneeId', as: 'assignedTickets' });
+    User.hasMany(models.Comment, { foreignKey: 'authorId', as: 'comments' });
+  };
 
   return User;
 };
