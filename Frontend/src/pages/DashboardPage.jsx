@@ -1,26 +1,61 @@
 import { useState, useEffect } from 'react';
 
-export default function DashboardPage({ user, onLogout, onNewTicket, onSelectTicket }) {
+export default function DashboardPage({ user, onLogout, onNewTicket, onSelectTicket, onManageUsers }) {
   const [tickets, setTickets] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [overdueOnly, setOverdueOnly] = useState(false);
+  const [agentFilter, setAgentFilter] = useState('');
+  const [agents, setAgents] = useState([]);
+
+  const isStaff = user.role === 'agent' || user.role === 'admin';
+  const isAdmin = user.role === 'admin';
+
+  useEffect(() => {
+    if (!isAdmin) return;
+    const token = localStorage.getItem('token');
+    fetch('http://localhost:4000/users?role=agent', {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+      .then((res) => res.json())
+      .then((data) => setAgents(data.users || []))
+      .catch(() => {});
+  }, [isAdmin]);
 
   useEffect(() => {
     const token = localStorage.getItem('token');
+    const url = overdueOnly
+      ? 'http://localhost:4000/tickets/overdue'
+      : `http://localhost:4000/tickets${agentFilter ? `?assigneeId=${agentFilter}` : ''}`;
 
-    fetch('http://localhost:4000/tickets', {
+    setLoading(true);
+    setError('');
+
+    fetch(url, {
       headers: { Authorization: `Bearer ${token}` },
     })
       .then((res) => res.json())
       .then((data) => {
-        setTickets(data.tickets);
+        // The overdue endpoint doesn't support filtering by assignee
+        // server-side, so apply it client-side on that smaller result set.
+        const rows =
+          overdueOnly && agentFilter
+            ? data.tickets.filter((t) => String(t.assigneeId) === agentFilter)
+            : data.tickets;
+        setTickets(rows);
         setLoading(false);
       })
       .catch((err) => {
         setError(err.message);
         setLoading(false);
       });
-  }, []);
+  }, [overdueOnly, agentFilter]);
+
+  function assigneeLabel(ticket) {
+    if (!ticket.assigneeId) return 'Unassigned';
+    const agent = agents.find((a) => a.id === ticket.assigneeId);
+    return agent ? agent.name : `User #${ticket.assigneeId}`;
+  }
 
   return (
     <div style={{ maxWidth: 900, margin: '40px auto', padding: '0 20px' }}>
@@ -41,6 +76,11 @@ export default function DashboardPage({ user, onLogout, onNewTicket, onSelectTic
             </p>
           </div>
           <div style={{ display: 'flex', gap: 10 }}>
+            {user.role === 'admin' && (
+              <button className="btn-primary" style={{ width: 'auto' }} onClick={onManageUsers}>
+                Manage Users
+              </button>
+            )}
             <button className="btn-primary" style={{ width: 'auto' }} onClick={onNewTicket}>
               + New Ticket
             </button>
@@ -49,6 +89,33 @@ export default function DashboardPage({ user, onLogout, onNewTicket, onSelectTic
             </button>
           </div>
         </div>
+
+        {isStaff && (
+          <div style={{ display: 'flex', gap: 20, alignItems: 'center', marginBottom: 16, flexWrap: 'wrap' }}>
+            <label style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 13 }}>
+              <input
+                type="checkbox"
+                checked={overdueOnly}
+                onChange={(e) => setOverdueOnly(e.target.checked)}
+              />
+              Show overdue only
+            </label>
+
+            {isAdmin && (
+              <label style={{ fontSize: 13 }}>
+                Agent:{' '}
+                <select value={agentFilter} onChange={(e) => setAgentFilter(e.target.value)}>
+                  <option value="">All agents</option>
+                  {agents.map((a) => (
+                    <option key={a.id} value={a.id}>
+                      {a.name}
+                    </option>
+                  ))}
+                </select>
+              </label>
+            )}
+          </div>
+        )}
 
         {loading && <p>Loading tickets…</p>}
         {error && <div className="error-text">{error}</div>}
@@ -64,6 +131,7 @@ export default function DashboardPage({ user, onLogout, onNewTicket, onSelectTic
                 <th style={{ padding: 10 }}>Status</th>
                 <th style={{ padding: 10 }}>Priority</th>
                 <th style={{ padding: 10 }}>Category</th>
+                {isStaff && <th style={{ padding: 10 }}>Assignee</th>}
               </tr>
             </thead>
             <tbody>
@@ -78,6 +146,7 @@ export default function DashboardPage({ user, onLogout, onNewTicket, onSelectTic
                   <td style={{ padding: 10 }}>{ticket.status}</td>
                   <td style={{ padding: 10 }}>{ticket.priority}</td>
                   <td style={{ padding: 10 }}>{ticket.category}</td>
+                  {isStaff && <td style={{ padding: 10 }}>{assigneeLabel(ticket)}</td>}
                 </tr>
               ))}
             </tbody>

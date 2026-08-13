@@ -4,11 +4,12 @@ import RegisterPage from './pages/RegisterPage';
 import DashboardPage from './pages/DashboardPage';
 import NewTicketPage from './pages/NewTicketPage';
 import TicketDetailPage from './pages/TicketDetailPage';
+import AdminUsersPage from './pages/AdminUsersPage';
 
 function App() {
   const [mode, setMode] = useState('login');
   const [loggedInUser, setLoggedInUser] = useState(null);
-  const [view, setView] = useState('dashboard'); // 'dashboard' | 'newTicket' | 'ticketDetail'
+  const [view, setView] = useState('dashboard'); // 'dashboard' | 'newTicket' | 'ticketDetail' | 'manageUsers'
   const [selectedTicketId, setSelectedTicketId] = useState(null);
   const [refreshKey, setRefreshKey] = useState(0);
 
@@ -36,8 +37,15 @@ function App() {
     }
     if (view === 'ticketDetail') {
       return (
-        <TicketDetailPage ticketId={selectedTicketId} onBack={() => setView('dashboard')} />
+        <TicketDetailPage
+          ticketId={selectedTicketId}
+          user={loggedInUser}
+          onBack={() => setView('dashboard')}
+        />
       );
+    }
+    if (view === 'manageUsers') {
+      return <AdminUsersPage onBack={() => setView('dashboard')} />;
     }
     return (
       <DashboardPage
@@ -46,6 +54,7 @@ function App() {
         onLogout={handleLogout}
         onNewTicket={() => setView('newTicket')}
         onSelectTicket={handleSelectTicket}
+        onManageUsers={() => setView('manageUsers')}
       />
     );
   }
