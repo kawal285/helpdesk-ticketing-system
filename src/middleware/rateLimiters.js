@@ -1,15 +1,15 @@
 const rateLimit = require('express-rate-limit');
 
-// Rate limiting is disabled under test so the suite can hit auth/AI routes
-// repeatedly across scenarios without tripping limits meant for real traffic.
-const skipInTest = () => process.env.NODE_ENV === 'test';
+// Rate limiting only applies in production so the test suite and local dev
+// can hit auth/AI routes repeatedly without tripping limits meant for real traffic.
+const skipOutsideProd = () => process.env.NODE_ENV !== 'production';
 
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 10,
   standardHeaders: true,
   legacyHeaders: false,
-  skip: skipInTest,
+  skip: skipOutsideProd,
   message: { status: 'fail', message: 'Too many attempts. Please try again later.' },
 });
 
@@ -18,7 +18,7 @@ const aiLimiter = rateLimit({
   max: 20,
   standardHeaders: true,
   legacyHeaders: false,
-  skip: skipInTest,
+  skip: skipOutsideProd,
   message: { status: 'fail', message: 'Too many AI analysis requests. Please try again later.' },
 });
 
