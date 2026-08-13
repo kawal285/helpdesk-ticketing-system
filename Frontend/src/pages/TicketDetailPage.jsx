@@ -4,6 +4,15 @@ const STATUSES = ['Open', 'In Progress', 'Resolved', 'Closed'];
 const CATEGORIES = ['Hardware', 'Software', 'Network', 'Account', 'Other'];
 const PRIORITIES = ['Low', 'Medium', 'High', 'Critical'];
 
+// Mirrors src/utils/ticketStatus.js -- admins may override any transition,
+// so this only constrains the options a non-admin agent is offered.
+const TRANSITIONS = {
+  Open: ['In Progress', 'Resolved', 'Closed'],
+  'In Progress': ['Resolved', 'Closed', 'Open'],
+  Resolved: ['Closed', 'In Progress'],
+  Closed: [],
+};
+
 export default function TicketDetailPage({ ticketId, user, onBack }) {
   const [ticket, setTicket] = useState(null);
   const [comments, setComments] = useState([]);
@@ -323,7 +332,10 @@ export default function TicketDetailPage({ ticketId, user, onBack }) {
                       disabled={statusSaving}
                       onChange={(e) => handleStatusChange(e.target.value)}
                     >
-                      {STATUSES.map((s) => (
+                      {(isAdmin
+                        ? STATUSES
+                        : [ticket.status, ...(TRANSITIONS[ticket.status] || [])]
+                      ).map((s) => (
                         <option key={s} value={s}>
                           {s}
                         </option>
