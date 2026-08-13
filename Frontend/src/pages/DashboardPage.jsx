@@ -1,14 +1,23 @@
 import { useState, useEffect } from 'react';
 
-export default function DashboardPage({ user, onLogout, onNewTicket, onSelectTicket }) {
+export default function DashboardPage({ user, onLogout, onNewTicket, onSelectTicket, onManageUsers }) {
   const [tickets, setTickets] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [overdueOnly, setOverdueOnly] = useState(false);
+
+  const isStaff = user.role === 'agent' || user.role === 'admin';
 
   useEffect(() => {
     const token = localStorage.getItem('token');
+    const url = overdueOnly
+      ? 'http://localhost:4000/tickets/overdue'
+      : 'http://localhost:4000/tickets';
 
-    fetch('http://localhost:4000/tickets', {
+    setLoading(true);
+    setError('');
+
+    fetch(url, {
       headers: { Authorization: `Bearer ${token}` },
     })
       .then((res) => res.json())
@@ -20,7 +29,7 @@ export default function DashboardPage({ user, onLogout, onNewTicket, onSelectTic
         setError(err.message);
         setLoading(false);
       });
-  }, []);
+  }, [overdueOnly]);
 
   return (
     <div style={{ maxWidth: 900, margin: '40px auto', padding: '0 20px' }}>
@@ -41,6 +50,11 @@ export default function DashboardPage({ user, onLogout, onNewTicket, onSelectTic
             </p>
           </div>
           <div style={{ display: 'flex', gap: 10 }}>
+            {user.role === 'admin' && (
+              <button className="btn-primary" style={{ width: 'auto' }} onClick={onManageUsers}>
+                Manage Users
+              </button>
+            )}
             <button className="btn-primary" style={{ width: 'auto' }} onClick={onNewTicket}>
               + New Ticket
             </button>
@@ -49,6 +63,17 @@ export default function DashboardPage({ user, onLogout, onNewTicket, onSelectTic
             </button>
           </div>
         </div>
+
+        {isStaff && (
+          <label style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 13, marginBottom: 16 }}>
+            <input
+              type="checkbox"
+              checked={overdueOnly}
+              onChange={(e) => setOverdueOnly(e.target.checked)}
+            />
+            Show overdue only
+          </label>
+        )}
 
         {loading && <p>Loading tickets…</p>}
         {error && <div className="error-text">{error}</div>}
