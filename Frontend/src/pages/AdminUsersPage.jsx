@@ -93,6 +93,21 @@ export default function AdminUsersPage({ onBack }) {
     }
   }
 
+  async function handleActivate(userId) {
+    setError('');
+    try {
+      const response = await fetch(`http://localhost:4000/users/${userId}/activate`, {
+        method: 'PATCH',
+        headers: authHeaders(),
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.message || 'Could not activate user');
+      setUsers((prev) => prev.map((u) => (u.id === userId ? data.user : u)));
+    } catch (err) {
+      setError(err.message);
+    }
+  }
+
   const cardStyle = {
     background: '#ffffff',
     borderRadius: 12,
@@ -174,9 +189,13 @@ export default function AdminUsersPage({ onBack }) {
                   </td>
                   <td style={{ padding: 10 }}>{u.isActive ? 'Active' : 'Deactivated'}</td>
                   <td style={{ padding: 10 }}>
-                    {u.isActive && (
+                    {u.isActive ? (
                       <button type="button" onClick={() => handleDeactivate(u.id)} style={{ padding: '4px 10px' }}>
                         Deactivate
+                      </button>
+                    ) : (
+                      <button type="button" onClick={() => handleActivate(u.id)} style={{ padding: '4px 10px' }}>
+                        Reactivate
                       </button>
                     )}
                   </td>

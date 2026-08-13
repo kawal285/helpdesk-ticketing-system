@@ -40,4 +40,13 @@ const deactivateUser = catchAsync(async (req, res, next) => {
   res.status(200).json({ user: sanitizeUser(user) });
 });
 
-module.exports = { createUser, listUsers, updateRole, deactivateUser };
+const activateUser = catchAsync(async (req, res, next) => {
+  const user = await User.findByPk(req.params.id);
+  if (!user) return next(new AppError('User not found.', 404));
+
+  user.isActive = true;
+  await user.save();
+  res.status(200).json({ user: sanitizeUser(user) });
+});
+
+module.exports = { createUser, listUsers, updateRole, deactivateUser, activateUser };
