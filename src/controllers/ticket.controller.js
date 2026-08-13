@@ -200,10 +200,8 @@ const updateTicketStatus = catchAsync(async (req, res, next) => {
 });
 
 const assignTicket = catchAsync(async (req, res, next) => {
-  const ticket = await Ticket.findByPk(req.params.id);
-  if (!ticket) {
-    return next(new AppError('Ticket not found.', 404));
-  }
+  const ticket = await loadAccessibleTicket(req, next);
+  if (!ticket) return;
 
   const { assigneeId } = req.body;
   if (assigneeId === null) {
