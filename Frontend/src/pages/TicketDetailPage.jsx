@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
 
-export default function TicketDetailPage({ ticketId, onBack }) {
+const STATUSES = ['Open', 'In Progress', 'Resolved', 'Closed'];
+
+export default function TicketDetailPage({ ticketId, user, onBack }) {
   const [ticket, setTicket] = useState(null);
   const [comments, setComments] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -8,6 +10,13 @@ export default function TicketDetailPage({ ticketId, onBack }) {
 
   const [commentText, setCommentText] = useState('');
   const [posting, setPosting] = useState(false);
+
+  const [statusSaving, setStatusSaving] = useState(false);
+  const [assignSaving, setAssignSaving] = useState(false);
+  const [analyzing, setAnalyzing] = useState(false);
+  const [actionError, setActionError] = useState('');
+
+  const isStaff = user.role === 'agent' || user.role === 'admin';
 
   useEffect(() => {
     loadEverything();
@@ -71,6 +80,72 @@ export default function TicketDetailPage({ ticketId, onBack }) {
     }
   }
 
+  async function handleStatusChange(newStatus) {
+    if (!newStatus || newStatus === ticket.status) return;
+    setActionError('');
+    setStatusSaving(true);
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`http://localhost:4000/tickets/${ticketId}/status`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ status: newStatus }),
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.message || 'Could not update status');
+      setTicket(data.ticket);
+    } catch (err) {
+      setActionError(err.message);
+    } finally {
+      setStatusSaving(false);
+    }
+  }
+
+  async function handleAssignChange(assigneeId) {
+    setActionError('');
+    setAssignSaving(true);
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`http://localhost:4000/tickets/${ticketId}/assign`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ assigneeId }),
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.message || 'Could not update assignment');
+      setTicket(data.ticket);
+    } catch (err) {
+      setActionError(err.message);
+    } finally {
+      setAssignSaving(false);
+    }
+  }
+
+  async function handleAiAnalyze() {
+    setActionError('');
+    setAnalyzing(true);
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`http://localhost:4000/tickets/${ticketId}/ai-analyze`, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.message || 'AI analysis failed');
+      setTicket(data.ticket);
+    } catch (err) {
+      setActionError(err.message);
+    } finally {
+      setAnalyzing(false);
+    }
+  }
+
   const cardStyle = {
     background: '#ffffff',
     borderRadius: 12,
@@ -99,6 +174,83 @@ export default function TicketDetailPage({ ticketId, onBack }) {
             </p>
 
             <p style={{ lineHeight: 1.6, whiteSpace: 'pre-wrap' }}>{ticket.description}</p>
+
+            {isStaff && (
+              <div
+                style={{
+                  background: '#f7f7f5',
+                  border: '1px solid #e5e2d9',
+                  borderRadius: 8,
+                  padding: 16,
+                  marginBottom: 16,
+                }}
+              >
+                <h3 style={{ marginTop: 0 }}>Staff actions</h3>
+                {actionError && <div className="error-text">{actionError}</div>}
+
+                <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap', alignItems: 'center' }}>
+                  <label style={{ fontSize: 13 }}>
+                    Status:{' '}
+                    <select
+                      value={ticket.status}
+                      disabled={statusSaving}
+                      onChange={(e) => handleStatusChange(e.target.value)}
+                    >
+                      {STATUSES.map((s) => (
+                        <option key={s} value={s}>
+                          {s}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+
+                  <span style={{ fontSize: 13 }}>
+                    {ticket.assigneeId ? `Assigned to user #${ticket.assigneeId}` : 'Unassigned'}
+                  </span>
+                  {ticket.assigneeId === user.id ? (
+                    <button
+                      type="button"
+                      disabled={assignSaving}
+                      onClick={() => handleAssignChange(null)}
+                      style={{ padding: '4px 10px' }}
+                    >
+                      Unassign
+                    </button>
+                  ) : (
+                    <button
+                      type="button"
+                      disabled={assignSaving}
+                      onClick={() => handleAssignChange(user.id)}
+                      style={{ padding: '4px 10px' }}
+                    >
+                      Assign to me
+                    </button>
+                  )}
+
+                  <button
+                    type="button"
+                    disabled={analyzing}
+                    onClick={handleAiAnalyze}
+                    style={{ padding: '4px 10px' }}
+                  >
+                    {analyzing ? 'Analyzing…' : 'Run AI analysis'}
+                  </button>
+                </div>
+
+                {ticket.aiAnalyzedAt && (
+                  <div style={{ marginTop: 12, fontSize: 13 }}>
+                    <div>
+                      <strong>AI suggestion:</strong> {ticket.aiCategory} · {ticket.aiPriority}
+                    </div>
+                    {ticket.aiSuggestedResponse && (
+                      <div style={{ marginTop: 4, color: '#656a7d', whiteSpace: 'pre-wrap' }}>
+                        {ticket.aiSuggestedResponse}
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            )}
 
             <hr style={{ margin: '20px 0', border: 'none', borderTop: '1px solid #e5e2d9' }} />
 

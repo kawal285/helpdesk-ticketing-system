@@ -36,7 +36,11 @@ function App() {
     }
     if (view === 'ticketDetail') {
       return (
-        <TicketDetailPage ticketId={selectedTicketId} onBack={() => setView('dashboard')} />
+        <TicketDetailPage
+          ticketId={selectedTicketId}
+          user={loggedInUser}
+          onBack={() => setView('dashboard')}
+        />
       );
     }
     return (
