@@ -93,6 +93,10 @@ const listTickets = catchAsync(async (req, res) => {
     order: [['createdAt', 'DESC']],
     limit,
     offset: (page - 1) * limit,
+    include: [
+      { model: User, as: 'requester', attributes: ['id', 'name'] },
+      { model: User, as: 'assignee', attributes: ['id', 'name'] },
+    ],
   });
 
   res.status(200).json({ tickets: rows, total: count, page, limit });
