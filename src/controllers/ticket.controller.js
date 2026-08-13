@@ -83,6 +83,7 @@ const listTickets = catchAsync(async (req, res) => {
   if (req.query.priority) where.priority = req.query.priority;
   if (req.query.category) where.category = req.query.category;
   if (req.query.organization) where.organization = req.query.organization;
+  if (req.query.assigneeId) where.assigneeId = req.query.assigneeId;
 
   const page = parseInt(req.query.page, 10) || 1;
   const limit = Math.min(parseInt(req.query.limit, 10) || 20, 100);
