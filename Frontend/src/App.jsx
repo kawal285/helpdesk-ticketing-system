@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
 import DashboardPage from './pages/DashboardPage';
@@ -9,9 +9,28 @@ import AdminUsersPage from './pages/AdminUsersPage';
 function App() {
   const [mode, setMode] = useState('login');
   const [loggedInUser, setLoggedInUser] = useState(null);
+  const [checkingSession, setCheckingSession] = useState(true);
   const [view, setView] = useState('dashboard'); // 'dashboard' | 'newTicket' | 'ticketDetail' | 'manageUsers'
   const [selectedTicketId, setSelectedTicketId] = useState(null);
   const [refreshKey, setRefreshKey] = useState(0);
+
+  // Re-hydrate the session from a stored token on load, so a page refresh
+  // doesn't silently log the user out even though their token is still valid.
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    if (!token) {
+      setCheckingSession(false);
+      return;
+    }
+
+    fetch('http://localhost:4000/auth/me', {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+      .then((res) => (res.ok ? res.json() : Promise.reject()))
+      .then((data) => setLoggedInUser(data.data.user))
+      .catch(() => localStorage.removeItem('token'))
+      .finally(() => setCheckingSession(false));
+  }, []);
 
   function handleLogout() {
     localStorage.removeItem('token');
@@ -27,6 +46,10 @@ function App() {
   function handleSelectTicket(id) {
     setSelectedTicketId(id);
     setView('ticketDetail');
+  }
+
+  if (checkingSession) {
+    return null;
   }
 
   if (loggedInUser) {
