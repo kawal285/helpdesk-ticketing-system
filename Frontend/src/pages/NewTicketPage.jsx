@@ -1,197 +1,701 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 
-const CATEGORIES = ['Hardware', 'Software', 'Network', 'Account', 'Other'];
-const PRIORITIES = ['Low', 'Medium', 'High', 'Critical'];
-const INITIAL_FEELINGS = ['Calm', 'Concerned', 'Frustrated', 'Urgent'];
-const ORIGINS = ['Portal', 'Email', 'Phone', 'Walk-in'];
+const CATEGORIES = [
+  'Hardware',
+  'Software',
+  'Network',
+  'Account',
+  'Other',
+];
 
-export default function NewTicketPage({ onCreated, onCancel }) {
+const PRIORITIES = [
+  {
+    value: 'Low',
+    label: 'P4 – Low',
+    description: 'General request or minor issue',
+    businessDays: 10,
+  },
+  {
+    value: 'Medium',
+    label: 'P3 – Medium',
+    description: 'Work is affected, but an alternative is available',
+    businessDays: 5,
+  },
+  {
+    value: 'High',
+    label: 'P2 – High',
+    description: 'Important work cannot continue',
+    businessDays: 2,
+  },
+  {
+    value: 'Critical',
+    label: 'P1 – Critical',
+    description: 'Major outage, safety issue or security incident',
+    businessDays: 1,
+  },
+];
+
+const INITIAL_FEELINGS = [
+  'Calm',
+  'Concerned',
+  'Frustrated',
+  'Urgent',
+];
+
+const ORIGINS = [
+  'Portal',
+  'Email',
+  'Phone',
+  'Walk-in',
+];
+
+const EMPTY_FORM = {
+  title: '',
+  description: '',
+  category: '',
+  priority: '',
+  initialFeeling: '',
+  origin: 'Portal',
+  location: '',
+  studentLivingVillageResident: false,
+  opsvDefect: false,
+};
+
+const styles = {
+  page: {
+    width: '100%',
+    maxWidth: 980,
+    margin: '32px auto',
+    padding: '0 22px 50px',
+    fontFamily: 'inherit',
+  },
+
+  headingArea: {
+    marginBottom: 18,
+  },
+
+  heading: {
+    margin: '0 0 3px',
+    color: '#005a9c',
+    fontSize: 32,
+  },
+
+  subtitle: {
+    margin: 0,
+    color: '#656a7d',
+    fontSize: 14,
+  },
+
+  tabs: {
+    display: 'flex',
+    gap: 28,
+    padding: '0 4px',
+    borderBottom: '1px solid #d9e1e8',
+  },
+
+  activeTab: {
+    padding: '13px 2px',
+    color: '#005a9c',
+    background: 'transparent',
+    border: 'none',
+    borderBottom: '3px solid #f37021',
+    fontWeight: 700,
+    cursor: 'default',
+  },
+
+  inactiveTab: {
+    padding: '13px 2px',
+    color: '#656a7d',
+    background: 'transparent',
+    border: 'none',
+    cursor: 'default',
+  },
+
+  card: {
+    marginTop: 18,
+    padding: 26,
+    background: '#ffffff',
+    border: '1px solid #d9e1e8',
+    borderRadius: 10,
+    boxShadow: '0 4px 14px rgba(16, 20, 43, 0.08)',
+  },
+
+  cardHeading: {
+    margin: '0 0 22px',
+    color: '#003b70',
+    fontSize: 16,
+    textTransform: 'uppercase',
+  },
+
+  grid: {
+    display: 'grid',
+    gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))',
+    gap: '18px 22px',
+  },
+
+  fullWidth: {
+    gridColumn: '1 / -1',
+  },
+
+  textarea: {
+    width: '100%',
+    minHeight: 150,
+    padding: 12,
+    resize: 'vertical',
+    border: '1px solid #d9e1e8',
+    borderRadius: 5,
+    fontFamily: 'inherit',
+    fontSize: 14,
+  },
+
+  helper: {
+    display: 'block',
+    marginTop: 6,
+    color: '#656a7d',
+    fontSize: 12,
+    lineHeight: 1.4,
+  },
+
+  required: {
+    color: '#d0483f',
+  },
+
+  checkboxGrid: {
+    display: 'grid',
+    gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))',
+    gap: 14,
+    marginTop: 6,
+  },
+
+  checkboxCard: {
+    display: 'flex',
+    alignItems: 'flex-start',
+    gap: 10,
+    padding: 14,
+    background: '#f7f9fb',
+    border: '1px solid #d9e1e8',
+    borderRadius: 6,
+    cursor: 'pointer',
+  },
+
+  informationCard: {
+    marginTop: 18,
+    padding: 18,
+    background: '#eaf4fa',
+    borderLeft: '4px solid #005a9c',
+    borderRadius: 5,
+  },
+
+  informationTitle: {
+    margin: '0 0 8px',
+    color: '#003b70',
+    fontSize: 15,
+  },
+
+  informationText: {
+    margin: 0,
+    color: '#354454',
+    fontSize: 13,
+    lineHeight: 1.55,
+  },
+
+  priorityBox: {
+    marginTop: 10,
+    padding: 12,
+    color: '#7a3a00',
+    background: '#fff4e8',
+    borderLeft: '4px solid #f37021',
+    borderRadius: 4,
+    fontSize: 13,
+    lineHeight: 1.5,
+  },
+
+  actionRow: {
+    display: 'flex',
+    flexWrap: 'wrap',
+    gap: 12,
+    marginTop: 24,
+  },
+
+  submitButton: {
+    width: 'auto',
+    minWidth: 150,
+  },
+
+  cancelButton: {
+    padding: '10px 18px',
+    color: '#005a9c',
+    background: '#ffffff',
+    border: '1px solid #005a9c',
+    borderRadius: 5,
+    fontWeight: 600,
+    cursor: 'pointer',
+  },
+};
+
+export default function NewTicketPage({
+  onCreated,
+  onCancel,
+  initialData = {},
+}) {
   const [form, setForm] = useState({
-    title: '',
-    description: '',
-    category: '',
-    priority: '',
-    initialFeeling: '',
-    origin: '',
-    location: '',
-    studentLivingVillageResident: false,
-    opsvDefect: false,
+    ...EMPTY_FORM,
+    title: initialData.title || '',
+    description:
+      initialData.description ||
+      initialData.question ||
+      '',
+    category:
+      initialData.category ||
+      initialData.suggestedCategory ||
+      '',
+    priority:
+      initialData.priority ||
+      initialData.suggestedPriority ||
+      '',
   });
+
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
+  const selectedPriority = useMemo(
+    () =>
+      PRIORITIES.find(
+        (priority) => priority.value === form.priority
+      ),
+    [form.priority]
+  );
+
   function updateField(key, value) {
-    setForm((f) => ({ ...f, [key]: value }));
+    setForm((currentForm) => ({
+      ...currentForm,
+      [key]: value,
+    }));
   }
 
-  async function handleSubmit(e) {
-    e.preventDefault();
+  function validateForm() {
+    if (!form.title.trim()) {
+      return 'Please enter a title for the problem.';
+    }
+
+    if (form.title.trim().length < 3) {
+      return 'The ticket title must contain at least 3 characters.';
+    }
+
+    if (!form.description.trim()) {
+      return 'Please describe the problem.';
+    }
+
+    if (form.description.trim().length < 10) {
+      return 'Please provide more information about the problem.';
+    }
+
+    return '';
+  }
+
+  async function handleSubmit(event) {
+    event.preventDefault();
+
+    const validationError = validateForm();
+
+    if (validationError) {
+      setError(validationError);
+      return;
+    }
+
     setError('');
     setLoading(true);
 
-    // Leave optional dropdowns out of the request entirely if left blank,
-    // rather than sending an empty string -- the backend validator only
-    // accepts a real option or nothing at all.
     const body = {
-      title: form.title,
-      description: form.description,
-      ...(form.category && { category: form.category }),
-      ...(form.priority && { priority: form.priority }),
-      ...(form.initialFeeling && { initialFeeling: form.initialFeeling }),
-      ...(form.origin && { origin: form.origin }),
-      ...(form.location && { location: form.location }),
-      studentLivingVillageResident: form.studentLivingVillageResident,
+      title: form.title.trim(),
+      description: form.description.trim(),
+
+      ...(form.category && {
+        category: form.category,
+      }),
+
+      ...(form.priority && {
+        priority: form.priority,
+      }),
+
+      ...(form.initialFeeling && {
+        initialFeeling: form.initialFeeling,
+      }),
+
+      ...(form.origin && {
+        origin: form.origin,
+      }),
+
+      ...(form.location.trim() && {
+        location: form.location.trim(),
+      }),
+
+      studentLivingVillageResident:
+        form.studentLivingVillageResident,
+
       opsvDefect: form.opsvDefect,
     };
 
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch('http://localhost:4000/tickets', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify(body),
-      });
+
+      if (!token) {
+        throw new Error(
+          'Your login session has expired. Please log in again.'
+        );
+      }
+
+      const response = await fetch(
+        'http://localhost:4000/tickets',
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify(body),
+        }
+      );
+
       const data = await response.json();
-      if (!response.ok) throw new Error(data.message || 'Could not create ticket');
+
+      if (!response.ok) {
+        throw new Error(
+          data.message || 'Could not create the ticket.'
+        );
+      }
+
       onCreated(data.ticket);
-    } catch (err) {
-      setError(err.message);
+    } catch (requestError) {
+      setError(requestError.message);
     } finally {
       setLoading(false);
     }
   }
 
   return (
-    <div style={{ maxWidth: 560, margin: '40px auto', fontFamily: 'sans-serif', padding: '0 20px' }}>
-      <h1>New Case</h1>
+    <main style={styles.page}>
+      <header style={styles.headingArea}>
+        <h1 style={styles.heading}>New Case</h1>
 
-      {error && <div className="error-text">{error}</div>}
+        <p style={styles.subtitle}>
+          Create and track a request with the IT support team.
+        </p>
+      </header>
+
+      <div style={styles.tabs}>
+        <button type="button" style={styles.activeTab}>
+          Summary
+        </button>
+
+        <button
+          type="button"
+          style={styles.inactiveTab}
+          title="Available after the ticket is created"
+        >
+          Case Relationships
+        </button>
+
+        <button
+          type="button"
+          style={styles.inactiveTab}
+          title="Available to support staff after creation"
+        >
+          Administration
+        </button>
+      </div>
+
+      {error && (
+        <div
+          className="error-text"
+          role="alert"
+          style={{ marginTop: 18 }}
+        >
+          {error}
+        </div>
+      )}
 
       <form onSubmit={handleSubmit}>
-        <div className="field">
-          <label htmlFor="title">Title</label>
-          <input
-            id="title"
-            required
-            value={form.title}
-            onChange={(e) => updateField('title', e.target.value)}
-          />
-        </div>
+        <section style={styles.card}>
+          <h2 style={styles.cardHeading}>Case details</h2>
 
-        <div className="field">
-          <label htmlFor="description">Description</label>
-          <textarea
-            id="description"
-            required
-            rows={5}
-            style={{ width: '100%', padding: 8, fontFamily: 'inherit' }}
-            value={form.description}
-            onChange={(e) => updateField('description', e.target.value)}
-          />
-        </div>
+          <div style={styles.grid}>
+            <div style={styles.fullWidth} className="field">
+              <label htmlFor="title">
+                Title{' '}
+                <span style={styles.required}>*</span>
+              </label>
 
-        <div className="field">
-          <label htmlFor="category">Category</label>
-          <select
-            id="category"
-            value={form.category}
-            onChange={(e) => updateField('category', e.target.value)}
-          >
-            <option value="">Let AI suggest</option>
-            {CATEGORIES.map((c) => (
-              <option key={c} value={c}>{c}</option>
-            ))}
-          </select>
-        </div>
+              <input
+                id="title"
+                name="title"
+                required
+                maxLength={150}
+                placeholder="Short summary of the problem"
+                value={form.title}
+                onChange={(event) =>
+                  updateField('title', event.target.value)
+                }
+              />
 
-        <div className="field">
-          <label htmlFor="priority">Priority</label>
-          <select
-            id="priority"
-            value={form.priority}
-            onChange={(e) => updateField('priority', e.target.value)}
-          >
-            <option value="">Let AI suggest</option>
-            {PRIORITIES.map((p) => (
-              <option key={p} value={p}>{p}</option>
-            ))}
-          </select>
-        </div>
+              <small style={styles.helper}>
+                Example: Laptop overheats and shuts down.
+              </small>
+            </div>
 
-        <div className="field">
-          <label htmlFor="initialFeeling">Initial Feeling</label>
-          <select
-            id="initialFeeling"
-            value={form.initialFeeling}
-            onChange={(e) => updateField('initialFeeling', e.target.value)}
-          >
-            <option value="">—</option>
-            {INITIAL_FEELINGS.map((f) => (
-              <option key={f} value={f}>{f}</option>
-            ))}
-          </select>
-        </div>
+            <div className="field">
+              <label htmlFor="category">
+                Category
+              </label>
 
-        <div className="field">
-          <label htmlFor="origin">Origin</label>
-          <select
-            id="origin"
-            value={form.origin}
-            onChange={(e) => updateField('origin', e.target.value)}
-          >
-            <option value="">—</option>
-            {ORIGINS.map((o) => (
-              <option key={o} value={o}>{o}</option>
-            ))}
-          </select>
-        </div>
+              <select
+                id="category"
+                name="category"
+                value={form.category}
+                onChange={(event) =>
+                  updateField('category', event.target.value)
+                }
+              >
+                <option value="">Let AI suggest</option>
 
-        <div className="field">
-          <label htmlFor="location">Location</label>
-          <input
-            id="location"
-            placeholder="e.g. Block C, Room 214"
-            value={form.location}
-            onChange={(e) => updateField('location', e.target.value)}
-          />
-        </div>
+                {CATEGORIES.map((category) => (
+                  <option key={category} value={category}>
+                    {category}
+                  </option>
+                ))}
+              </select>
 
-        <div className="field">
-          <label>
-            <input
-              type="checkbox"
-              checked={form.studentLivingVillageResident}
-              onChange={(e) => updateField('studentLivingVillageResident', e.target.checked)}
-              style={{ marginRight: 8 }}
+              <small style={styles.helper}>
+                AI can recommend a category after submission.
+              </small>
+            </div>
+
+            <div className="field">
+              <label htmlFor="priority">
+                Priority
+              </label>
+
+              <select
+                id="priority"
+                name="priority"
+                value={form.priority}
+                onChange={(event) =>
+                  updateField('priority', event.target.value)
+                }
+              >
+                <option value="">Let AI suggest</option>
+
+                {PRIORITIES.map((priority) => (
+                  <option
+                    key={priority.value}
+                    value={priority.value}
+                  >
+                    {priority.label} – {priority.businessDays}{' '}
+                    business day
+                    {priority.businessDays === 1 ? '' : 's'}
+                  </option>
+                ))}
+              </select>
+
+              {selectedPriority && (
+                <div style={styles.priorityBox}>
+                  <strong>{selectedPriority.label}</strong>
+                  <br />
+
+                  {selectedPriority.description}
+                  <br />
+
+                  Target completion:{' '}
+                  <strong>
+                    {selectedPriority.businessDays} business day
+                    {selectedPriority.businessDays === 1
+                      ? ''
+                      : 's'}
+                  </strong>
+                </div>
+              )}
+            </div>
+
+            <div className="field">
+              <label htmlFor="initialFeeling">
+                Initial feeling
+              </label>
+
+              <select
+                id="initialFeeling"
+                name="initialFeeling"
+                value={form.initialFeeling}
+                onChange={(event) =>
+                  updateField(
+                    'initialFeeling',
+                    event.target.value
+                  )
+                }
+              >
+                <option value="">Select an option</option>
+
+                {INITIAL_FEELINGS.map((feeling) => (
+                  <option key={feeling} value={feeling}>
+                    {feeling}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div className="field">
+              <label htmlFor="origin">
+                Origin
+              </label>
+
+              <select
+                id="origin"
+                name="origin"
+                value={form.origin}
+                onChange={(event) =>
+                  updateField('origin', event.target.value)
+                }
+              >
+                {ORIGINS.map((origin) => (
+                  <option key={origin} value={origin}>
+                    {origin}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div style={styles.fullWidth} className="field">
+              <label htmlFor="location">
+                Location
+              </label>
+
+              <input
+                id="location"
+                name="location"
+                maxLength={150}
+                placeholder="Example: Auckland campus, Level 3, Room 214"
+                value={form.location}
+                onChange={(event) =>
+                  updateField('location', event.target.value)
+                }
+              />
+            </div>
+          </div>
+
+          <div style={styles.checkboxGrid}>
+            <label style={styles.checkboxCard}>
+              <input
+                type="checkbox"
+                checked={form.studentLivingVillageResident}
+                onChange={(event) =>
+                  updateField(
+                    'studentLivingVillageResident',
+                    event.target.checked
+                  )
+                }
+              />
+
+              <span>
+                <strong>
+                  Student Living Village resident
+                </strong>
+
+                <small style={styles.helper}>
+                  Select this if the issue relates to your
+                  Student Village accommodation.
+                </small>
+              </span>
+            </label>
+
+            <label style={styles.checkboxCard}>
+              <input
+                type="checkbox"
+                checked={form.opsvDefect}
+                onChange={(event) =>
+                  updateField(
+                    'opsvDefect',
+                    event.target.checked
+                  )
+                }
+              />
+
+              <span>
+                <strong>OPSV defect</strong>
+
+                <small style={styles.helper}>
+                  Select this for a property, room or facilities
+                  defect.
+                </small>
+              </span>
+            </label>
+          </div>
+        </section>
+
+        <section style={styles.card}>
+          <h2 style={styles.cardHeading}>Description</h2>
+
+          <div className="field" style={{ marginBottom: 0 }}>
+            <label htmlFor="description">
+              Problem description{' '}
+              <span style={styles.required}>*</span>
+            </label>
+
+            <textarea
+              id="description"
+              name="description"
+              required
+              maxLength={5000}
+              style={styles.textarea}
+              placeholder="Explain what happened, when it started, any error message shown and the troubleshooting steps you have already tried."
+              value={form.description}
+              onChange={(event) =>
+                updateField(
+                  'description',
+                  event.target.value
+                )
+              }
             />
-            Student Living Village Resident?
-          </label>
+
+            <small style={styles.helper}>
+              {form.description.length}/5000 characters
+            </small>
+          </div>
+        </section>
+
+        <div style={styles.informationCard}>
+          <h3 style={styles.informationTitle}>
+            What happens after submission?
+          </h3>
+
+          <p style={styles.informationText}>
+            The system records your name and email from your
+            logged-in account. AI reviews the description and can
+            suggest a category, priority and initial response. An
+            administrator can then assign the appropriate support
+            agent. Your ticket will show its status, assigned
+            person and target completion date.
+          </p>
         </div>
 
-        <div className="field">
-          <label>
-            <input
-              type="checkbox"
-              checked={form.opsvDefect}
-              onChange={(e) => updateField('opsvDefect', e.target.checked)}
-              style={{ marginRight: 8 }}
-            />
-            OPSV Defect?
-          </label>
-        </div>
-
-        <div style={{ display: 'flex', gap: 10 }}>
-          <button className="btn-primary" type="submit" disabled={loading} style={{ width: 'auto' }}>
+        <div style={styles.actionRow}>
+          <button
+            className="btn-primary"
+            type="submit"
+            disabled={loading}
+            style={styles.submitButton}
+          >
             {loading ? 'Submitting…' : 'Submit Ticket'}
           </button>
-          <button type="button" onClick={onCancel} style={{ padding: '10px 16px' }}>
+
+          <button
+            type="button"
+            onClick={onCancel}
+            disabled={loading}
+            style={styles.cancelButton}
+          >
             Cancel
           </button>
         </div>
       </form>
-    </div>
+    </main>
   );
 }
