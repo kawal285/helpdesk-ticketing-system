@@ -17,7 +17,12 @@ async function analyzeTicket(issue) {
       model: "gemini-flash-latest",
       systemInstruction: ticketPrompt,
     });
-
+async function analyzeTicket(issue) {
+  if (!issue || typeof issue !== "string" || issue.trim().length === 0) {
+    throw new Error("analyzeTicket requires a non-empty description string");
+  }
+ 
+}
     const result = await model.generateContent(issue);
     return result.response.text();
   } catch (err) {
