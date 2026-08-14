@@ -35,18 +35,23 @@ async function assistUser(question) {
       shouldCreateTicket: false,
     };
   }
+const generalAiGuidance =
+  aiSuggestions.suggestedResponse ||
+  'I could not find approved guidance for this problem. Please create a support ticket so the IT team can investigate it safely.';
 
-  return {
-    question: cleanQuestion,
-    answer:
-      'I could not find an approved knowledge-base article that fully answers this question. Please create a support ticket so the IT team can help you.',
-    knowledgeBaseMatch: false,
-    source: null,
-    suggestedCategory: aiSuggestions.category,
-    suggestedPriority: aiSuggestions.priority,
-    suggestedResponse: aiSuggestions.suggestedResponse,
-    shouldCreateTicket: true,
-  };
+return {
+  question: cleanQuestion,
+  answer: generalAiGuidance,
+  knowledgeBaseMatch: false,
+  source: null,
+  guidanceType: aiSuggestions.suggestedResponse
+    ? 'general-ai'
+    : 'ticket-required',
+  suggestedCategory: aiSuggestions.category,
+  suggestedPriority: aiSuggestions.priority,
+  shouldCreateTicket: true,
+};
+  
 }
 
 module.exports = {
