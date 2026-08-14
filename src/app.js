@@ -10,7 +10,7 @@ const ticketRoute = require('./routes/ticket.route');
 const commentRoute = require('./routes/comment.route');
 const notFound = require('./middleware/notFound');
 const errorHandler = require('./middleware/errorHandler');
-
+const knowledgeBaseRoute = require('./routes/knowledgeBase.route');
 const app = express();
 
 app.use(helmet());
@@ -25,7 +25,7 @@ app.use('/auth', authRoute);
 app.use('/users', userRoute);
 app.use('/tickets', ticketRoute);
 app.use('/tickets/:ticketId/comments', commentRoute);
-
+app.use('/knowledge-base', knowledgeBaseRoute);
 app.use(notFound);
 app.use(errorHandler);
 
