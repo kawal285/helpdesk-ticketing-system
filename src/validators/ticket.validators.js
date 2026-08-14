@@ -4,7 +4,12 @@ const { STATUSES } = require('../utils/ticketStatus');
 const { ORGANIZATIONS } = require('../utils/organizations');
 
 const createTicketValidator = [
-  body('title').trim().notEmpty().withMessage('title is required'),
+  body('title')
+    .trim()
+    .notEmpty()
+    .withMessage('title is required')
+    .isLength({ max: 255 })
+    .withMessage('title must be 255 characters or fewer'),
   body('description').trim().notEmpty().withMessage('description is required'),
   body('category').optional().isIn(CATEGORIES).withMessage(`category must be one of ${CATEGORIES.join(', ')}`),
   body('priority').optional().isIn(PRIORITIES).withMessage(`priority must be one of ${PRIORITIES.join(', ')}`),
@@ -39,7 +44,13 @@ const ticketIdValidator = [param('id').isInt().withMessage('id must be an intege
 
 const updateTicketValidator = [
   param('id').isInt().withMessage('id must be an integer'),
-  body('title').optional().trim().notEmpty().withMessage('title cannot be empty'),
+  body('title')
+    .optional()
+    .trim()
+    .notEmpty()
+    .withMessage('title cannot be empty')
+    .isLength({ max: 255 })
+    .withMessage('title must be 255 characters or fewer'),
   body('description').optional().trim().notEmpty().withMessage('description cannot be empty'),
   body('category').optional().isIn(CATEGORIES).withMessage(`category must be one of ${CATEGORIES.join(', ')}`),
   body('priority').optional().isIn(PRIORITIES).withMessage(`priority must be one of ${PRIORITIES.join(', ')}`),
