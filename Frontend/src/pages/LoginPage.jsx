@@ -79,7 +79,7 @@ export default function LoginPage({ onSuccess, onSwitchToRegister }) {
         body: JSON.stringify({ email, password }),
       });
       const data = await response.json();
-      if (!response.ok) throw new Error(data.error || 'Login failed');
+      if (!response.ok) throw new Error(data.message || 'Login failed');
       localStorage.setItem('token', data.token);
       onSuccess(data.data.user);
     } catch (err) {
