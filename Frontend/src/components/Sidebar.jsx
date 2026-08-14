@@ -1,6 +1,7 @@
 const NAV_ITEMS = [
   { key: 'dashboard', label: 'Dashboard' },
   { key: 'tickets', label: 'Tickets' },
+  { key: 'aiAssistant', label: 'AI Assistant' },
   { key: 'manageUsers', label: 'Users', adminOnly: true },
   { key: 'report', label: 'Report' },
   { key: 'settings', label: 'Settings' },

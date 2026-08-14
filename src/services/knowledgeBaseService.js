@@ -8,8 +8,47 @@ const KNOWLEDGE_BASE_FILE = path.join(
   'knowledgeBase.json'
 );
 
+const STOP_WORDS = new Set([
+  'the',
+  'and',
+  'for',
+  'with',
+  'this',
+  'that',
+  'from',
+  'your',
+  'you',
+  'are',
+  'was',
+  'were',
+  'has',
+  'have',
+  'had',
+  'not',
+  'but',
+  'what',
+  'when',
+  'where',
+  'which',
+  'how',
+  'can',
+  'could',
+  'should',
+  'would',
+  'into',
+  'our',
+  'their',
+  'there',
+  'issue',
+  'problem',
+  'help',
+]);
+
 function loadArticles() {
-  const fileContent = fs.readFileSync(KNOWLEDGE_BASE_FILE, 'utf8');
+  const fileContent = fs.readFileSync(
+    KNOWLEDGE_BASE_FILE,
+    'utf8'
+  );
   const articles = JSON.parse(fileContent);
 
   if (!Array.isArray(articles)) {
@@ -24,7 +63,10 @@ function normaliseWords(value) {
     .toLowerCase()
     .replace(/[^a-z0-9\s]/g, ' ')
     .split(/\s+/)
-    .filter((word) => word.length > 2);
+    .filter(
+      (word) =>
+        word.length > 2 && !STOP_WORDS.has(word)
+    );
 }
 
 function searchArticles(query) {
@@ -44,24 +86,29 @@ function searchArticles(query) {
 
       const articleWords = normaliseWords(searchableText);
 
-      const score = queryWords.reduce((total, queryWord) => {
-        const matches = articleWords.filter(
-          (articleWord) =>
-            articleWord === queryWord ||
-            articleWord.includes(queryWord) ||
-            queryWord.includes(articleWord)
-        ).length;
+      const score = queryWords.reduce(
+        (total, queryWord) => {
+          const matches = articleWords.filter(
+            (articleWord) =>
+              articleWord === queryWord ||
+              articleWord.includes(queryWord) ||
+              queryWord.includes(articleWord)
+          ).length;
 
-        return total + matches;
-      }, 0);
+          return total + matches;
+        },
+        0
+      );
 
       return {
         ...article,
         score,
       };
     })
-    .filter((article) => article.score > 0)
-    .sort((first, second) => second.score - first.score);
+    .filter((article) => article.score > 2)
+    .sort(
+      (first, second) => second.score - first.score
+    );
 }
 
 function getArticleById(id) {
