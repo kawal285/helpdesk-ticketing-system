@@ -17,12 +17,12 @@ describe('POST /auth/register', () => {
 
     expect(res.status).toBe(201);
     expect(res.body.token).toEqual(expect.any(String));
-    expect(res.body.user.email).toBe(email);
-    expect(res.body.user.role).toBe('customer');
-    expect(res.body.user.passwordHash).toBeUndefined();
+    expect(res.body.data.user.email).toBe(email);
+    expect(res.body.data.user.role).toBe('customer');
+    expect(res.body.data.user.passwordHash).toBeUndefined();
   });
 
-  it('rejects a duplicate email with 409', async () => {
+  it('rejects a duplicate email with 400', async () => {
     const email = uniqueEmail('dup');
     await request(app).post('/auth/register').send({ name: 'First', email, password: 'Password123!' });
 
@@ -30,7 +30,7 @@ describe('POST /auth/register', () => {
       .post('/auth/register')
       .send({ name: 'Second', email, password: 'Password123!' });
 
-    expect(res.status).toBe(409);
+    expect(res.status).toBe(400);
   });
 
   it('rejects a password shorter than 8 characters with 400', async () => {
@@ -63,7 +63,7 @@ describe('POST /auth/login', () => {
       .get('/auth/me')
       .set('Authorization', `Bearer ${loginRes.body.token}`);
     expect(meRes.status).toBe(200);
-    expect(meRes.body.user.email).toBe(email);
+    expect(meRes.body.data.user.email).toBe(email);
   });
 
   it('rejects an incorrect password with 401', async () => {

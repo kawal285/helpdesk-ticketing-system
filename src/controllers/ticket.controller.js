@@ -61,6 +61,7 @@ const createTicket = catchAsync(async (req, res) => {
           category: finalCategory,
           priority: finalPriority,
           requesterId: req.user.id,
+          organization: req.user.organization,
           assigneeId,
           dueAt: computeDueAt(finalPriority, createdAt),
           aiCategory: ai.category,
@@ -81,6 +82,8 @@ const listTickets = catchAsync(async (req, res) => {
   if (req.query.status) where.status = req.query.status;
   if (req.query.priority) where.priority = req.query.priority;
   if (req.query.category) where.category = req.query.category;
+  if (req.query.organization) where.organization = req.query.organization;
+  if (req.query.assigneeId) where.assigneeId = req.query.assigneeId;
 
   const page = parseInt(req.query.page, 10) || 1;
   const limit = Math.min(parseInt(req.query.limit, 10) || 20, 100);
@@ -90,6 +93,10 @@ const listTickets = catchAsync(async (req, res) => {
     order: [['createdAt', 'DESC']],
     limit,
     offset: (page - 1) * limit,
+    include: [
+      { model: User, as: 'requester', attributes: ['id', 'name'] },
+      { model: User, as: 'assignee', attributes: ['id', 'name'] },
+    ],
   });
 
   res.status(200).json({ tickets: rows, total: count, page, limit });
@@ -117,18 +124,56 @@ const updateTicket = catchAsync(async (req, res, next) => {
   const ticket = await loadAccessibleTicket(req, next);
   if (!ticket) return;
 
-  const editError = editPermissionError(req.user, ticket);
-  if (editError) {
-    return next(new AppError(editError, 403));
+  const { title, description, category, priority, status, assigneeId } = req.body;
+
+  // Status and assignment are staff-only actions, same as their dedicated
+  // /status and /assign endpoints -- customers can only touch the detail
+  // fields below, and only while editPermissionError allows it.
+  const isStaff = req.user.role === 'agent' || req.user.role === 'admin';
+  if ((status !== undefined || assigneeId !== undefined) && !isStaff) {
+    return next(new AppError('You do not have permission to perform this action.', 403));
   }
 
-  const { title, description, category, priority } = req.body;
+  if (title !== undefined || description !== undefined || category !== undefined || priority !== undefined) {
+    const editError = editPermissionError(req.user, ticket);
+    if (editError) {
+      return next(new AppError(editError, 403));
+    }
+  }
+
   if (title !== undefined) ticket.title = title;
   if (description !== undefined) ticket.description = description;
   if (category !== undefined) ticket.category = category;
   if (priority !== undefined) {
     ticket.priority = priority;
     ticket.dueAt = computeDueAt(priority, ticket.createdAt);
+  }
+
+  if (status !== undefined) {
+    const isAdmin = req.user.role === 'admin';
+    if (!isValidTransition(ticket.status, status, isAdmin)) {
+      return next(new AppError(`Cannot transition ticket from ${ticket.status} to ${status}.`, 409));
+    }
+    if (status === 'Resolved') {
+      ticket.resolvedAt = new Date();
+    } else if (status === 'Closed') {
+      ticket.resolvedAt = ticket.resolvedAt || new Date();
+    } else {
+      ticket.resolvedAt = null;
+    }
+    ticket.status = status;
+  }
+
+  if (assigneeId !== undefined) {
+    if (assigneeId === null) {
+      ticket.assigneeId = null;
+    } else {
+      const agent = await User.findByPk(assigneeId);
+      if (!agent || agent.role !== 'agent' || !agent.isActive) {
+        return next(new AppError('assigneeId must be an active agent.', 400));
+      }
+      ticket.assigneeId = assigneeId;
+    }
   }
 
   await ticket.save();
@@ -159,10 +204,8 @@ const updateTicketStatus = catchAsync(async (req, res, next) => {
 });
 
 const assignTicket = catchAsync(async (req, res, next) => {
-  const ticket = await Ticket.findByPk(req.params.id);
-  if (!ticket) {
-    return next(new AppError('Ticket not found.', 404));
-  }
+  const ticket = await loadAccessibleTicket(req, next);
+  if (!ticket) return;
 
   const { assigneeId } = req.body;
   if (assigneeId === null) {

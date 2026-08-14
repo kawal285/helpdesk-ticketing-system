@@ -1,6 +1,6 @@
 const bcrypt = require('bcryptjs');
 const { User } = require('../../src/models');
-const { signToken } = require('../../src/controllers/auth.controller');
+const { signToken } = require('../../src/utils/token');
 
 let counter = 0;
 function uniqueEmail(prefix) {
@@ -11,13 +11,21 @@ function uniqueEmail(prefix) {
 // Bypasses the register/login HTTP flow (which always forces role=customer)
 // so tests can create agents/admins directly. Low bcrypt cost keeps the
 // suite fast -- security of the hash doesn't matter for test fixtures.
-async function createUser({ role = 'customer', name, email, password = 'Password123!', isActive = true } = {}) {
+async function createUser({
+  role = 'customer',
+  organization,
+  name,
+  email,
+  password = 'Password123!',
+  isActive = true,
+} = {}) {
   const passwordHash = await bcrypt.hash(password, 4);
   const user = await User.create({
     name: name || `${role} user`,
     email: email || uniqueEmail(role),
     passwordHash,
     role,
+    ...(organization ? { organization } : {}),
     isActive,
   });
   return user;
@@ -25,7 +33,7 @@ async function createUser({ role = 'customer', name, email, password = 'Password
 
 async function createUserWithToken(opts) {
   const user = await createUser(opts);
-  return { user, token: signToken(user) };
+  return { user, token: signToken(user.id) };
 }
 
 module.exports = { createUser, createUserWithToken, uniqueEmail };

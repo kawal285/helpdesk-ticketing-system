@@ -2,6 +2,7 @@
 
 const { CATEGORIES, PRIORITIES, INITIAL_FEELINGS, ORIGINS } = require('../utils/ticketFields');
 const { STATUSES } = require('../utils/ticketStatus');
+const { ORGANIZATIONS } = require('../utils/organizations');
 
 module.exports = (sequelize, DataTypes) => {
   const Ticket = sequelize.define(
@@ -33,6 +34,13 @@ module.exports = (sequelize, DataTypes) => {
       },
       requesterId: {
         type: DataTypes.INTEGER,
+        allowNull: false,
+      },
+      // Copied from the requester's organization at creation time so tickets
+      // stay filterable/reportable by org even if the requester's own
+      // organization changes later.
+      organization: {
+        type: DataTypes.ENUM(...ORGANIZATIONS),
         allowNull: false,
       },
       assigneeId: {

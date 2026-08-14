@@ -227,20 +227,100 @@ describe('PATCH /tickets/:id (edit)', () => {
     expect(res.status).toBe(403);
   });
 
-  it('always blocks agents from editing ticket details with 403, even when assigned to them', async () => {
+  it('lets an assigned agent edit ticket details, including once the ticket is no longer Open', async () => {
     const { token: ownerToken } = await createUserWithToken({ role: 'customer' });
     const { token: adminToken } = await createUserWithToken({ role: 'admin' });
     const { user: agent, token: agentToken } = await createUserWithToken({ role: 'agent' });
     const created = await createTicketAs(ownerToken);
     const ticketId = created.body.ticket.id;
-    await assignTicket(adminToken, ticketId, agent.id); // rules out a 404 masking the intended 403
+    await assignTicket(adminToken, ticketId, agent.id);
+    await request(app)
+      .patch(`/tickets/${ticketId}/status`)
+      .set('Authorization', `Bearer ${agentToken}`)
+      .send({ status: 'In Progress' });
 
     const res = await request(app)
       .patch(`/tickets/${ticketId}`)
       .set('Authorization', `Bearer ${agentToken}`)
-      .send({ title: 'Agent trying to edit' });
+      .send({ title: 'Agent editing details' });
 
-    expect(res.status).toBe(403);
+    expect(res.status).toBe(200);
+    expect(res.body.ticket.title).toBe('Agent editing details');
+  });
+
+  it('lets an assigned agent update status and details together in one call', async () => {
+    const { token: ownerToken } = await createUserWithToken({ role: 'customer' });
+    const { token: adminToken } = await createUserWithToken({ role: 'admin' });
+    const { user: agent, token: agentToken } = await createUserWithToken({ role: 'agent' });
+    const created = await createTicketAs(ownerToken);
+    const ticketId = created.body.ticket.id;
+    await assignTicket(adminToken, ticketId, agent.id);
+
+    const res = await request(app)
+      .patch(`/tickets/${ticketId}`)
+      .set('Authorization', `Bearer ${agentToken}`)
+      .send({ title: 'Root cause found', priority: 'High', status: 'Resolved' });
+
+    expect(res.status).toBe(200);
+    expect(res.body.ticket.title).toBe('Root cause found');
+    expect(res.body.ticket.priority).toBe('High');
+    expect(res.body.ticket.status).toBe('Resolved');
+    expect(res.body.ticket.resolvedAt).not.toBeNull();
+  });
+
+  it('lets an admin reassign a ticket via PATCH /tickets/:id', async () => {
+    const { token: ownerToken } = await createUserWithToken({ role: 'customer' });
+    const { token: adminToken } = await createUserWithToken({ role: 'admin' });
+    const { user: agent } = await createUserWithToken({ role: 'agent' });
+    const created = await createTicketAs(ownerToken);
+    const ticketId = created.body.ticket.id;
+
+    const res = await request(app)
+      .patch(`/tickets/${ticketId}`)
+      .set('Authorization', `Bearer ${adminToken}`)
+      .send({ assigneeId: agent.id });
+
+    expect(res.status).toBe(200);
+    expect(res.body.ticket.assigneeId).toBe(agent.id);
+  });
+
+  it('rejects an invalid status transition through the combined endpoint with 409', async () => {
+    const { token: ownerToken } = await createUserWithToken({ role: 'customer' });
+    const { token: adminToken } = await createUserWithToken({ role: 'admin' });
+    const { user: agent, token: agentToken } = await createUserWithToken({ role: 'agent' });
+    const created = await createTicketAs(ownerToken);
+    const ticketId = created.body.ticket.id;
+    await assignTicket(adminToken, ticketId, agent.id);
+    await request(app)
+      .patch(`/tickets/${ticketId}/status`)
+      .set('Authorization', `Bearer ${agentToken}`)
+      .send({ status: 'Closed' });
+
+    const res = await request(app)
+      .patch(`/tickets/${ticketId}`)
+      .set('Authorization', `Bearer ${agentToken}`)
+      .send({ status: 'Open', title: 'Should not apply' });
+
+    expect(res.status).toBe(409);
+  });
+
+  it('blocks a customer from changing status or assigneeId through PATCH /tickets/:id with 403', async () => {
+    const { token: ownerToken } = await createUserWithToken({ role: 'customer' });
+    const { user: agent } = await createUserWithToken({ role: 'agent' });
+    const created = await createTicketAs(ownerToken);
+    const ticketId = created.body.ticket.id;
+
+    const statusRes = await request(app)
+      .patch(`/tickets/${ticketId}`)
+      .set('Authorization', `Bearer ${ownerToken}`)
+      .send({ status: 'Resolved' });
+    expect(statusRes.status).toBe(403);
+
+    const assignRes = await request(app)
+      .patch(`/tickets/${ticketId}`)
+      .set('Authorization', `Bearer ${ownerToken}`)
+      .send({ assigneeId: agent.id });
+    expect(assignRes.status).toBe(403);
   });
 });
 
@@ -263,6 +343,44 @@ describe('GET /tickets pagination', () => {
     const { token } = await createUserWithToken({ role: 'customer' });
 
     const res = await request(app).get('/tickets?limit=101').set('Authorization', `Bearer ${token}`);
+    expect(res.status).toBe(400);
+  });
+});
+
+describe('ticket organization', () => {
+  it('stamps a new ticket with the organization of its requester', async () => {
+    const { token } = await createUserWithToken({ role: 'customer', organization: 'OP' });
+
+    const res = await createTicketAs(token);
+
+    expect(res.status).toBe(201);
+    expect(res.body.ticket.organization).toBe('OP');
+  });
+
+  it('lets staff see tickets from both organizations in one list, and filter by organization', async () => {
+    const { token: fsCustomer } = await createUserWithToken({ role: 'customer', organization: 'Future Skills' });
+    const { token: opCustomer } = await createUserWithToken({ role: 'customer', organization: 'OP' });
+    const { token: adminToken } = await createUserWithToken({ role: 'admin' });
+
+    const fsTicket = await createTicketAs(fsCustomer, { title: 'FS ticket' });
+    const opTicket = await createTicketAs(opCustomer, { title: 'OP ticket' });
+
+    const unfiltered = await request(app).get('/tickets').set('Authorization', `Bearer ${adminToken}`);
+    expect(unfiltered.status).toBe(200);
+    const ids = unfiltered.body.tickets.map((t) => t.id);
+    expect(ids).toEqual(expect.arrayContaining([fsTicket.body.ticket.id, opTicket.body.ticket.id]));
+
+    const opOnly = await request(app).get('/tickets?organization=OP').set('Authorization', `Bearer ${adminToken}`);
+    expect(opOnly.status).toBe(200);
+    expect(opOnly.body.tickets.every((t) => t.organization === 'OP')).toBe(true);
+    expect(opOnly.body.tickets.some((t) => t.id === opTicket.body.ticket.id)).toBe(true);
+    expect(opOnly.body.tickets.some((t) => t.id === fsTicket.body.ticket.id)).toBe(false);
+  });
+
+  it('rejects an invalid organization filter with 400', async () => {
+    const { token } = await createUserWithToken({ role: 'customer' });
+
+    const res = await request(app).get('/tickets?organization=NotAnOrg').set('Authorization', `Bearer ${token}`);
     expect(res.status).toBe(400);
   });
 });
