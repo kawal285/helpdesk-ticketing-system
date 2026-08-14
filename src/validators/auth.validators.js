@@ -1,4 +1,5 @@
 const { body } = require('express-validator');
+const { ORGANIZATIONS } = require('../utils/organizations');
 
 const registerValidator = [
   body('name').trim().notEmpty().withMessage('name is required'),
@@ -6,6 +7,10 @@ const registerValidator = [
   body('password')
     .isLength({ min: 8 })
     .withMessage('password must be at least 8 characters long'),
+  body('organization')
+    .optional()
+    .isIn(ORGANIZATIONS)
+    .withMessage(`organization must be one of ${ORGANIZATIONS.join(', ')}`),
 ];
 
 const loginValidator = [
