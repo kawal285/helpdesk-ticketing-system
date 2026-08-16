@@ -31,7 +31,18 @@ async function loadAccessibleTicket(req, next) {
 }
 
 const createTicket = catchAsync(async (req, res) => {
-  const { title, description, category, priority } = req.body;
+  const {
+    title,
+    description,
+    category,
+    priority,
+    initialFeeling,
+    origin,
+    location,
+    studentLivingVillageResident,
+    opsvDefect,
+    parentCaseId,
+  } = req.body;
   const createdAt = new Date();
 
   // Only call the AI if the requester left something blank -- and never let
@@ -68,6 +79,12 @@ const createTicket = catchAsync(async (req, res) => {
           aiPriority: ai.priority,
           aiSuggestedResponse: ai.suggestedResponse,
           aiAnalyzedAt: aiSucceeded ? new Date() : null,
+          initialFeeling,
+          origin,
+          location,
+          studentLivingVillageResident,
+          opsvDefect,
+          parentCaseId,
         },
         { transaction: t }
       );
@@ -124,7 +141,20 @@ const updateTicket = catchAsync(async (req, res, next) => {
   const ticket = await loadAccessibleTicket(req, next);
   if (!ticket) return;
 
-  const { title, description, category, priority, status, assigneeId } = req.body;
+  const {
+    title,
+    description,
+    category,
+    priority,
+    status,
+    assigneeId,
+    initialFeeling,
+    origin,
+    location,
+    studentLivingVillageResident,
+    opsvDefect,
+    parentCaseId,
+  } = req.body;
 
   // Status and assignment are staff-only actions, same as their dedicated
   // /status and /assign endpoints -- customers can only touch the detail
@@ -134,7 +164,19 @@ const updateTicket = catchAsync(async (req, res, next) => {
     return next(new AppError('You do not have permission to perform this action.', 403));
   }
 
-  if (title !== undefined || description !== undefined || category !== undefined || priority !== undefined) {
+  const editsDetailFields = [
+    title,
+    description,
+    category,
+    priority,
+    initialFeeling,
+    origin,
+    location,
+    studentLivingVillageResident,
+    opsvDefect,
+    parentCaseId,
+  ].some((value) => value !== undefined);
+  if (editsDetailFields) {
     const editError = editPermissionError(req.user, ticket);
     if (editError) {
       return next(new AppError(editError, 403));
@@ -148,6 +190,12 @@ const updateTicket = catchAsync(async (req, res, next) => {
     ticket.priority = priority;
     ticket.dueAt = computeDueAt(priority, ticket.createdAt);
   }
+  if (initialFeeling !== undefined) ticket.initialFeeling = initialFeeling;
+  if (origin !== undefined) ticket.origin = origin;
+  if (location !== undefined) ticket.location = location;
+  if (studentLivingVillageResident !== undefined) ticket.studentLivingVillageResident = studentLivingVillageResident;
+  if (opsvDefect !== undefined) ticket.opsvDefect = opsvDefect;
+  if (parentCaseId !== undefined) ticket.parentCaseId = parentCaseId;
 
   if (status !== undefined) {
     const isAdmin = req.user.role === 'admin';
