@@ -9,6 +9,7 @@ import TicketDetailPage from './pages/TicketDetailPage';
 import AdminUsersPage from './pages/AdminUsersPage';
 import ComingSoonPage from './pages/ComingSoonPage';
 import AiAssistantPage from './pages/AiAssistantPage';
+import ReportPage from './pages/ReportPage';
 import Sidebar from './components/Sidebar';
 
 function App() {
@@ -269,7 +270,7 @@ function App() {
       );
     } else if (view === 'report') {
       content = (
-        <ComingSoonPage title="Report" />
+  content = <ReportPage />
       );
     } else if (view === 'settings') {
       content = (
