@@ -114,21 +114,7 @@ export default function LoginPage({
       );
 
       const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(
-          data.message ||
-            data.error ||
-            'The email or password is incorrect.'
-        );
-      }
-
-      if (!data.token || !data.data?.user) {
-        throw new Error(
-          'The server returned an incomplete login response.'
-        );
-      }
-
+      if (!response.ok) throw new Error(data.message || 'Login failed');
       localStorage.setItem('token', data.token);
       onSuccess(data.data.user);
     } catch (loginError) {
