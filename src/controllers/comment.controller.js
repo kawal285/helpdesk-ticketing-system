@@ -1,44 +1,197 @@
 const catchAsync = require('../utils/catchAsync');
 const AppError = require('../utils/appError');
-const { canAccessTicket } = require('../utils/ticketAccess');
-const { Ticket, Comment } = require('../models');
+
+const {
+  canAccessTicket,
+} = require('../utils/ticketAccess');
+
+const {
+  notifyCommentAdded,
+} = require('../services/notificationService');
+
+const {
+  Ticket,
+  Comment,
+  User,
+} = require('../models');
 
 async function loadAccessibleTicket(req, next) {
-  const ticket = await Ticket.findByPk(req.params.ticketId);
+  const ticket = await Ticket.findByPk(
+    req.params.ticketId,
+    {
+      include: [
+        {
+          model: User,
+          as: 'requester',
+          attributes: [
+            'id',
+            'name',
+            'email',
+            'role',
+            'organization',
+          ],
+        },
+        {
+          model: User,
+          as: 'assignee',
+          attributes: [
+            'id',
+            'name',
+            'email',
+            'role',
+          ],
+          required: false,
+        },
+      ],
+    }
+  );
+
   if (!ticket) {
-    next(new AppError('Ticket not found.', 404));
+    next(
+      new AppError(
+        'Ticket not found.',
+        404
+      )
+    );
+
     return null;
   }
-  if (!canAccessTicket(req.user, ticket)) {
-    next(new AppError('You do not have permission to access this ticket.', 403));
+
+  if (
+    !canAccessTicket(req.user, ticket)
+  ) {
+    next(
+      new AppError(
+        'You do not have permission to access this ticket.',
+        403
+      )
+    );
+
     return null;
   }
+
   return ticket;
 }
 
-const createComment = catchAsync(async (req, res, next) => {
-  const ticket = await loadAccessibleTicket(req, next);
-  if (!ticket) return;
+const createComment = catchAsync(
+  async (req, res, next) => {
+    const ticket =
+      await loadAccessibleTicket(
+        req,
+        next
+      );
 
-  const comment = await Comment.create({
-    text: req.body.text,
-    ticketId: ticket.id,
-    authorId: req.user.id,
-  });
+    if (!ticket) return;
 
-  res.status(201).json({ comment });
-});
+    const createdComment =
+      await Comment.create({
+        text: req.body.text,
+        ticketId: ticket.id,
+        authorId: req.user.id,
+      });
 
-const listComments = catchAsync(async (req, res, next) => {
-  const ticket = await loadAccessibleTicket(req, next);
-  if (!ticket) return;
+    /*
+     * Reload the comment with its author so the frontend can
+     * immediately display the author's name.
+     */
+    const comment =
+      await Comment.findByPk(
+        createdComment.id,
+        {
+          include: [
+            {
+              model: User,
+              as: 'author',
+              attributes: [
+                'id',
+                'name',
+                'email',
+                'role',
+              ],
+            },
+          ],
+        }
+      );
 
-  const comments = await Comment.findAll({
-    where: { ticketId: ticket.id },
-    order: [['createdAt', 'ASC']],
-  });
+    const author =
+      comment.author || req.user;
 
-  res.status(200).json({ comments });
-});
+    let recipient = null;
 
-module.exports = { createComment, listComments };
+    /*
+     * Customer comments notify the assigned agent.
+     * Agent/admin comments notify the requester.
+     */
+    if (
+      req.user.role === 'customer'
+    ) {
+      recipient = ticket.assignee;
+    } else {
+      recipient = ticket.requester;
+    }
+
+    /*
+     * Do not send an email back to the person who posted the
+     * comment. Unassigned tickets may not yet have an agent
+     * recipient, in which case notificationService safely skips it.
+     */
+    if (
+      recipient &&
+      Number(recipient.id) !==
+        Number(req.user.id)
+    ) {
+      await notifyCommentAdded({
+        ticket,
+        recipient,
+        author,
+        comment,
+      });
+    }
+
+    res.status(201).json({
+      comment,
+    });
+  }
+);
+
+const listComments = catchAsync(
+  async (req, res, next) => {
+    const ticket =
+      await loadAccessibleTicket(
+        req,
+        next
+      );
+
+    if (!ticket) return;
+
+    const comments =
+      await Comment.findAll({
+        where: {
+          ticketId: ticket.id,
+        },
+        order: [
+          ['createdAt', 'ASC'],
+        ],
+        include: [
+          {
+            model: User,
+            as: 'author',
+            attributes: [
+              'id',
+              'name',
+              'role',
+            ],
+          },
+        ],
+      });
+
+    res.status(200).json({
+      comments,
+    });
+  }
+);
+
+module.exports = {
+  createComment,
+  listComments,
+};

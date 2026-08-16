@@ -1,68 +1,101 @@
+import opLogo from '../assets/op-logo.png';
+import futureSkillsLogo from '../assets/future-skills-logo.png';
 const NAV_ITEMS = [
-  { key: 'dashboard', label: 'Dashboard' },
-  { key: 'tickets', label: 'Tickets' },
-  { key: 'aiAssistant', label: 'AI Assistant' },
-  { key: 'manageUsers', label: 'Users', adminOnly: true },
-  { key: 'report', label: 'Report' },
-  { key: 'settings', label: 'Settings' },
+  {
+    key: 'dashboard',
+    label: 'Dashboard',
+    roles: ['customer', 'agent', 'admin'],
+  },
+  {
+    key: 'tickets',
+    label: 'Tickets',
+    roles: ['customer', 'agent', 'admin'],
+  },
+  {
+    key: 'aiAssistant',
+    label: 'AI Assistant',
+    roles: ['customer'],
+  },
+  {
+    key: 'manageUsers',
+    label: 'Users',
+    roles: ['admin'],
+  },
+  {
+    key: 'report',
+    label: 'Report',
+    roles: ['admin'],
+  },
+  {
+    key: 'settings',
+    label: 'Settings',
+    roles: ['admin'],
+  },
 ];
+export default function Sidebar({
+  active,
+  user,
+  onNavigate,
+  onLogout,
+}) {
+  const visibleItems = NAV_ITEMS.filter((item) =>
+  item.roles.includes(user.role)
+);
 
-export default function Sidebar({ active, user, onNavigate, onLogout }) {
   return (
-    <div
-      style={{
-        width: 200,
-        flexShrink: 0,
-        background: '#ffffff',
-        borderRight: '1px solid #e5e2d9',
-        minHeight: '100vh',
-        padding: '20px 0',
-        fontFamily: 'sans-serif',
-      }}
-    >
-      <div style={{ padding: '0 20px 20px', fontWeight: 700, fontSize: 16 }}>Help Desk</div>
+    <aside className="sidebar">
+      <div className="sidebar-brand">
+        <div className="institution-logos">
+          <img
+            src={opLogo}
+            alt="Otago Polytechnic"
+            className="op-logo"
+          />
 
-      <nav>
-        {NAV_ITEMS.filter((item) => !item.adminOnly || user.role === 'admin').map((item) => (
+          <div className="logo-divider" />
+
+          <img
+            src={futureSkillsLogo}
+            alt="Future Skills"
+            className="future-skills-logo"
+          />
+        </div>
+
+        <div className="helpdesk-title">
+          <strong>IT Helpdesk</strong>
+          <span>Support Portal</span>
+        </div>
+      </div>
+
+      <nav className="sidebar-navigation" aria-label="Main navigation">
+        {visibleItems.map((item) => (
           <button
             key={item.key}
             type="button"
+            className={`sidebar-nav-button ${
+              active === item.key ? 'active' : ''
+            }`}
             onClick={() => onNavigate(item.key)}
-            style={{
-              display: 'block',
-              width: '100%',
-              textAlign: 'left',
-              padding: '10px 20px',
-              border: 'none',
-              background: active === item.key ? '#eeeefd' : 'transparent',
-              color: active === item.key ? '#5b5fef' : '#1b1e2b',
-              fontWeight: active === item.key ? 600 : 400,
-              cursor: 'pointer',
-              fontSize: 14,
-            }}
           >
             {item.label}
           </button>
         ))}
       </nav>
 
-      <div style={{ marginTop: 30, padding: '0 20px' }}>
+      <div className="sidebar-footer">
+        <div className="sidebar-user">
+          <strong>{user.name}</strong>
+          <span>{user.role}</span>
+        </div>
+
         <button
           type="button"
+          className="sidebar-logout"
           onClick={onLogout}
-          style={{
-            width: '100%',
-            padding: '10px 16px',
-            border: '1px solid #e5e2d9',
-            borderRadius: 4,
-            background: '#ffffff',
-            cursor: 'pointer',
-            fontSize: 14,
-          }}
         >
           Log out
         </button>
       </div>
-    </div>
+    </aside>
   );
 }

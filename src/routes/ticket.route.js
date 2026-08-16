@@ -8,6 +8,7 @@ const {
   updateTicketStatus,
   assignTicket,
   aiAnalyzeTicket,
+  reviewTicketResolution,
 } = require('../controllers/ticket.controller');
 const {
   createTicketValidator,
@@ -52,6 +53,13 @@ router.post(
   ticketIdValidator,
   validate,
   aiAnalyzeTicket
+);
+
+router.patch(
+  '/:id/review',
+  ticketIdValidator,
+  validate,
+  reviewTicketResolution
 );
 
 module.exports = router;
