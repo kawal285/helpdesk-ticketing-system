@@ -1,6 +1,6 @@
 'use strict';
 
-const { CATEGORIES, PRIORITIES, INITIAL_FEELINGS, ORIGINS } = require('../utils/ticketFields');
+const { CATEGORIES, PRIORITIES, DEFAULT_PRIORITY } = require('../utils/ticketFields');
 const { STATUSES } = require('../utils/ticketStatus');
 const { ORGANIZATIONS } = require('../utils/organizations');
 
@@ -25,7 +25,7 @@ module.exports = (sequelize, DataTypes) => {
       priority: {
         type: DataTypes.ENUM(...PRIORITIES),
         allowNull: false,
-        defaultValue: 'Medium',
+        defaultValue: DEFAULT_PRIORITY,
       },
       status: {
         type: DataTypes.ENUM(...STATUSES),
@@ -71,28 +71,9 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.DATE,
         allowNull: true,
       },
-      // --- Fields matching the client's CRM "New Case" form ---
-      initialFeeling: {
-        type: DataTypes.ENUM(...INITIAL_FEELINGS),
-        allowNull: true,
-      },
-      origin: {
-        type: DataTypes.ENUM(...ORIGINS),
-        allowNull: true,
-      },
-      location: {
+      room: {
         type: DataTypes.STRING,
         allowNull: true,
-      },
-      studentLivingVillageResident: {
-        type: DataTypes.BOOLEAN,
-        allowNull: false,
-        defaultValue: false,
-      },
-      opsvDefect: {
-        type: DataTypes.BOOLEAN,
-        allowNull: false,
-        defaultValue: false,
       },
       parentCaseId: {
         type: DataTypes.INTEGER,
