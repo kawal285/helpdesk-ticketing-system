@@ -7,6 +7,8 @@ const STATUS_LABELS = {
   Closed: 'Reviewed and Closed',
 };
 
+const ORGANIZATIONS = ['Future Skills', 'OP'];
+
 export default function DashboardPage({
   user,
   onNewTicket,
@@ -19,6 +21,7 @@ export default function DashboardPage({
   const [error, setError] = useState('');
   const [overdueOnly, setOverdueOnly] = useState(false);
   const [agentFilter, setAgentFilter] = useState('');
+  const [organizationFilter, setOrganizationFilter] = useState('');
   const [agents, setAgents] = useState([]);
 
   const isCustomer = user.role === 'customer';
@@ -65,18 +68,29 @@ export default function DashboardPage({
 
   useEffect(() => {
     loadTickets();
-  }, [overdueOnly, agentFilter]);
+  }, [overdueOnly, agentFilter, organizationFilter]);
 
   async function loadTickets() {
     const token = localStorage.getItem('token');
 
-    let url = 'http://localhost:4000/tickets';
+    const params = new URLSearchParams();
 
-    if (overdueOnly && isStaff) {
-      url = 'http://localhost:4000/tickets/overdue';
-    } else if (agentFilter && isAdmin) {
-      url = `http://localhost:4000/tickets?assigneeId=${agentFilter}`;
+    if (agentFilter && isAdmin) {
+      params.set('assigneeId', agentFilter);
     }
+
+    if (organizationFilter && isStaff) {
+      params.set('organization', organizationFilter);
+    }
+
+    const queryString = params.toString();
+
+    const url =
+      overdueOnly && isStaff
+        ? 'http://localhost:4000/tickets/overdue'
+        : `http://localhost:4000/tickets${
+            queryString ? `?${queryString}` : ''
+          }`;
 
     setLoading(true);
     setError('');
@@ -99,12 +113,20 @@ export default function DashboardPage({
       let rows = data.tickets || [];
 
       // The overdue endpoint currently does not apply the admin
-      // agent filter, so apply it safely in the frontend.
+      // agent/organization filters, so apply them safely in the
+      // frontend.
       if (overdueOnly && agentFilter && isAdmin) {
         rows = rows.filter(
           (ticket) =>
             String(ticket.assigneeId) ===
             String(agentFilter)
+        );
+      }
+
+      if (overdueOnly && organizationFilter && isStaff) {
+        rows = rows.filter(
+          (ticket) =>
+            ticket.organization === organizationFilter
         );
       }
 
@@ -303,6 +325,35 @@ export default function DashboardPage({
                 </select>
               </label>
             )}
+
+            <label style={{ fontSize: 14 }}>
+              Organization:{' '}
+
+              <select
+                value={organizationFilter}
+                onChange={(event) =>
+                  setOrganizationFilter(event.target.value)
+                }
+                style={{
+                  padding: '7px 9px',
+                  border: '1px solid #d9e1e8',
+                  borderRadius: 4,
+                }}
+              >
+                <option value="">
+                  Both (Future Skills &amp; OP)
+                </option>
+
+                {ORGANIZATIONS.map((organization) => (
+                  <option
+                    key={organization}
+                    value={organization}
+                  >
+                    {organization}
+                  </option>
+                ))}
+              </select>
+            </label>
           </div>
         )}
 
@@ -350,6 +401,12 @@ export default function DashboardPage({
                   <th style={{ padding: 11 }}>Status</th>
                   <th style={{ padding: 11 }}>Priority</th>
                   <th style={{ padding: 11 }}>Category</th>
+
+                  {isStaff && (
+                    <th style={{ padding: 11 }}>
+                      Organization
+                    </th>
+                  )}
 
                   {isStaff && (
                     <th style={{ padding: 11 }}>
@@ -401,6 +458,12 @@ export default function DashboardPage({
                     <td style={{ padding: 11 }}>
                       {ticket.category}
                     </td>
+
+                    {isStaff && (
+                      <td style={{ padding: 11 }}>
+                        {ticket.organization}
+                      </td>
+                    )}
 
                     {isStaff && (
                       <td style={{ padding: 11 }}>
