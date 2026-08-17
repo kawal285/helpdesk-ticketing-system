@@ -1,0 +1,32 @@
+[
+  {
+    "id": 1,
+    "title": "How to reset your password",
+    "content": "Go to the login page and select 'Forgot password'. Enter your email address and follow the link sent to your inbox. If you don't receive the email within 5 minutes, check your spam folder before logging a ticket.",
+    "tags": ["password", "login", "account"]
+  },
+  {
+    "id": 2,
+    "title": "Printer not working or not printing",
+    "content": "Check the printer is powered on and connected to the network. Try restarting the printer. Ensure you have selected the correct printer in the print dialog. If the issue continues, log a Hardware ticket with the printer name and any error message shown.",
+    "tags": ["printer", "hardware"]
+  },
+  {
+    "id": 3,
+    "title": "Requesting software installation",
+    "content": "Software installs require approval. Submit a Software category ticket with the exact software name and version, and the business reason for needing it. Approved requests are typically installed within 1 business day.",
+    "tags": ["software", "install", "request"]
+  },
+  {
+    "id": 4,
+    "title": "Wi-Fi or network connection issues",
+    "content": "Toggle Wi-Fi off and on, then reconnect to the correct network. Confirm you are connecting to the staff or student network, not a guest network. If the issue continues, log a Network ticket including your location or building.",
+    "tags": ["wifi", "network", "connection"]
+  },
+  {
+    "id": 5, 
+    "title": "Raising a support ticket",
+    "content": "Select 'New Ticket', choose the category that best matches your issue, describe the problem in as much detail as possible, and set a priority. You will get an email and portal notification whenever there is an update.",
+    "tags": ["ticket", "help", "howto"]
+  }
+]

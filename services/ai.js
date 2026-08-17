@@ -1,9 +1,5 @@
 const { GoogleGenerativeAI } = require("@google/generative-ai");
 require("dotenv").config();
-if (!process.env.GEMINI_API_KEY) {
-  console.error("ERROR: GEMINI_API_KEY is missing from your .env file. The AI service cannot start without it.");
-  process.exit(1);
-}
 
 const ticketPrompt = require("../prompts/ticketPrompt");
 
@@ -21,7 +17,12 @@ async function analyzeTicket(issue) {
       model: "gemini-flash-latest",
       systemInstruction: ticketPrompt,
     });
-
+async function analyzeTicket(issue) {
+  if (!issue || typeof issue !== "string" || issue.trim().length === 0) {
+    throw new Error("analyzeTicket requires a non-empty description string");
+  }
+ 
+}
     const result = await model.generateContent(issue);
     return result.response.text();
   } catch (err) {

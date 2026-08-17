@@ -13,7 +13,9 @@ function mockResponse(description) {
 async function generateAnalysis(description) {
   try {
     const model = genAI.getGenerativeModel({
-      model: 'gemini-flash-latest',
+      model:
+  process.env.GEMINI_MODEL ||
+  'gemini-3.6-flash',
       systemInstruction: ticketPrompt,
     });
 
