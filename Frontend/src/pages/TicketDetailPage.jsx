@@ -30,6 +30,7 @@ const CATEGORIES = [
 ];
 
 const PRIORITIES = [
+  'Trivial',
   'Low',
   'Medium',
   'High',
@@ -37,6 +38,7 @@ const PRIORITIES = [
 ];
 
 const PRIORITY_DAYS = {
+  Trivial: 20,
   Low: 10,
   Medium: 5,
   High: 2,
@@ -566,55 +568,8 @@ export default function TicketDetailPage({
                 </div>
 
                 <div>
-                  <dt>Origin</dt>
-                  <dd>{ticket.origin || 'Not provided'}</dd>
-                </div>
-{ticket.status === 'Resolved' && !isStaff && (
-  <div className="ticket-review-panel">
-    <h3>Has your problem been solved?</h3>
-
-    <p>
-      The support team marked this ticket as resolved.
-      Please confirm whether the solution worked.
-    </p>
-
-    {actionError && (
-      <div className="error-text">{actionError}</div>
-    )}
-
-    <div className="ticket-review-actions">
-      <button
-        type="button"
-        className="ticket-accept-button"
-        disabled={reviewSaving}
-        onClick={() => handleResolutionReview('accept')}
-      >
-        {reviewSaving
-          ? 'Submitting…'
-          : 'Yes, close this ticket'}
-      </button>
-
-      <button
-        type="button"
-        className="ticket-reopen-button"
-        disabled={reviewSaving}
-        onClick={() => handleResolutionReview('reopen')}
-      >
-        No, I still need help
-      </button>
-    </div>
-  </div>
-)}
-                <div>
-                  <dt>Location</dt>
-                  <dd>{ticket.location || 'Not provided'}</dd>
-                </div>
-
-                <div>
-                  <dt>Initial feeling</dt>
-                  <dd>
-                    {ticket.initialFeeling || 'Not provided'}
-                  </dd>
+                  <dt>Room</dt>
+                  <dd>{ticket.room || 'Not provided'}</dd>
                 </div>
 
                 <div>
