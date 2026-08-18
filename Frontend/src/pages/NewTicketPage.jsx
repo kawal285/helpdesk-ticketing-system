@@ -10,6 +10,12 @@ const CATEGORIES = [
 
 const PRIORITIES = [
   {
+    value: 'Trivial',
+    label: 'P5 – Trivial',
+    description: 'Trivial request or cosmetic issue',
+    businessDays: 20,
+  },
+  {
     value: 'Low',
     label: 'P4 – Low',
     description: 'General request or minor issue',
@@ -35,30 +41,12 @@ const PRIORITIES = [
   },
 ];
 
-const INITIAL_FEELINGS = [
-  'Calm',
-  'Concerned',
-  'Frustrated',
-  'Urgent',
-];
-
-const ORIGINS = [
-  'Portal',
-  'Email',
-  'Phone',
-  'Walk-in',
-];
-
 const EMPTY_FORM = {
   title: '',
   description: '',
   category: '',
   priority: '',
-  initialFeeling: '',
-  origin: 'Portal',
-  location: '',
-  studentLivingVillageResident: false,
-  opsvDefect: false,
+  room: '',
 };
 
 const styles = {
@@ -318,22 +306,9 @@ export default function NewTicketPage({
         priority: form.priority,
       }),
 
-      ...(form.initialFeeling && {
-        initialFeeling: form.initialFeeling,
+      ...(form.room.trim() && {
+        room: form.room.trim(),
       }),
-
-      ...(form.origin && {
-        origin: form.origin,
-      }),
-
-      ...(form.location.trim() && {
-        location: form.location.trim(),
-      }),
-
-      studentLivingVillageResident:
-        form.studentLivingVillageResident,
-
-      opsvDefect: form.opsvDefect,
     };
 
     try {
@@ -516,117 +491,22 @@ export default function NewTicketPage({
               )}
             </div>
 
-            <div className="field">
-              <label htmlFor="initialFeeling">
-                Initial feeling
-              </label>
-
-              <select
-                id="initialFeeling"
-                name="initialFeeling"
-                value={form.initialFeeling}
-                onChange={(event) =>
-                  updateField(
-                    'initialFeeling',
-                    event.target.value
-                  )
-                }
-              >
-                <option value="">Select an option</option>
-
-                {INITIAL_FEELINGS.map((feeling) => (
-                  <option key={feeling} value={feeling}>
-                    {feeling}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <div className="field">
-              <label htmlFor="origin">
-                Origin
-              </label>
-
-              <select
-                id="origin"
-                name="origin"
-                value={form.origin}
-                onChange={(event) =>
-                  updateField('origin', event.target.value)
-                }
-              >
-                {ORIGINS.map((origin) => (
-                  <option key={origin} value={origin}>
-                    {origin}
-                  </option>
-                ))}
-              </select>
-            </div>
-
             <div style={styles.fullWidth} className="field">
-              <label htmlFor="location">
-                Location
+              <label htmlFor="room">
+                Room
               </label>
 
               <input
-                id="location"
-                name="location"
+                id="room"
+                name="room"
                 maxLength={150}
                 placeholder="Example: Auckland campus, Level 3, Room 214"
-                value={form.location}
+                value={form.room}
                 onChange={(event) =>
-                  updateField('location', event.target.value)
+                  updateField('room', event.target.value)
                 }
               />
             </div>
-          </div>
-
-          <div style={styles.checkboxGrid}>
-            <label style={styles.checkboxCard}>
-              <input
-                type="checkbox"
-                checked={form.studentLivingVillageResident}
-                onChange={(event) =>
-                  updateField(
-                    'studentLivingVillageResident',
-                    event.target.checked
-                  )
-                }
-              />
-
-              <span>
-                <strong>
-                  Student Living Village resident
-                </strong>
-
-                <small style={styles.helper}>
-                  Select this if the issue relates to your
-                  Student Village accommodation.
-                </small>
-              </span>
-            </label>
-
-            <label style={styles.checkboxCard}>
-              <input
-                type="checkbox"
-                checked={form.opsvDefect}
-                onChange={(event) =>
-                  updateField(
-                    'opsvDefect',
-                    event.target.checked
-                  )
-                }
-              />
-
-              <span>
-                <strong>OPSV defect</strong>
-
-                <small style={styles.helper}>
-                  Select this for a property, room or facilities
-                  defect.
-                </small>
-              </span>
-            </label>
           </div>
         </section>
 
@@ -645,7 +525,7 @@ export default function NewTicketPage({
               required
               maxLength={5000}
               style={styles.textarea}
-              placeholder="Explain what happened, when it started, any error message shown and the troubleshooting steps you have already tried."
+              placeholder="Describe the problem in detail. Include: the exact error message (if any), which device or system is affected, and what troubleshooting steps you have already tried."
               value={form.description}
               onChange={(event) =>
                 updateField(

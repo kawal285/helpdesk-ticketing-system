@@ -129,6 +129,10 @@ export default function ReportPage() {
           name: 'Low',
           count: countByPriority('Low'),
         },
+        {
+          name: 'Trivial',
+          count: countByPriority('Trivial'),
+        },
       ],
       organizations: [
         {

@@ -1,5 +1,5 @@
 const { body, param, query } = require('express-validator');
-const { CATEGORIES, PRIORITIES, INITIAL_FEELINGS, ORIGINS } = require('../utils/ticketFields');
+const { CATEGORIES, PRIORITIES, DEFAULT_PRIORITY } = require('../utils/ticketFields');
 const { STATUSES } = require('../utils/ticketStatus');
 const { ORGANIZATIONS } = require('../utils/organizations');
 
@@ -13,14 +13,7 @@ const createTicketValidator = [
   body('description').trim().notEmpty().withMessage('description is required'),
   body('category').optional().isIn(CATEGORIES).withMessage(`category must be one of ${CATEGORIES.join(', ')}`),
   body('priority').optional().isIn(PRIORITIES).withMessage(`priority must be one of ${PRIORITIES.join(', ')}`),
-  body('initialFeeling')
-    .optional()
-    .isIn(INITIAL_FEELINGS)
-    .withMessage(`initialFeeling must be one of ${INITIAL_FEELINGS.join(', ')}`),
-  body('origin').optional().isIn(ORIGINS).withMessage(`origin must be one of ${ORIGINS.join(', ')}`),
-  body('location').optional().trim(),
-  body('studentLivingVillageResident').optional().isBoolean().withMessage('studentLivingVillageResident must be true or false'),
-  body('opsvDefect').optional().isBoolean().withMessage('opsvDefect must be true or false'),
+  body('room').optional().trim(),
   body('parentCaseId')
     .optional({ nullable: true })
     .isInt()
@@ -59,14 +52,7 @@ const updateTicketValidator = [
     .optional({ nullable: true })
     .custom((value) => value === null || Number.isInteger(value))
     .withMessage('assigneeId must be an integer or null'),
-  body('initialFeeling')
-    .optional()
-    .isIn(INITIAL_FEELINGS)
-    .withMessage(`initialFeeling must be one of ${INITIAL_FEELINGS.join(', ')}`),
-  body('origin').optional().isIn(ORIGINS).withMessage(`origin must be one of ${ORIGINS.join(', ')}`),
-  body('location').optional().trim(),
-  body('studentLivingVillageResident').optional().isBoolean().withMessage('studentLivingVillageResident must be true or false'),
-  body('opsvDefect').optional().isBoolean().withMessage('opsvDefect must be true or false'),
+  body('room').optional().trim(),
   body('parentCaseId')
     .optional({ nullable: true })
     .isInt()

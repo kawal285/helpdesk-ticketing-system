@@ -3,6 +3,7 @@ const { Op, Transaction } = require('sequelize');
 const catchAsync = require('../utils/catchAsync');
 const AppError = require('../utils/appError');
 const { computeDueAt } = require('../utils/sla');
+const { DEFAULT_PRIORITY } = require('../utils/ticketFields');
 
 const {
   isValidTransition,
@@ -120,11 +121,7 @@ const createTicket = catchAsync(
       description,
       category,
       priority,
-      initialFeeling,
-      origin,
-      location,
-      studentLivingVillageResident,
-      opsvDefect,
+      room,
       parentCaseId,
     } = req.body;
 
@@ -150,7 +147,7 @@ const createTicket = catchAsync(
       category || ai.category || 'Other';
 
     const finalPriority =
-      priority || ai.priority || 'Medium';
+      priority || ai.priority || DEFAULT_PRIORITY;
 
     /*
      * Assignment and creation use one transaction so concurrent
@@ -186,15 +183,7 @@ const createTicket = catchAsync(
             aiAnalyzedAt: aiSucceeded
               ? new Date()
               : null,
-            initialFeeling:
-              initialFeeling || null,
-            origin: origin || 'Portal',
-            location: location || null,
-            studentLivingVillageResident:
-              Boolean(
-                studentLivingVillageResident
-              ),
-            opsvDefect: Boolean(opsvDefect),
+            room: room || null,
             parentCaseId:
               parentCaseId || null,
           },
