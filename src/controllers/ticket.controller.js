@@ -377,6 +377,8 @@ const updateTicket = catchAsync(
       priority,
       status,
       assigneeId,
+      room,
+      parentCaseId,
     } = req.body;
 
     const originalStatus = ticket.status;
@@ -404,7 +406,9 @@ const updateTicket = catchAsync(
       title !== undefined ||
       description !== undefined ||
       category !== undefined ||
-      priority !== undefined
+      priority !== undefined ||
+      room !== undefined ||
+      parentCaseId !== undefined
     ) {
       const editError =
         editPermissionError(
@@ -438,6 +442,14 @@ const updateTicket = catchAsync(
         priority,
         ticket.createdAt
       );
+    }
+
+    if (room !== undefined) {
+      ticket.room = room;
+    }
+
+    if (parentCaseId !== undefined) {
+      ticket.parentCaseId = parentCaseId;
     }
 
     if (status !== undefined) {

@@ -35,14 +35,61 @@ describe('POST /tickets', () => {
     expect(dueAt - createdAt).toBeCloseTo(4 * 60 * 60 * 1000, -3);
   });
 
-  it('falls back to category=Other/priority=Medium when neither is supplied and the AI has nothing to offer', async () => {
+  it('falls back to category=Other/priority=Trivial when neither is supplied and the AI has nothing to offer', async () => {
     const { token } = await createUserWithToken({ role: 'customer' });
 
     const res = await createTicketAs(token);
 
     expect(res.status).toBe(201);
     expect(res.body.ticket.category).toBe('Other');
-    expect(res.body.ticket.priority).toBe('Medium');
+    expect(res.body.ticket.priority).toBe('Trivial');
+  });
+
+  it('computes a 120-hour due date for Trivial priority', async () => {
+    const { token } = await createUserWithToken({ role: 'customer' });
+
+    const res = await createTicketAs(token, { category: 'Other', priority: 'Trivial' });
+
+    expect(res.status).toBe(201);
+    const { ticket } = res.body;
+    const dueAt = new Date(ticket.dueAt).getTime();
+    const createdAt = new Date(ticket.createdAt).getTime();
+    expect(dueAt - createdAt).toBeCloseTo(120 * 60 * 60 * 1000, -3);
+  });
+
+  it('persists the room field', async () => {
+    const { token } = await createUserWithToken({ role: 'customer' });
+
+    const res = await createTicketAs(token, { room: 'Block C, Room 214' });
+
+    expect(res.status).toBe(201);
+    expect(res.body.ticket.room).toBe('Block C, Room 214');
+  });
+
+  it('leaves room null when not supplied', async () => {
+    const { token } = await createUserWithToken({ role: 'customer' });
+
+    const res = await createTicketAs(token);
+
+    expect(res.status).toBe(201);
+    expect(res.body.ticket.room).toBeNull();
+  });
+
+  it('no longer accepts the retired CRM fields -- they are silently ignored, not persisted or errored on', async () => {
+    const { token } = await createUserWithToken({ role: 'customer' });
+
+    const res = await createTicketAs(token, {
+      initialFeeling: 'Frustrated',
+      origin: 'Phone',
+      studentLivingVillageResident: true,
+      opsvDefect: true,
+    });
+
+    expect(res.status).toBe(201);
+    expect(res.body.ticket.initialFeeling).toBeUndefined();
+    expect(res.body.ticket.origin).toBeUndefined();
+    expect(res.body.ticket.studentLivingVillageResident).toBeUndefined();
+    expect(res.body.ticket.opsvDefect).toBeUndefined();
   });
 
   it('ignores a client-supplied requesterId and uses the authenticated user instead', async () => {
@@ -208,6 +255,19 @@ describe('PATCH /tickets/:id (edit)', () => {
     expect(res.body.ticket.title).toBe('Updated title');
   });
 
+  it('lets the requester update the room field while their ticket is Open', async () => {
+    const { token } = await createUserWithToken({ role: 'customer' });
+    const created = await createTicketAs(token, { room: 'Block A, Room 1' });
+
+    const res = await request(app)
+      .patch(`/tickets/${created.body.ticket.id}`)
+      .set('Authorization', `Bearer ${token}`)
+      .send({ room: 'Block B, Room 2' });
+
+    expect(res.status).toBe(200);
+    expect(res.body.ticket.room).toBe('Block B, Room 2');
+  });
+
   it('blocks the requester from editing once the ticket is no longer Open', async () => {
     const { token: ownerToken } = await createUserWithToken({ role: 'customer' });
     const { token: adminToken } = await createUserWithToken({ role: 'admin' });
@@ -242,9 +302,10 @@ describe('PATCH /tickets/:id (edit)', () => {
     const res = await request(app)
       .patch(`/tickets/${ticketId}`)
       .set('Authorization', `Bearer ${agentToken}`)
-      .send({ title: 'Agent editing details' });
+      .send({ title: 'Agent editing details', room: 'Server room' });
 
     expect(res.status).toBe(200);
+    expect(res.body.ticket.room).toBe('Server room');
     expect(res.body.ticket.title).toBe('Agent editing details');
   });
 

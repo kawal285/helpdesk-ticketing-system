@@ -62,6 +62,11 @@ export default function ReportPage() {
         (ticket) => ticket.priority === priority
       ).length;
 
+    const countByOrganization = (organization) =>
+      tickets.filter(
+        (ticket) => ticket.organization === organization
+      ).length;
+
     const overdue = tickets.filter((ticket) => {
       if (!ticket.dueAt) return false;
 
@@ -127,6 +132,16 @@ export default function ReportPage() {
         {
           name: 'Trivial',
           count: countByPriority('Trivial'),
+        },
+      ],
+      organizations: [
+        {
+          name: 'Future Skills',
+          count: countByOrganization('Future Skills'),
+        },
+        {
+          name: 'OP',
+          count: countByOrganization('OP'),
         },
       ],
     };
@@ -337,6 +352,26 @@ export default function ReportPage() {
                   total={report.total}
                 />
               </div>
+
+              <div style={cardStyle}>
+                <h2
+                  style={{
+                    color: '#005a9c',
+                    marginTop: 0,
+                  }}
+                >
+                  Tickets by organization
+                </h2>
+
+                {report.organizations.map((item) => (
+                  <ReportRow
+                    key={item.name}
+                    label={item.name}
+                    value={item.count}
+                    total={report.total}
+                  />
+                ))}
+              </div>
             </section>
 
             <section style={cardStyle}>
@@ -371,6 +406,7 @@ export default function ReportPage() {
                         <th style={{ padding: 12 }}>Status</th>
                         <th style={{ padding: 12 }}>Priority</th>
                         <th style={{ padding: 12 }}>Category</th>
+                        <th style={{ padding: 12 }}>Organization</th>
                         <th style={{ padding: 12 }}>Assignment</th>
                       </tr>
                     </thead>
@@ -398,6 +434,9 @@ export default function ReportPage() {
                           </td>
                           <td style={{ padding: 12 }}>
                             {ticket.category}
+                          </td>
+                          <td style={{ padding: 12 }}>
+                            {ticket.organization}
                           </td>
                           <td style={{ padding: 12 }}>
                             {ticket.assignee?.name ||
