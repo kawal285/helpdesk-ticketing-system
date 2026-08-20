@@ -445,6 +445,27 @@ export default function ReportPage() {
                   Tickets by organization
                 </h2>
 
+                {report.total > 0 && (
+                  <div style={{ width: '100%', height: 220 }}>
+                    <ResponsiveContainer>
+                      <BarChart
+                        data={report.organizations}
+                        layout="vertical"
+                      >
+                        <CartesianGrid strokeDasharray="3 3" />
+                        <XAxis type="number" allowDecimals={false} />
+                        <YAxis type="category" dataKey="name" />
+                        <Tooltip />
+                        <Bar
+                          dataKey="count"
+                          fill="#005a9c"
+                          radius={[0, 4, 4, 0]}
+                        />
+                      </BarChart>
+                    </ResponsiveContainer>
+                  </div>
+                )}
+
                 {report.organizations.map((item) => (
                   <ReportRow
                     key={item.name}
