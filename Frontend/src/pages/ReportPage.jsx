@@ -1,11 +1,16 @@
 import { useEffect, useMemo, useState } from 'react';
 import {
+  Bar,
+  BarChart,
+  CartesianGrid,
   Cell,
   Legend,
   Pie,
   PieChart,
   ResponsiveContainer,
   Tooltip,
+  XAxis,
+  YAxis,
 } from 'recharts';
 
 const API_URL = 'http://localhost:4000';
@@ -17,6 +22,14 @@ const CATEGORY_COLOURS = [
   '#66a300',
   '#8e44ad',
 ];
+
+const PRIORITY_COLOURS = {
+  Critical: '#c62828',
+  High: '#f37021',
+  Medium: '#f5a623',
+  Low: '#006bb6',
+  Trivial: '#8fa3b3',
+};
 
 export default function ReportPage() {
   const [tickets, setTickets] = useState([]);
@@ -364,6 +377,30 @@ export default function ReportPage() {
                 >
                   Tickets by priority
                 </h2>
+
+                {report.total > 0 && (
+                  <div style={{ width: '100%', height: 220 }}>
+                    <ResponsiveContainer>
+                      <BarChart data={report.priorities}>
+                        <CartesianGrid strokeDasharray="3 3" />
+                        <XAxis dataKey="name" />
+                        <YAxis allowDecimals={false} />
+                        <Tooltip />
+                        <Bar dataKey="count" radius={[4, 4, 0, 0]}>
+                          {report.priorities.map((item) => (
+                            <Cell
+                              key={item.name}
+                              fill={
+                                PRIORITY_COLOURS[item.name] ||
+                                '#006bb6'
+                              }
+                            />
+                          ))}
+                        </Bar>
+                      </BarChart>
+                    </ResponsiveContainer>
+                  </div>
+                )}
 
                 {report.priorities.map((item) => (
                   <ReportRow
