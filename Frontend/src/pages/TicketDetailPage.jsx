@@ -138,6 +138,7 @@ export default function TicketDetailPage({
   const [editDescription, setEditDescription] = useState('');
   const [editCategory, setEditCategory] = useState('');
   const [editPriority, setEditPriority] = useState('');
+  const [editRoom, setEditRoom] = useState('');
   const [editSaving, setEditSaving] = useState(false);
   const [editError, setEditError] = useState('');
 
@@ -217,6 +218,7 @@ export default function TicketDetailPage({
     setEditDescription(ticket.description);
     setEditCategory(ticket.category);
     setEditPriority(ticket.priority);
+    setEditRoom(ticket.room || '');
     setEditError('');
     setEditing(true);
   }
@@ -352,6 +354,7 @@ export default function TicketDetailPage({
             description: editDescription.trim(),
             category: editCategory,
             priority: editPriority,
+            room: editRoom.trim(),
           }),
         }
       );
@@ -615,6 +618,18 @@ export default function TicketDetailPage({
                   value={editTitle}
                   onChange={(event) =>
                     setEditTitle(event.target.value)
+                  }
+                />
+              </div>
+
+              <div className="field">
+                <label htmlFor="editRoom">Room</label>
+                <input
+                  id="editRoom"
+                  placeholder="Example: Auckland campus, Level 3, Room 214"
+                  value={editRoom}
+                  onChange={(event) =>
+                    setEditRoom(event.target.value)
                   }
                 />
               </div>
