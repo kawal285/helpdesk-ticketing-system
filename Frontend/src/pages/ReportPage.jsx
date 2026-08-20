@@ -329,34 +329,30 @@ export default function ReportPage() {
                   Tickets by category
                 </h2>
 
-                {report.total > 0 && (
-                  <div style={{ width: '100%', height: 220 }}>
-                    <ResponsiveContainer>
-                      <PieChart>
-                        <Pie
-                          data={report.categories}
-                          dataKey="count"
-                          nameKey="name"
-                          innerRadius={45}
-                          outerRadius={80}
-                        >
-                          {report.categories.map((item, index) => (
-                            <Cell
-                              key={item.name}
-                              fill={
-                                CATEGORY_COLOURS[
-                                  index % CATEGORY_COLOURS.length
-                                ]
-                              }
-                            />
-                          ))}
-                        </Pie>
-                        <Tooltip />
-                        <Legend />
-                      </PieChart>
-                    </ResponsiveContainer>
-                  </div>
-                )}
+                <ChartFrame visible={report.total > 0}>
+                  <PieChart>
+                    <Pie
+                      data={report.categories}
+                      dataKey="count"
+                      nameKey="name"
+                      innerRadius={45}
+                      outerRadius={80}
+                    >
+                      {report.categories.map((item, index) => (
+                        <Cell
+                          key={item.name}
+                          fill={
+                            CATEGORY_COLOURS[
+                              index % CATEGORY_COLOURS.length
+                            ]
+                          }
+                        />
+                      ))}
+                    </Pie>
+                    <Tooltip />
+                    <Legend />
+                  </PieChart>
+                </ChartFrame>
 
                 {report.categories.map((item) => (
                   <ReportRow
@@ -378,29 +374,25 @@ export default function ReportPage() {
                   Tickets by priority
                 </h2>
 
-                {report.total > 0 && (
-                  <div style={{ width: '100%', height: 220 }}>
-                    <ResponsiveContainer>
-                      <BarChart data={report.priorities}>
-                        <CartesianGrid strokeDasharray="3 3" />
-                        <XAxis dataKey="name" />
-                        <YAxis allowDecimals={false} />
-                        <Tooltip />
-                        <Bar dataKey="count" radius={[4, 4, 0, 0]}>
-                          {report.priorities.map((item) => (
-                            <Cell
-                              key={item.name}
-                              fill={
-                                PRIORITY_COLOURS[item.name] ||
-                                '#006bb6'
-                              }
-                            />
-                          ))}
-                        </Bar>
-                      </BarChart>
-                    </ResponsiveContainer>
-                  </div>
-                )}
+                <ChartFrame visible={report.total > 0}>
+                  <BarChart data={report.priorities}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="name" />
+                    <YAxis allowDecimals={false} />
+                    <Tooltip />
+                    <Bar dataKey="count" radius={[4, 4, 0, 0]}>
+                      {report.priorities.map((item) => (
+                        <Cell
+                          key={item.name}
+                          fill={
+                            PRIORITY_COLOURS[item.name] ||
+                            '#006bb6'
+                          }
+                        />
+                      ))}
+                    </Bar>
+                  </BarChart>
+                </ChartFrame>
 
                 {report.priorities.map((item) => (
                   <ReportRow
@@ -445,26 +437,22 @@ export default function ReportPage() {
                   Tickets by organization
                 </h2>
 
-                {report.total > 0 && (
-                  <div style={{ width: '100%', height: 220 }}>
-                    <ResponsiveContainer>
-                      <BarChart
-                        data={report.organizations}
-                        layout="vertical"
-                      >
-                        <CartesianGrid strokeDasharray="3 3" />
-                        <XAxis type="number" allowDecimals={false} />
-                        <YAxis type="category" dataKey="name" />
-                        <Tooltip />
-                        <Bar
-                          dataKey="count"
-                          fill="#005a9c"
-                          radius={[0, 4, 4, 0]}
-                        />
-                      </BarChart>
-                    </ResponsiveContainer>
-                  </div>
-                )}
+                <ChartFrame visible={report.total > 0}>
+                  <BarChart
+                    data={report.organizations}
+                    layout="vertical"
+                  >
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis type="number" allowDecimals={false} />
+                    <YAxis type="category" dataKey="name" />
+                    <Tooltip />
+                    <Bar
+                      dataKey="count"
+                      fill="#005a9c"
+                      radius={[0, 4, 4, 0]}
+                    />
+                  </BarChart>
+                </ChartFrame>
 
                 {report.organizations.map((item) => (
                   <ReportRow
@@ -558,6 +546,16 @@ export default function ReportPage() {
         )}
       </div>
     </main>
+  );
+}
+
+function ChartFrame({ visible, children }) {
+  if (!visible) return null;
+
+  return (
+    <div style={{ width: '100%', height: 220, marginBottom: 8 }}>
+      <ResponsiveContainer>{children}</ResponsiveContainer>
+    </div>
   );
 }
 
