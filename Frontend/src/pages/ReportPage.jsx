@@ -1,6 +1,22 @@
 import { useEffect, useMemo, useState } from 'react';
+import {
+  Cell,
+  Legend,
+  Pie,
+  PieChart,
+  ResponsiveContainer,
+  Tooltip,
+} from 'recharts';
 
 const API_URL = 'http://localhost:4000';
+
+const CATEGORY_COLOURS = [
+  '#005a9c',
+  '#f37021',
+  '#006bb6',
+  '#66a300',
+  '#8e44ad',
+];
 
 export default function ReportPage() {
   const [tickets, setTickets] = useState([]);
@@ -299,6 +315,35 @@ export default function ReportPage() {
                 >
                   Tickets by category
                 </h2>
+
+                {report.total > 0 && (
+                  <div style={{ width: '100%', height: 220 }}>
+                    <ResponsiveContainer>
+                      <PieChart>
+                        <Pie
+                          data={report.categories}
+                          dataKey="count"
+                          nameKey="name"
+                          innerRadius={45}
+                          outerRadius={80}
+                        >
+                          {report.categories.map((item, index) => (
+                            <Cell
+                              key={item.name}
+                              fill={
+                                CATEGORY_COLOURS[
+                                  index % CATEGORY_COLOURS.length
+                                ]
+                              }
+                            />
+                          ))}
+                        </Pie>
+                        <Tooltip />
+                        <Legend />
+                      </PieChart>
+                    </ResponsiveContainer>
+                  </div>
+                )}
 
                 {report.categories.map((item) => (
                   <ReportRow
