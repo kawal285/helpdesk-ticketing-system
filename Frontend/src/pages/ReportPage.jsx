@@ -15,20 +15,27 @@ import {
 
 const API_URL = 'http://localhost:4000';
 
+// Validated categorical palette (dataviz skill, references/palette.md) --
+// fixed hue order assigned by category position, not cycled by data.
+// Passes CVD-separation and normal-vision-floor checks at 5 slots.
 const CATEGORY_COLOURS = [
-  '#005a9c',
-  '#f37021',
-  '#006bb6',
-  '#66a300',
-  '#8e44ad',
+  '#2a78d6', // Hardware -- blue
+  '#eb6834', // Software -- orange
+  '#1baf7a', // Network -- aqua
+  '#eda100', // Account -- yellow
+  '#e87ba4', // Other -- magenta
 ];
 
+// Priority is ordinal severity, so it gets a single-hue ordinal ramp
+// (light = least urgent, dark = most urgent) rather than five arbitrary
+// hues -- the previous High/Medium pair (orange/yellow) measured ΔE 12.2,
+// below the 15 floor, genuinely hard to tell apart even with normal vision.
 const PRIORITY_COLOURS = {
-  Critical: '#c62828',
-  High: '#f37021',
-  Medium: '#f5a623',
-  Low: '#006bb6',
-  Trivial: '#8fa3b3',
+  Trivial: '#86b6ef',
+  Low: '#5598e7',
+  Medium: '#2a78d6',
+  High: '#1c5cab',
+  Critical: '#104281',
 };
 
 export default function ReportPage() {
@@ -386,7 +393,7 @@ export default function ReportPage() {
                           key={item.name}
                           fill={
                             PRIORITY_COLOURS[item.name] ||
-                            '#006bb6'
+                            '#2a78d6'
                           }
                         />
                       ))}
