@@ -1,32 +1,369 @@
 [
   {
     "id": 1,
-    "title": "How to reset your password",
-    "content": "Go to the login page and select 'Forgot password'. Enter your email address and follow the link sent to your inbox. If you don't receive the email within 5 minutes, check your spam folder before logging a ticket.",
-    "tags": ["password", "login", "account"]
+    "title": "Reset a forgotten password",
+    "category": "Account",
+    "audience": "All",
+    "tags": [
+      "password",
+      "forgot password",
+      "login",
+      "sign in",
+      "credentials",
+      "reset"
+    ],
+    "lastReviewed": "2026-08-22",
+    "content": "If you cannot remember your account password, you can reset it yourself without contacting the IT Help Desk. A self-service reset is the fastest option and works at any time of day.\n\n## Reset your own password\n\n1. Open the sign-in page and select **Forgot password**.\n2. Enter your institutional email address. Personal email addresses will not be recognised.\n3. Check your inbox for a reset link. The link is valid for 30 minutes.\n4. Choose a new password that meets the password rules below.\n5. Sign in with the new password.\n\n## Password rules\n\nYour password must be at least 12 characters long and include a mix of upper and lower case letters, at least one number, and at least one symbol. It cannot repeat any of your previous five passwords, and it cannot contain your name or your student or staff ID number.\n\n## If the reset email does not arrive\n\nWait five minutes, then check your junk or spam folder. Confirm that you typed your email address correctly, as a typo will send the link to an address that does not exist. If you are using a mail app on your phone, pull down to refresh the inbox manually.\n\n## Still not working\n\nIf the reset email has still not arrived after 15 minutes, raise a ticket under the Account category. Include the email address you attempted the reset with and the approximate time you requested it, as this lets the Help Desk locate the request in the mail logs."
   },
   {
     "id": 2,
-    "title": "Printer not working or not printing",
-    "content": "Check the printer is powered on and connected to the network. Try restarting the printer. Ensure you have selected the correct printer in the print dialog. If the issue continues, log a Hardware ticket with the printer name and any error message shown.",
-    "tags": ["printer", "hardware"]
+    "title": "Account locked after too many failed sign-in attempts",
+    "category": "Account",
+    "audience": "All",
+    "tags": [
+      "locked out",
+      "account locked",
+      "failed login",
+      "too many attempts",
+      "lockout"
+    ],
+    "lastReviewed": "2026-08-22",
+    "content": "Accounts lock automatically after ten failed sign-in attempts within 15 minutes. This is a security measure that protects your account from someone repeatedly guessing your password.\n\n## How long the lock lasts\n\nA lockout clears by itself after 30 minutes. In most cases you do not need to contact anyone. Waiting is faster than raising a ticket.\n\n## Common causes\n\nThe most frequent cause is a saved password on a device you have forgotten about. A phone, tablet or old laptop that still has your previous password stored will keep attempting to sign in every few minutes, which locks the account again as soon as the lock clears. Check every device that is signed into your email.\n\nA second common cause is a recently changed password that has not been updated in a mail app, on a printer that scans to your email, or in a Wi-Fi profile.\n\n## Steps to take\n\n1. Sign out of your account on every phone, tablet and personal computer you own.\n2. Wait 30 minutes for the lock to clear.\n3. Sign in once on a single device and confirm it works.\n4. Sign back in on your other devices one at a time.\n\n## When to raise a ticket\n\nIf your account locks again within minutes of clearing and you cannot identify which device is causing it, raise a ticket under the Account category. Mention that the lockout is repeating, as this needs a sign-in log review rather than a simple unlock."
   },
   {
     "id": 3,
-    "title": "Requesting software installation",
-    "content": "Software installs require approval. Submit a Software category ticket with the exact software name and version, and the business reason for needing it. Approved requests are typically installed within 1 business day.",
-    "tags": ["software", "install", "request"]
+    "title": "Set up multi-factor authentication",
+    "category": "Account",
+    "audience": "All",
+    "tags": [
+      "mfa",
+      "2fa",
+      "multi-factor",
+      "two factor",
+      "authenticator",
+      "verification code"
+    ],
+    "lastReviewed": "2026-08-22",
+    "content": "Multi-factor authentication (MFA) adds a second check when you sign in, so that knowing your password alone is not enough for someone to access your account. MFA is required on all staff and student accounts.\n\n## Setting up the authenticator app\n\n1. Install Microsoft Authenticator on your phone from the App Store or Google Play.\n2. On a computer, sign in to your account security settings.\n3. Select **Add sign-in method** and choose the authenticator app.\n4. Scan the QR code shown on the computer screen using the app.\n5. Approve the test notification that appears on your phone.\n\n## Choosing a backup method\n\nAdd a second method during setup, such as a text message to your mobile number. If you lose access to your phone and have only one method registered, the Help Desk must verify your identity in person before restoring access, which takes considerably longer.\n\n## Replacing a lost or new phone\n\nIf you still have access to a backup method, sign in using that method and register the new phone in your security settings before removing the old one. If you have no working method, you must bring photo identification to the IT Help Desk in person. MFA cannot be reset over the phone or by email, because that would defeat its purpose.\n\n## Approving a request you did not make\n\nIf you receive an MFA prompt when you were not signing in, deny it and change your password immediately. This means someone else has your password. Report it by raising a ticket under the Account category and mark it as urgent."
   },
   {
     "id": 4,
-    "title": "Wi-Fi or network connection issues",
-    "content": "Toggle Wi-Fi off and on, then reconnect to the correct network. Confirm you are connecting to the staff or student network, not a guest network. If the issue continues, log a Network ticket including your location or building.",
-    "tags": ["wifi", "network", "connection"]
+    "title": "Replace a lost or damaged campus ID card",
+    "category": "Account",
+    "audience": "All",
+    "tags": [
+      "id card",
+      "student card",
+      "access card",
+      "swipe card",
+      "door access",
+      "lost card"
+    ],
+    "lastReviewed": "2026-08-22",
+    "content": "Your campus ID card is used for building access, printing, and library borrowing. Report a lost card promptly so it can be deactivated.\n\n## Report the loss first\n\nRaise a ticket under the Account category as soon as you notice the card is missing, or visit the Help Desk in person. The old card is deactivated immediately, which prevents anyone who finds it from entering buildings or spending your print credit.\n\n## Getting a replacement\n\nReplacement cards are issued at the Help Desk during opening hours. Bring photo identification. Your first replacement each year is free; further replacements carry a small fee charged to your student account.\n\n## Cards that do not open a door\n\nA card that stops working is usually demagnetised rather than deactivated. Cards are damaged by being kept next to phones, other magnetic cards, or by bending in a back pocket. Try the card on a second door before reporting it, because a single faulty reader is a different problem and needs a Hardware ticket for that specific room.\n\n## Access to a room you have not used before\n\nIf your card works elsewhere but not on one particular door, you probably do not have permission for that room rather than having a faulty card. Access to specialist labs and staff areas is granted by the department that owns the room. Raise a ticket under the Account category naming the exact room number and your reason for needing access, and it will be routed for approval."
   },
   {
-    "id": 5, 
-    "title": "Raising a support ticket",
-    "content": "Select 'New Ticket', choose the category that best matches your issue, describe the problem in as much detail as possible, and set a priority. You will get an email and portal notification whenever there is an update.",
-    "tags": ["ticket", "help", "howto"]
+    "id": 5,
+    "title": "Connect to the campus Wi-Fi network",
+    "category": "Network",
+    "audience": "All",
+    "tags": [
+      "wifi",
+      "wi-fi",
+      "wireless",
+      "eduroam",
+      "internet",
+      "connect",
+      "network"
+    ],
+    "lastReviewed": "2026-08-22",
+    "content": "The campus provides a secured wireless network for staff and students, and a separate guest network for visitors. Use the secured network, as the guest network is rate-limited and blocks access to internal systems such as printing and shared drives.\n\n## Connecting for the first time\n\n1. Open the Wi-Fi settings on your device and select the secured campus network.\n2. Enter your full institutional email address as the username, not just the part before the @ symbol.\n3. Enter your account password.\n4. Accept the security certificate if your device prompts you to trust it.\n\nWindows, macOS, iOS and Android all remember the network after a successful first connection.\n\n## The most common mistake\n\nEntering only your username rather than your full email address is the single most frequent cause of failure. The connection appears to accept the details and then silently fails to authenticate.\n\n## After a password change\n\nChanging your account password does not update the saved Wi-Fi profile on your devices. Each device will keep trying the old password and fail. Forget the network on the device, then reconnect and enter the new password.\n\n## If it still will not connect\n\nRestart your device, as this clears a stale wireless driver state more often than people expect. If the network does not appear at all in the list, check whether other people nearby can see it. If nobody can, raise a Network ticket including the building name and room number, since this indicates an access point fault rather than a device problem."
+  },
+  {
+    "id": 6,
+    "title": "Wi-Fi keeps dropping or is very slow",
+    "category": "Network",
+    "audience": "All",
+    "tags": [
+      "wifi slow",
+      "wifi dropping",
+      "disconnecting",
+      "weak signal",
+      "buffering",
+      "network slow"
+    ],
+    "lastReviewed": "2026-08-22",
+    "content": "An intermittent wireless connection is usually caused by signal strength, device power settings, or congestion, rather than by a fault in the network itself.\n\n## Check the basics first\n\nMove closer to the centre of the room and see whether the connection stabilises. Concrete walls, lift shafts and metal shelving all weaken the signal significantly. Check whether other people around you have the same problem at the same time. If they do not, the issue is with your device.\n\n## Power saving on laptops\n\nWindows laptops turn off the wireless adapter to save battery when running on battery power. Open Device Manager, find your wireless adapter, open its properties, and under Power Management clear the option that allows the computer to turn off the device. This resolves a large share of reported dropouts on laptops.\n\n## Devices that cause interference\n\nPersonal wireless hotspots, wireless printers, and some Bluetooth speakers create interference on the same frequencies. Turning off a personal hotspot you are not using will often improve the connection for you and for people around you.\n\n## What to include in a ticket\n\nIf the problem persists across several days and in more than one location, raise a Network ticket. Include the building and room where the problem happens, the times of day, the make and model of your device, and whether the connection drops completely or merely slows down. Without the location, the Help Desk cannot identify which access point to examine."
+  },
+  {
+    "id": 7,
+    "title": "Connect to the VPN for off-campus access",
+    "category": "Network",
+    "audience": "All",
+    "tags": [
+      "vpn",
+      "remote access",
+      "off campus",
+      "working from home",
+      "shared drive remote"
+    ],
+    "lastReviewed": "2026-08-22",
+    "content": "Some systems, including shared network drives and certain internal applications, are only reachable from the campus network. The VPN creates a secure connection from your home internet to the campus network so these systems become available.\n\n## What you do not need the VPN for\n\nEmail, the online learning site, and Microsoft 365 all work from home without the VPN. Connecting unnecessarily slows your general browsing, because all your traffic is routed through the campus. Use the VPN only when you need an internal system.\n\n## Setting up the client\n\n1. Download the VPN client from the IT self-service page.\n2. Install it, accepting the default options.\n3. Enter the campus VPN server address supplied on that page.\n4. Sign in with your institutional email address and password.\n5. Approve the multi-factor authentication prompt on your phone.\n\n## Common problems\n\nIf the client connects and then disconnects after a few seconds, the usual cause is an unapproved MFA prompt. Check your phone.\n\nIf you can connect but cannot reach a shared drive, the drive may need to be mapped again while the VPN is active. Mapped drives created on campus do not always reconnect automatically from home.\n\nIf the client will not install, you may not have administrator rights on the computer. On a personally owned computer, use an administrator account. On a campus computer, raise a Software ticket rather than attempting to work around it."
+  },
+  {
+    "id": 8,
+    "title": "Printer is not printing",
+    "category": "Hardware",
+    "audience": "All",
+    "tags": [
+      "printer",
+      "printing",
+      "not printing",
+      "print queue",
+      "paper jam",
+      "spooler"
+    ],
+    "lastReviewed": "2026-08-22",
+    "content": "Most printing failures are caused by a stalled print queue or by the job being sent to a printer that is offline, rather than by a hardware fault.\n\n## Check the printer itself\n\nLook at the printer's display panel before doing anything on your computer. A paper jam, an empty paper tray, an open door, or a toner warning will stop all jobs and is shown on the panel. Clearing the message often releases every queued job at once.\n\n## Clear a stalled queue\n\n1. Open printer settings on your computer and find the printer.\n2. Open the print queue and cancel every document listed, including any marked as Error or Deleting.\n3. Restart the computer if a document refuses to cancel, as this clears the print spooler.\n4. Send a single test page.\n\n## Printing to the wrong device\n\nIf your document does not appear anywhere, check which printer was selected. A previously used printer often remains the default and may be in another building entirely. Confirm the printer name matches the label on the physical device.\n\n## Print quality problems\n\nStreaks or faded areas usually indicate a toner cartridge nearing the end of its life. Report the printer's asset number rather than replacing the cartridge yourself.\n\n## Raising a ticket\n\nInclude the printer's name or asset number from the label on the device, the room it is in, and whether other people can print to it. A fault affecting everyone is treated differently from one affecting only your account."
+  },
+  {
+    "id": 9,
+    "title": "Print credit, print release and scanning",
+    "category": "Hardware",
+    "audience": "Students",
+    "tags": [
+      "print credit",
+      "print release",
+      "scan",
+      "photocopy",
+      "copying",
+      "top up"
+    ],
+    "lastReviewed": "2026-08-22",
+    "content": "Printing is charged against a print credit balance attached to your account. Jobs are held until you release them at a device.\n\n## Releasing a job\n\nSend the document from your computer, then go to any campus multifunction device and tap your ID card on the reader. Your held jobs appear on the screen. Select the documents you want and press Print. Jobs that are not released are deleted automatically after 24 hours.\n\n## If your card does not register at the device\n\nYou can sign in at the device using your username and password instead. If the card reader shows no light at all, the reader is faulty and should be reported with the device's asset number.\n\n## Checking and topping up your balance\n\nYour remaining balance is shown on the device screen after you sign in, and on the printing page of the IT self-service site. Top-ups are made online through the student portal. Credit purchased online can take up to ten minutes to appear at the device.\n\n## Scanning to email\n\nTap your card, choose Scan, and confirm the destination address that appears, which defaults to your own institutional email. Scans over 20 MB may be rejected by the mail system. If a large scan does not arrive, reduce the resolution or scan the document in two parts.\n\n## Refunds\n\nIf a job printed incorrectly through a device fault, raise a Hardware ticket with the date, the device, and the number of pages affected, and the credit can be returned."
+  },
+  {
+    "id": 10,
+    "title": "Request software to be installed on a campus computer",
+    "category": "Software",
+    "audience": "All",
+    "tags": [
+      "install software",
+      "software request",
+      "application",
+      "admin rights",
+      "program"
+    ],
+    "lastReviewed": "2026-08-22",
+    "content": "Campus computers are managed, and users do not have administrator rights. Software must be installed by IT so that licensing, security and compatibility can be checked.\n\n## Check the self-service catalogue first\n\nMany applications are already approved and can be installed by you without a ticket. Open the Software Centre on Windows or Self Service on macOS from the Start menu or Applications folder, search for the application, and select Install. This takes a few minutes and requires no approval.\n\n## Requesting something not in the catalogue\n\nRaise a ticket under the Software category and include:\n\n- The exact name and version of the application.\n- The computer's asset number, found on a label on the case or under the laptop.\n- The room, if it is a lab or shared machine.\n- Whether a licence already exists, or a link to the licence you want purchased.\n- The date you need it working by, and the paper or course it is for.\n\n## How long it takes\n\nFree and already-licensed software is normally installed within three working days. Anything requiring a purchase or a security review takes longer, because it involves procurement and, for some products, a privacy assessment. Requests for teaching software should be submitted at least four weeks before the start of the block.\n\n## Software for a whole lab\n\nIf a class needs the application, say so in the ticket. Installing to an entire lab is scheduled as a single piece of work outside class hours rather than machine by machine."
+  },
+  {
+    "id": 11,
+    "title": "Install Microsoft 365 on a personal device",
+    "category": "Software",
+    "audience": "All",
+    "tags": [
+      "microsoft 365",
+      "office",
+      "word",
+      "excel",
+      "personal laptop",
+      "install office"
+    ],
+    "lastReviewed": "2026-08-22",
+    "content": "Your enrolment or employment includes Microsoft 365 for use on personal devices at no cost. The licence covers up to five computers and five mobile devices.\n\n## Installing\n\n1. Sign in to the Microsoft 365 portal with your institutional email address.\n2. Select **Install apps** from the top right of the page.\n3. Run the downloaded installer and wait for it to finish.\n4. Open Word and sign in with the same account when prompted, so the licence activates.\n\n## Signing in matters\n\nIf you install the applications but do not sign in, they run in a reduced mode and eventually stop allowing editing. If documents suddenly become read-only, check that you are signed in rather than reinstalling.\n\n## Existing personal copies\n\nIf you already have a personal version of Office installed, uninstall it before installing the institutional version. Two versions on one computer cause activation conflicts that are awkward to unpick.\n\n## When your enrolment ends\n\nThe licence stops working once you are no longer enrolled or employed. Your applications revert to read-only, and files stored in the institutional OneDrive become inaccessible. Copy any personal files elsewhere before your final date. This is not reversible afterwards, so plan for it in advance rather than requesting recovery later."
+  },
+  {
+    "id": 12,
+    "title": "Set up institutional email on a phone",
+    "category": "Software",
+    "audience": "All",
+    "tags": [
+      "email",
+      "phone",
+      "mobile",
+      "outlook",
+      "mail app",
+      "email setup"
+    ],
+    "lastReviewed": "2026-08-22",
+    "content": "Use the Outlook mobile application rather than the built-in mail app on your phone. Outlook handles the sign-in and security requirements correctly, whereas the built-in app frequently fails or repeatedly prompts for a password.\n\n## Setting it up\n\n1. Install Outlook from the App Store or Google Play.\n2. Open it and enter your full institutional email address.\n3. Enter your password when redirected to the sign-in page.\n4. Approve the multi-factor authentication prompt.\n5. Allow notifications if you want to be alerted to new mail.\n\n## Repeated password prompts\n\nIf the app asks for your password over and over, remove the account from the app entirely and add it again. This is almost always caused by a stored password that is out of date after a password change, and re-adding the account is faster than any other fix.\n\n## Missing mail\n\nCheck the Other or Focused tabs, and the junk folder. Outlook sorts messages between tabs automatically and a message you expect may not be in the tab you are looking at.\n\n## Before you lose a device\n\nIf your phone is lost or stolen, raise a ticket under the Account category immediately so the account session on that device can be revoked. Do not wait until you have a replacement phone."
+  },
+  {
+    "id": 13,
+    "title": "Recognise and report a phishing email",
+    "category": "Account",
+    "audience": "All",
+    "tags": [
+      "phishing",
+      "scam",
+      "suspicious email",
+      "fraud",
+      "spam",
+      "fake email"
+    ],
+    "lastReviewed": "2026-08-22",
+    "content": "Phishing messages try to persuade you to reveal your password or to approve a sign-in. They are the most common way accounts are compromised, and they are often well written and convincing.\n\n## Warning signs\n\nBe suspicious of any message that creates urgency, such as a claim that your account will be closed today. Check whether the sender's address matches the organisation it claims to come from; a display name is easy to fake while the underlying address is not. Hover over links before clicking to see the real destination. Treat unexpected attachments with caution, particularly documents that ask you to enable content.\n\nThe IT Help Desk will never ask you for your password by email, and no legitimate service asks you to confirm a password by replying to a message.\n\n## If you receive one\n\nDo not click any link and do not reply. Use the Report button in Outlook, which sends the message for analysis and removes it from your mailbox. If the Report button is unavailable, forward the message to the Help Desk and then delete it.\n\n## If you have already clicked\n\nChange your password immediately from a different device, then raise a ticket under the Account category marked urgent. Say plainly what you entered and when. Nobody will be blamed for reporting this, and a fast report substantially limits the damage. Delaying because you are embarrassed is what turns a contained incident into a serious one."
+  },
+  {
+    "id": 14,
+    "title": "Suspected virus or malware on a computer",
+    "category": "Software",
+    "audience": "All",
+    "tags": [
+      "virus",
+      "malware",
+      "infected",
+      "ransomware",
+      "pop ups",
+      "security warning"
+    ],
+    "lastReviewed": "2026-08-22",
+    "content": "Signs of an infection include unexpected pop-ups, a browser homepage you did not set, programs launching by themselves, a sudden and sustained slowdown, or files that will no longer open.\n\n## What to do immediately\n\nDisconnect the computer from the network by unplugging the network cable or turning off Wi-Fi. This limits the spread to shared drives and other machines. Do not shut the computer down, because evidence needed to identify the infection is lost when it powers off, and do not try to remove the infection yourself with a downloaded tool.\n\n## Raise the ticket\n\nReport it under the Software category and mark it urgent. Include what you noticed, when it started, and anything you had installed or opened shortly beforehand. Say whether the machine had access to a shared drive.\n\n## Fake warnings\n\nA full-screen browser message claiming your computer is infected and giving a phone number to call is itself a scam. Close the browser tab, or force-quit the browser if the tab will not close. Never call the number and never allow anyone who calls you to connect remotely to your computer.\n\n## Personal devices\n\nThe IT Help Desk can advise on personally owned computers but does not remove infections from them. If your personal device is compromised and you use it for coursework, change your account password from a different, clean device."
+  },
+  {
+    "id": 15,
+    "title": "OneDrive is not syncing",
+    "category": "Software",
+    "audience": "All",
+    "tags": [
+      "onedrive",
+      "sync",
+      "cloud storage",
+      "files not syncing",
+      "backup"
+    ],
+    "lastReviewed": "2026-08-22",
+    "content": "OneDrive shows its status through the cloud icon in the system tray on Windows or the menu bar on macOS. A red cross means syncing has stopped, and a pause symbol means it has been paused manually.\n\n## First checks\n\nSelect the icon and read the message shown. OneDrive usually states the specific reason. Confirm you are still signed in, as an expired sign-in silently stops syncing while leaving files visible locally.\n\nCheck your storage quota in the same panel. Syncing stops when the account is full, and no other fix will work until space is freed.\n\n## Files that will not sync\n\nFile names containing the characters \" * : < > ? / \\ | cannot be synced and will be skipped. Rename them. Very long folder paths also fail; shortening folder names resolves this.\n\nAn open file will not finish syncing. Close documents in Word or Excel before expecting the sync to complete.\n\n## Restarting the sync\n\nQuit OneDrive completely from the icon menu, then reopen it from the Start menu or Applications folder. This resolves most stalls. Signing out and back in is a heavier step and should be tried only after a restart fails.\n\n## Raising a ticket\n\nInclude the exact error message shown in the OneDrive panel, whether it affects one file or everything, and the computer's asset number. A screenshot of the panel is more useful than a description of it."
+  },
+  {
+    "id": 16,
+    "title": "Recover a deleted file or an earlier version",
+    "category": "Software",
+    "audience": "All",
+    "tags": [
+      "deleted file",
+      "recover",
+      "restore",
+      "lost work",
+      "version history",
+      "recycle bin"
+    ],
+    "lastReviewed": "2026-08-22",
+    "content": "Files stored in OneDrive or on a shared drive can usually be recovered without help, provided you act reasonably soon.\n\n## Recently deleted files\n\nOpen the recycle bin on the OneDrive website rather than the one on your computer. Items remain there for 30 days for personal storage and 93 days for shared sites. Select the file and choose Restore, and it returns to its original folder.\n\n## Restoring an earlier version\n\nIf a file still exists but has been overwritten with bad changes, right-click it in OneDrive online and choose Version history. Every saved version is listed with its date. Open a version to check it before restoring, because restoring replaces the current file.\n\n## Restoring an entire folder after a mistake\n\nIf a large number of files were deleted or changed at once, OneDrive can roll your whole storage back to a point in the previous 30 days. This is under Settings, then Restore your OneDrive. It undoes everything after that point, so use it only when a broad mistake has occurred.\n\n## Files never stored in the cloud\n\nWork saved only to the desktop or the C: drive of a campus computer is not backed up and cannot be recovered once deleted. Lab machines are also reset periodically. Save coursework to OneDrive rather than to the local machine. If you have already lost such a file, raise a Software ticket promptly, but recovery may not be possible."
+  },
+  {
+    "id": 17,
+    "title": "Cannot access the online learning site",
+    "category": "Software",
+    "audience": "Students",
+    "tags": [
+      "moodle",
+      "learning site",
+      "lms",
+      "course access",
+      "cannot log in",
+      "missing course"
+    ],
+    "lastReviewed": "2026-08-22",
+    "content": "Access problems with the online learning site fall into two groups: you cannot sign in at all, or you can sign in but a course is missing.\n\n## Cannot sign in\n\nConfirm your password works elsewhere, for example on your email. If it does not, the problem is your account rather than the learning site, and you should reset your password. If your password works on email but not here, clear your browser cache or try a private browsing window, which resolves most sign-in loops caused by a stale session.\n\n## A course is missing\n\nCourses appear only after enrolment is processed and only from the date the teaching staff make them visible. A course you expect to see at the start of a study block may simply not be published yet. Check with your lecturer before raising a ticket, since staff control course visibility directly and can fix it faster than IT can.\n\nIf you enrolled recently, allow one working day for the enrolment to flow through.\n\n## Content that will not load\n\nVideos and interactive activities that fail to load are often blocked by a browser extension or an ad blocker. Try a private window with extensions disabled.\n\n## Raising a ticket\n\nInclude the course code, the exact error message, the browser you are using, and whether the problem occurs on a second device. Confirm that you have already spoken to your lecturer about visibility, as this prevents the ticket being bounced back."
+  },
+  {
+    "id": 18,
+    "title": "Projector or classroom AV not working",
+    "category": "Hardware",
+    "audience": "Staff",
+    "tags": [
+      "projector",
+      "av",
+      "classroom",
+      "hdmi",
+      "no signal",
+      "screen",
+      "teaching space"
+    ],
+    "lastReviewed": "2026-08-22",
+    "content": "Teaching spaces have a control panel that switches the display between the room computer and a laptop input. Most reported faults are a source-selection problem rather than a broken projector.\n\n## Steps to try\n\n1. Wake the control panel and select the correct source. If you are using your own laptop, select the laptop or HDMI input rather than the room PC.\n2. Confirm the cable is fully seated at both the wall plate and the laptop.\n3. On Windows, press the Windows key and P together and choose Duplicate. On macOS, open Display settings and choose to mirror.\n4. Allow up to a minute for older projectors to warm up before concluding there is no signal.\n\n## Sound\n\nAudio follows the video source over HDMI. If there is no sound, check that the correct output device is selected in your computer's sound settings, and that the room volume on the control panel is not muted.\n\n## Adapters\n\nLaptops without a full-size HDMI port need an adapter. A small stock is held at the Help Desk for short-term loan, but this cannot be relied on immediately before a class.\n\n## Reporting a fault\n\nRaise a Hardware ticket with the room number, the time of your next class in that room, and what you have already tried. If a class is in progress, telephone the Help Desk rather than raising a ticket, because a written ticket will not be seen quickly enough to help."
+  },
+  {
+    "id": 19,
+    "title": "Campus computer is running very slowly",
+    "category": "Hardware",
+    "audience": "All",
+    "tags": [
+      "slow computer",
+      "freezing",
+      "performance",
+      "lagging",
+      "not responding"
+    ],
+    "lastReviewed": "2026-08-22",
+    "content": "A machine that has become slow is usually short of memory or is running a background task, rather than failing.\n\n## Immediate steps\n\nRestart the computer. Shared machines are often left running for weeks by successive users, and a restart resolves a large proportion of slowness reports on its own.\n\nClose browser tabs you are not using. Thirty open tabs consume more memory than most applications on the machine combined.\n\nCheck whether an update is installing. Open Task Manager on Windows with Ctrl, Shift and Escape, and look at the CPU and Disk columns. A process at very high disk usage will usually finish within ten to fifteen minutes.\n\n## If it happens only with one application\n\nNote which application it is. A single program that freezes points to a fault in that program or its data file, not to the computer, and it needs a Software ticket naming the application.\n\n## Persistent slowness\n\nIf a machine is still slow after a restart and with nothing running, raise a Hardware ticket with the asset number from the label, the room, and whether other machines nearby behave the same way. Include how long the problem has been present. A machine that became slow suddenly is investigated differently from one that has degraded over a year."
+  },
+  {
+    "id": 20,
+    "title": "Borrow a laptop or other equipment",
+    "category": "Hardware",
+    "audience": "Students",
+    "tags": [
+      "loan",
+      "borrow",
+      "laptop loan",
+      "equipment",
+      "camera",
+      "adapter",
+      "hire"
+    ],
+    "lastReviewed": "2026-08-22",
+    "content": "A pool of laptops, adapters, cameras, recorders and similar equipment is available for short-term loan to enrolled students.\n\n## Making a booking\n\nReserve equipment through the loans page on the IT self-service site, or in person at the Help Desk. Bookings can be made up to two weeks ahead. Popular items during assessment periods are booked out well in advance, so reserve early rather than relying on availability on the day.\n\n## Collection and return\n\nBring your campus ID card when collecting. Loans run for seven days by default and can be extended once if nobody is waiting for the item. Return the equipment to the Help Desk, not to a lecturer or a departmental office, so that the return is recorded against your name.\n\n## Overdue and damaged items\n\nOverdue items generate an automatic reminder, and continued non-return may place a hold on your account. Report damage or a fault when you return the item rather than leaving it to be discovered, as unreported damage is charged.\n\n## Longer loans\n\nLoans of more than seven days, for example for a project running across a study block, need approval from the course lecturer. Raise a ticket under the Hardware category with the item, the dates, the reason, and your lecturer's name so approval can be sought."
+  },
+  {
+    "id": 21,
+    "title": "Request access to a shared drive or Teams site",
+    "category": "Account",
+    "audience": "All",
+    "tags": [
+      "shared drive",
+      "permissions",
+      "access request",
+      "teams",
+      "sharepoint",
+      "folder access"
+    ],
+    "lastReviewed": "2026-08-22",
+    "content": "Access to shared folders and Teams sites is controlled by the department that owns the content, not by the IT Help Desk. IT applies the permission once the owner has approved it.\n\n## What to include in the request\n\nRaise a ticket under the Account category with the exact name or link of the drive, folder or Teams site, the name of the staff member who owns it, whether you need read-only or edit access, and the reason you need it. Requests missing the owner's name cannot proceed and will be returned to you, which wastes a day.\n\n## How long it takes\n\nOnce the owner approves, access is normally applied within one working day. The delay is almost always in obtaining approval, so contacting the owner yourself beforehand and saying in the ticket that they have agreed will speed things up noticeably.\n\n## Access that has stopped working\n\nIf you previously had access and it has now gone, say so explicitly. Permissions are reviewed periodically and access is removed when a role changes or a review lapses. This is treated as a restoration rather than a new request and follows a shorter approval path.\n\n## Access for a group\n\nIf a whole class or team needs access, ask the owner to request it once for the group rather than each person raising a separate ticket. Group requests are handled as a single piece of work."
+  },
+  {
+    "id": 22,
+    "title": "How to raise a support ticket and what happens next",
+    "category": "Other",
+    "audience": "All",
+    "tags": [
+      "raise ticket",
+      "log ticket",
+      "support request",
+      "help desk",
+      "new case",
+      "process"
+    ],
+    "lastReviewed": "2026-08-22",
+    "content": "Tickets are raised through the help desk portal. A clear ticket is resolved faster because it avoids a round trip asking for basic details.\n\n## Raising the ticket\n\nSign in to the portal and select New Case. Complete the title, description, category and room. The title should describe the problem in a few words, such as \"Cannot connect to Wi-Fi in D Block\", rather than simply \"Help\" or \"Urgent\".\n\n## What to include in the description\n\nState what you were trying to do, what happened instead, the exact wording of any error message, when it started, and what you have already tried. Include the asset number of the computer or device where relevant, and whether the problem affects other people. Attach a screenshot if there is an error on screen, as a screenshot removes any ambiguity about the message.\n\n## What happens next\n\nYou receive an email confirming the ticket and its reference number. The ticket is assigned to an available agent. You are notified by email when it is assigned, when the status changes, and when a comment is added.\n\n## Tracking and responding\n\nReply through the ticket rather than by starting a new one, so the history stays together. Raising a second ticket about the same problem slows things down, because work is duplicated across two records.\n\nWhen the ticket is resolved you are asked to confirm that the problem is fixed. If it is not, reopen the ticket and say what is still wrong rather than raising a new one."
+  },
+  {
+    "id": 23,
+    "title": "Ticket priorities and expected response times",
+    "category": "Other",
+    "audience": "All",
+    "tags": [
+      "priority",
+      "sla",
+      "response time",
+      "urgent",
+      "escalate",
+      "due date",
+      "how long"
+    ],
+    "lastReviewed": "2026-08-22",
+    "content": "Every ticket is assigned a priority, which determines the target time for resolution. Priorities are set by the Help Desk based on impact, and may be adjusted after triage.\n\n## The priority levels\n\n**Critical** — a system is down and a large number of people cannot work, or there is an active security incident. Target: 4 hours.\n\n**High** — an individual is completely unable to work, or a teaching session is affected. Target: 8 hours.\n\n**Medium** — a problem that impedes work but where a workaround exists. Target: 24 hours.\n\n**Low** — a minor issue or a request that is not time-critical. Target: 72 hours.\n\n**Trivial** — a cosmetic issue, a general question, or a request with no deadline. Target: 120 hours. This is the default for new tickets.\n\n## How targets are measured\n\nTargets are measured from when the ticket is created and refer to resolution, not to first response. A ticket waiting on information from you, or on approval from a third party, is still counted, which is another reason to supply complete details when you raise it.\n\n## If the priority is wrong\n\nIf a ticket has been given a lower priority than the impact justifies, add a comment explaining the impact, such as an assessment deadline or a class that cannot proceed. Priorities are adjusted on the basis of impact rather than on how the request is worded, so describing the consequence is more effective than marking a ticket urgent."
   }
 ]
