@@ -1,6 +1,42 @@
 import { useEffect, useMemo, useState } from 'react';
+import {
+  Bar,
+  BarChart,
+  CartesianGrid,
+  Cell,
+  Legend,
+  Pie,
+  PieChart,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from 'recharts';
 
 const API_URL = 'http://localhost:4000';
+
+// Validated categorical palette (dataviz skill, references/palette.md) --
+// fixed hue order assigned by category position, not cycled by data.
+// Passes CVD-separation and normal-vision-floor checks at 5 slots.
+const CATEGORY_COLOURS = [
+  '#2a78d6', // Hardware -- blue
+  '#eb6834', // Software -- orange
+  '#1baf7a', // Network -- aqua
+  '#eda100', // Account -- yellow
+  '#e87ba4', // Other -- magenta
+];
+
+// Priority is ordinal severity, so it gets a single-hue ordinal ramp
+// (light = least urgent, dark = most urgent) rather than five arbitrary
+// hues -- the previous High/Medium pair (orange/yellow) measured ΔE 12.2,
+// below the 15 floor, genuinely hard to tell apart even with normal vision.
+const PRIORITY_COLOURS = {
+  Trivial: '#86b6ef',
+  Low: '#5598e7',
+  Medium: '#2a78d6',
+  High: '#1c5cab',
+  Critical: '#104281',
+};
 
 export default function ReportPage() {
   const [tickets, setTickets] = useState([]);
@@ -300,6 +336,31 @@ export default function ReportPage() {
                   Tickets by category
                 </h2>
 
+                <ChartFrame visible={report.total > 0}>
+                  <PieChart>
+                    <Pie
+                      data={report.categories}
+                      dataKey="count"
+                      nameKey="name"
+                      innerRadius={45}
+                      outerRadius={80}
+                    >
+                      {report.categories.map((item, index) => (
+                        <Cell
+                          key={item.name}
+                          fill={
+                            CATEGORY_COLOURS[
+                              index % CATEGORY_COLOURS.length
+                            ]
+                          }
+                        />
+                      ))}
+                    </Pie>
+                    <Tooltip />
+                    <Legend />
+                  </PieChart>
+                </ChartFrame>
+
                 {report.categories.map((item) => (
                   <ReportRow
                     key={item.name}
@@ -319,6 +380,26 @@ export default function ReportPage() {
                 >
                   Tickets by priority
                 </h2>
+
+                <ChartFrame visible={report.total > 0}>
+                  <BarChart data={report.priorities}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="name" />
+                    <YAxis allowDecimals={false} />
+                    <Tooltip />
+                    <Bar dataKey="count" radius={[4, 4, 0, 0]}>
+                      {report.priorities.map((item) => (
+                        <Cell
+                          key={item.name}
+                          fill={
+                            PRIORITY_COLOURS[item.name] ||
+                            '#2a78d6'
+                          }
+                        />
+                      ))}
+                    </Bar>
+                  </BarChart>
+                </ChartFrame>
 
                 {report.priorities.map((item) => (
                   <ReportRow
@@ -362,6 +443,23 @@ export default function ReportPage() {
                 >
                   Tickets by organization
                 </h2>
+
+                <ChartFrame visible={report.total > 0}>
+                  <BarChart
+                    data={report.organizations}
+                    layout="vertical"
+                  >
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis type="number" allowDecimals={false} />
+                    <YAxis type="category" dataKey="name" />
+                    <Tooltip />
+                    <Bar
+                      dataKey="count"
+                      fill="#005a9c"
+                      radius={[0, 4, 4, 0]}
+                    />
+                  </BarChart>
+                </ChartFrame>
 
                 {report.organizations.map((item) => (
                   <ReportRow
@@ -455,6 +553,16 @@ export default function ReportPage() {
         )}
       </div>
     </main>
+  );
+}
+
+function ChartFrame({ visible, children }) {
+  if (!visible) return null;
+
+  return (
+    <div style={{ width: '100%', height: 220, marginBottom: 8 }}>
+      <ResponsiveContainer>{children}</ResponsiveContainer>
+    </div>
   );
 }
 

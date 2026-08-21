@@ -278,7 +278,11 @@ const listTickets = catchAsync(
     const { rows, count } =
       await Ticket.findAndCountAll({
         where,
-        order: [['createdAt', 'DESC']],
+        // createdAt only has second-level precision, so ties are
+        // common under fast/concurrent creation; id as a secondary
+        // key keeps pagination stable instead of leaving tied rows
+        // in an arbitrary order that can shift between requests.
+        order: [['createdAt', 'DESC'], ['id', 'DESC']],
         limit,
         offset: (page - 1) * limit,
         include: [
@@ -322,7 +326,10 @@ const getOverdueTickets = catchAsync(
 
     const tickets = await Ticket.findAll({
       where,
-      order: [['dueAt', 'ASC']],
+      // Same tie-break rationale as listTickets -- dueAt is derived
+      // from priority + createdAt, so same-priority tickets created
+      // in the same second share an identical dueAt.
+      order: [['dueAt', 'ASC'], ['id', 'ASC']],
       include: [
         {
           model: User,

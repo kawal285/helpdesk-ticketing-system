@@ -4,8 +4,11 @@ const {
   searchArticles,
   getArticleById,
 } = require('../services/knowledgeBaseService');
+const protect = require('../middleware/protect');
 
 const router = express.Router();
+
+router.use(protect);
 
 router.get('/', (req, res, next) => {
   try {

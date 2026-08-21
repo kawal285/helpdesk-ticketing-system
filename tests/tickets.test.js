@@ -462,3 +462,104 @@ describe('GET /tickets/overdue', () => {
     expect(res.body.tickets.some((t) => t.id === ticketId)).toBe(true);
   });
 });
+
+describe('PATCH /tickets/:id/review', () => {
+  async function resolveTicket(ownerToken, adminToken) {
+    const created = await createTicketAs(ownerToken);
+    const ticketId = created.body.ticket.id;
+
+    await request(app)
+      .patch(`/tickets/${ticketId}/status`)
+      .set('Authorization', `Bearer ${adminToken}`)
+      .send({ status: 'In Progress' });
+
+    await request(app)
+      .patch(`/tickets/${ticketId}/status`)
+      .set('Authorization', `Bearer ${adminToken}`)
+      .send({ status: 'Resolved' });
+
+    return ticketId;
+  }
+
+  it('lets the requester accept a resolution, closing the ticket', async () => {
+    const { token: ownerToken } = await createUserWithToken({ role: 'customer' });
+    const { token: adminToken } = await createUserWithToken({ role: 'admin' });
+    const ticketId = await resolveTicket(ownerToken, adminToken);
+
+    const res = await request(app)
+      .patch(`/tickets/${ticketId}/review`)
+      .set('Authorization', `Bearer ${ownerToken}`)
+      .send({ action: 'accept' });
+
+    expect(res.status).toBe(200);
+    expect(res.body.ticket.status).toBe('Closed');
+    expect(res.body.ticket.resolvedAt).not.toBeNull();
+  });
+
+  it('lets the requester reopen a resolution, moving the ticket back to In Progress', async () => {
+    const { token: ownerToken } = await createUserWithToken({ role: 'customer' });
+    const { token: adminToken } = await createUserWithToken({ role: 'admin' });
+    const ticketId = await resolveTicket(ownerToken, adminToken);
+
+    const res = await request(app)
+      .patch(`/tickets/${ticketId}/review`)
+      .set('Authorization', `Bearer ${ownerToken}`)
+      .send({ action: 'reopen' });
+
+    expect(res.status).toBe(200);
+    expect(res.body.ticket.status).toBe('In Progress');
+    expect(res.body.ticket.resolvedAt).toBeNull();
+  });
+
+  it('rejects a reviewer who is not the requester with 403', async () => {
+    const { token: ownerToken } = await createUserWithToken({ role: 'customer' });
+    const { token: adminToken } = await createUserWithToken({ role: 'admin' });
+    const { token: otherCustomerToken } = await createUserWithToken({ role: 'customer' });
+    const ticketId = await resolveTicket(ownerToken, adminToken);
+
+    const res = await request(app)
+      .patch(`/tickets/${ticketId}/review`)
+      .set('Authorization', `Bearer ${otherCustomerToken}`)
+      .send({ action: 'accept' });
+
+    expect(res.status).toBe(404);
+  });
+
+  it('rejects staff reviewing on the customer\'s behalf with 403', async () => {
+    const { token: ownerToken } = await createUserWithToken({ role: 'customer' });
+    const { token: adminToken } = await createUserWithToken({ role: 'admin' });
+    const ticketId = await resolveTicket(ownerToken, adminToken);
+
+    const res = await request(app)
+      .patch(`/tickets/${ticketId}/review`)
+      .set('Authorization', `Bearer ${adminToken}`)
+      .send({ action: 'accept' });
+
+    expect(res.status).toBe(403);
+  });
+
+  it('rejects reviewing a ticket that is not Resolved with 409', async () => {
+    const { token: ownerToken } = await createUserWithToken({ role: 'customer' });
+    const created = await createTicketAs(ownerToken);
+
+    const res = await request(app)
+      .patch(`/tickets/${created.body.ticket.id}/review`)
+      .set('Authorization', `Bearer ${ownerToken}`)
+      .send({ action: 'accept' });
+
+    expect(res.status).toBe(409);
+  });
+
+  it('rejects an invalid action with 400', async () => {
+    const { token: ownerToken } = await createUserWithToken({ role: 'customer' });
+    const { token: adminToken } = await createUserWithToken({ role: 'admin' });
+    const ticketId = await resolveTicket(ownerToken, adminToken);
+
+    const res = await request(app)
+      .patch(`/tickets/${ticketId}/review`)
+      .set('Authorization', `Bearer ${ownerToken}`)
+      .send({ action: 'delete-everything' });
+
+    expect(res.status).toBe(400);
+  });
+});

@@ -1,9 +1,25 @@
 const request = require('supertest');
 const app = require('../src/app');
+const { sequelize } = require('../src/models');
+const { createUserWithToken } = require('./helpers/testHelpers');
+
+afterAll(async () => {
+  await sequelize.close();
+});
 
 describe('Knowledge-base API', () => {
-  test('GET /knowledge-base returns all articles', async () => {
+  test('rejects an unauthenticated request with 401', async () => {
     const response = await request(app).get('/knowledge-base');
+
+    expect(response.statusCode).toBe(401);
+  });
+
+  test('GET /knowledge-base returns all articles', async () => {
+    const { token } = await createUserWithToken({ role: 'customer' });
+
+    const response = await request(app)
+      .get('/knowledge-base')
+      .set('Authorization', `Bearer ${token}`);
 
     expect(response.statusCode).toBe(200);
     expect(response.body.count).toBeGreaterThan(0);
@@ -11,9 +27,11 @@ describe('Knowledge-base API', () => {
   });
 
   test('GET /knowledge-base/search returns a relevant printer article', async () => {
-    const response = await request(app).get(
-      '/knowledge-base/search?q=printer'
-    );
+    const { token } = await createUserWithToken({ role: 'customer' });
+
+    const response = await request(app)
+      .get('/knowledge-base/search?q=printer')
+      .set('Authorization', `Bearer ${token}`);
 
     expect(response.statusCode).toBe(200);
     expect(response.body.query).toBe('printer');
@@ -25,7 +43,11 @@ describe('Knowledge-base API', () => {
   });
 
   test('GET /knowledge-base/search rejects a missing query', async () => {
-    const response = await request(app).get('/knowledge-base/search');
+    const { token } = await createUserWithToken({ role: 'customer' });
+
+    const response = await request(app)
+      .get('/knowledge-base/search')
+      .set('Authorization', `Bearer ${token}`);
 
     expect(response.statusCode).toBe(400);
     expect(response.body.message).toBe(
@@ -34,7 +56,11 @@ describe('Knowledge-base API', () => {
   });
 
   test('GET /knowledge-base/:id returns one article', async () => {
-    const response = await request(app).get('/knowledge-base/1');
+    const { token } = await createUserWithToken({ role: 'customer' });
+
+    const response = await request(app)
+      .get('/knowledge-base/1')
+      .set('Authorization', `Bearer ${token}`);
 
     expect(response.statusCode).toBe(200);
     expect(response.body.article.id).toBe(1);
@@ -42,7 +68,11 @@ describe('Knowledge-base API', () => {
   });
 
   test('GET /knowledge-base/:id returns 404 for an unknown article', async () => {
-    const response = await request(app).get('/knowledge-base/999');
+    const { token } = await createUserWithToken({ role: 'customer' });
+
+    const response = await request(app)
+      .get('/knowledge-base/999')
+      .set('Authorization', `Bearer ${token}`);
 
     expect(response.statusCode).toBe(404);
     expect(response.body.message).toBe(
@@ -51,9 +81,11 @@ describe('Knowledge-base API', () => {
   });
 
   test('search is case-insensitive', async () => {
-    const response = await request(app).get(
-      '/knowledge-base/search?q=PRINTER'
-    );
+    const { token } = await createUserWithToken({ role: 'customer' });
+
+    const response = await request(app)
+      .get('/knowledge-base/search?q=PRINTER')
+      .set('Authorization', `Bearer ${token}`);
 
     expect(response.statusCode).toBe(200);
     expect(response.body.count).toBeGreaterThan(0);
