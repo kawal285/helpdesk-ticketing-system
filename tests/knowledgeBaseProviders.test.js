@@ -173,4 +173,35 @@ describe('knowledgeBaseProviders registry', () => {
 
     expect(first).not.toBe(second);
   });
+
+  // This is the actual guarantee the "swappable backend" story asks for:
+  // a completely new provider -- standing in for a future CRM/hosted
+  // knowledge base -- becomes the active one purely through registration
+  // + config, with zero changes to this registry file or to
+  // knowledgeBaseService.js. If this test passes, the platform is
+  // provably not locked into the local-json implementation.
+  it('lets an entirely new provider replace local-json via registration + config alone', () => {
+    const { getProvider, registerProvider, resetProviderCache } = require('../src/services/knowledgeBaseProviders');
+    const { loadArticles, searchArticles, getArticleById } = require('../src/services/knowledgeBaseService');
+
+    const fakeCrmArticles = [{ id: 1, title: 'From the fake CRM', content: 'stub content', tags: [] }];
+
+    registerProvider('fake-crm', () => ({
+      listAll: () => fakeCrmArticles,
+      search: (query) => (query ? fakeCrmArticles : []),
+      getById: (id) => fakeCrmArticles.find((a) => a.id === Number(id)),
+    }));
+
+    process.env.KNOWLEDGE_BASE_PROVIDER = 'fake-crm';
+    resetProviderCache();
+
+    expect(getProvider().listAll()).toEqual(fakeCrmArticles);
+
+    // knowledgeBaseService -- what routes and the AI assistant actually
+    // call -- picks up the swap transparently, with no code of its own
+    // aware that anything changed.
+    expect(loadArticles()).toEqual(fakeCrmArticles);
+    expect(searchArticles('anything')).toEqual(fakeCrmArticles);
+    expect(getArticleById(1)).toEqual(fakeCrmArticles[0]);
+  });
 });

@@ -8,18 +8,26 @@
 //
 // Article shape: { id, title, content, tags?: string[] }.
 //
+// The registry is open, not a hardcoded switch: a provider becomes
+// available by calling registerProvider(name, factory), which the local
+// JSON provider does to itself below. A future CRM package (in this repo
+// or an external one) registers itself the same way and never has to
+// touch this file -- "not locked into one vendor" holds even at the
+// registration point, not just the interface.
+//
 // Which provider is active is a config decision, not a code change: set
-// KNOWLEDGE_BASE_PROVIDER to the registry key below. Everything else in the
-// app (routes, the AI assistant) calls the functions in
+// KNOWLEDGE_BASE_PROVIDER to a registered name. Everything else in the app
+// (routes, the AI assistant) calls the functions in
 // ../knowledgeBaseService.js, which just delegates to whatever this
-// resolves to -- so adding a provider is "write a file implementing this
-// contract, register it here," never "touch the consumers."
+// resolves to.
 
 const { createLocalJsonProvider } = require('./localJsonProvider');
 
-const REGISTRY = {
-  'local-json': () => createLocalJsonProvider(),
-};
+const registry = new Map();
+
+function registerProvider(name, factory) {
+  registry.set(name, factory);
+}
 
 let cachedProvider = null;
 
@@ -27,11 +35,11 @@ function getProvider() {
   if (cachedProvider) return cachedProvider;
 
   const key = process.env.KNOWLEDGE_BASE_PROVIDER || 'local-json';
-  const factory = REGISTRY[key];
+  const factory = registry.get(key);
 
   if (!factory) {
     throw new Error(
-      `Unknown KNOWLEDGE_BASE_PROVIDER "${key}". Available providers: ${Object.keys(REGISTRY).join(', ')}.`
+      `Unknown KNOWLEDGE_BASE_PROVIDER "${key}". Available providers: ${[...registry.keys()].join(', ')}.`
     );
   }
 
@@ -46,4 +54,6 @@ function resetProviderCache() {
   cachedProvider = null;
 }
 
-module.exports = { getProvider, resetProviderCache };
+registerProvider('local-json', () => createLocalJsonProvider());
+
+module.exports = { getProvider, resetProviderCache, registerProvider };
