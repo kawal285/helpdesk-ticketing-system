@@ -1,0 +1,20 @@
+[
+  {
+    "id": 1,
+    "title": "Printer troubleshooting guide",
+    "content": "If the office printer jams repeatedly, check the paper tray alignment and clean the printer rollers before logging a ticket.",
+    "tags": ["printer", "hardware", "troubleshooting"]
+  },
+  {
+    "id": 2,
+    "title": "How to reset your password",
+    "content": "Go to the login page and select forgot password to receive a reset link by email.",
+    "tags": ["password", "account", "login"]
+  },
+  {
+    "id": 3,
+    "title": "VPN connection issues",
+    "content": "Restart the VPN client and confirm your network connection before contacting support.",
+    "tags": ["vpn", "network"]
+  }
+]

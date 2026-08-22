@@ -49,4 +49,4 @@ async function analyzeTicket(description) {
   return parseAnalysis(raw);
 }
 
-module.exports = { analyzeTicket };
+module.exports = { analyzeTicket, parseAnalysis };
