@@ -14,7 +14,33 @@ const { cosineSimilarity } = require('./similarity');
 
 const { KbChunk } = db;
 
-const DEFAULT_TOP_K = Number(process.env.RAG_TOP_K) || 3;
+const DEFAULT_TOP_K = Number(process.env.RAG_TOP_K) || 4;
+
+/*
+ * Caps how many chunks one article may contribute to the results.
+ *
+ * Without this, a question touching two topics loses: the best-matching
+ * article fills every slot with its own sections and the second topic is
+ * never retrieved, so the model correctly reports it does not know
+ * something the knowledge base actually covers.
+ */
+const DEFAULT_MAX_PER_ARTICLE = Number(process.env.RAG_MAX_PER_ARTICLE) || 2;
+
+/*
+ * Drops chunks that score more than this far below the best match.
+ *
+ * The absolute threshold answers "is anything relevant at all?". This
+ * answers "is this chunk relevant given how good the best one is?" -- a
+ * chunk 0.07 below the top hit is usually a neighbouring topic rather than
+ * part of the answer, and feeding it to the model invites details from it
+ * to leak into the answer.
+ *
+ * Set RAG_RELATIVE_CUTOFF=0 to disable.
+ */
+const DEFAULT_RELATIVE_CUTOFF =
+  process.env.RAG_RELATIVE_CUTOFF === undefined
+    ? 0.06
+    : Number(process.env.RAG_RELATIVE_CUTOFF);
 
 // Deliberately unset by default. A threshold copied from a tutorial is
 // meaningless -- the right value depends on the embedding model, and is
@@ -140,6 +166,8 @@ async function retrieve(question, options = {}) {
     topK = DEFAULT_TOP_K,
     threshold = DEFAULT_THRESHOLD,
     category = null,
+    maxPerArticle = DEFAULT_MAX_PER_ARTICLE,
+    relativeCutoff = DEFAULT_RELATIVE_CUTOFF,
   } = options;
 
   if (typeof question !== 'string' || !question.trim()) {
@@ -165,10 +193,38 @@ async function retrieve(question, options = {}) {
 
   scored.sort((a, b) => b.score - a.score);
 
-  const top = scored.slice(0, topK);
+  // Walk the ranking in order, skipping an article once it has contributed
+  // its quota. Order is still strictly by score -- diversity is enforced by
+  // omission, never by promoting a weaker chunk above a stronger one.
+  const perArticle = new Map();
+  const top = [];
 
-  const relevant =
+  for (const match of scored) {
+    if (top.length >= topK) {
+      break;
+    }
+
+    const used = perArticle.get(match.articleId) || 0;
+
+    if (used >= maxPerArticle) {
+      continue;
+    }
+
+    perArticle.set(match.articleId, used + 1);
+    top.push(match);
+  }
+
+  let relevant =
     threshold === null ? top : top.filter((match) => match.score >= threshold);
+
+  // Relative filter, applied after the absolute one. The best match always
+  // survives; weaker neighbours are dropped rather than passed to the model
+  // as context it did not need.
+  if (relativeCutoff > 0 && relevant.length > 1) {
+    const floor = relevant[0].score - relativeCutoff;
+
+    relevant = relevant.filter((match) => match.score >= floor);
+  }
 
   return {
     question,
