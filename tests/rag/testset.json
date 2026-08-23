@@ -1,0 +1,29 @@
+[
+  { "type": "direct", "question": "How do I reset my password?", "expectedArticleId": 1 },
+  { "type": "direct", "question": "How do I set up multi-factor authentication?", "expectedArticleId": 3 },
+  { "type": "direct", "question": "How do I connect to the campus Wi-Fi?", "expectedArticleId": 5 },
+  { "type": "direct", "question": "How do I request software to be installed?", "expectedArticleId": 10 },
+  { "type": "direct", "question": "How do I borrow a laptop?", "expectedArticleId": 20 },
+  { "type": "direct", "question": "What are the ticket priority response times?", "expectedArticleId": 23 },
+  { "type": "direct", "question": "How do I set up my email on my phone?", "expectedArticleId": 12 },
+
+  { "type": "semantic", "question": "I cannot remember my login details", "expectedArticleId": 1 },
+  { "type": "semantic", "question": "It says too many attempts and now I am shut out", "expectedArticleId": 2 },
+  { "type": "semantic", "question": "The internet keeps cutting out when I am in the library", "expectedArticleId": 6 },
+  { "type": "semantic", "question": "Nothing comes out of the machine when I send a document", "expectedArticleId": 8 },
+  { "type": "semantic", "question": "I got a weird message asking me to confirm my account urgently", "expectedArticleId": 13 },
+  { "type": "semantic", "question": "I deleted my assignment by accident, can I get it back?", "expectedArticleId": 16 },
+  { "type": "semantic", "question": "My laptop takes forever to do anything", "expectedArticleId": 19 },
+  { "type": "semantic", "question": "The screen in the classroom is showing no signal", "expectedArticleId": 18 },
+
+  { "type": "misspelled", "question": "how do i reste my pasword", "expectedArticleId": 1 },
+  { "type": "short", "question": "vpn", "expectedArticleId": 7 },
+  { "type": "verbose", "question": "Hi there, I hope you are well. I am a second year student and I have been having a bit of trouble this week because whenever I try to print my essay at the library the job seems to disappear and nothing ever comes out of the printer.", "expectedArticleId": 8 },
+
+  { "type": "out-of-domain", "question": "Who won the football match last night?", "expectedArticleId": null },
+  { "type": "out-of-domain", "question": "What is the weather going to be tomorrow?", "expectedArticleId": null },
+  { "type": "out-of-domain", "question": "Can you write me a poem about the sea?", "expectedArticleId": null },
+  { "type": "out-of-domain", "question": "What is the capital city of Peru?", "expectedArticleId": null },
+  { "type": "out-of-domain", "question": "How do I cook a roast chicken?", "expectedArticleId": null },
+  { "type": "out-of-domain", "question": "What time does the campus cafe close?", "expectedArticleId": null }
+]
