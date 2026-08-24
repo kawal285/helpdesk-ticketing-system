@@ -31,6 +31,11 @@ const NAV_ITEMS = [
     label: 'Settings',
     roles: ['admin'],
   },
+  {
+    key: 'account',
+    label: 'My Account',
+    roles: ['customer', 'agent', 'admin'],
+  },
 ];
 export default function Sidebar({
   active,
