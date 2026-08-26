@@ -7,9 +7,9 @@ import AdminDashboardPage from './pages/AdminDashboardPage';
 import NewTicketPage from './pages/NewTicketPage';
 import TicketDetailPage from './pages/TicketDetailPage';
 import AdminUsersPage from './pages/AdminUsersPage';
-import ComingSoonPage from './pages/ComingSoonPage';
 import AiAssistantPage from './pages/AiAssistantPage';
 import ReportPage from './pages/ReportPage';
+import SettingsPage from './pages/SettingsPage';
 import Sidebar from './components/Sidebar';
 
 function App() {
@@ -273,9 +273,7 @@ function App() {
   content = <ReportPage />
       );
     } else if (view === 'settings') {
-      content = (
-        <ComingSoonPage title="Settings" />
-      );
+      content = <SettingsPage />;
     } else if (view === 'tickets') {
       content = (
         <DashboardPage

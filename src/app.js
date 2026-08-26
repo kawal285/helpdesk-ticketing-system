@@ -12,6 +12,7 @@ const notFound = require('./middleware/notFound');
 const errorHandler = require('./middleware/errorHandler');
 const knowledgeBaseRoute = require('./routes/knowledgeBase.route');
 const aiAssistantRoute = require('./routes/aiAssistant.route');
+const settingsRoute = require('./routes/settings.route');
 const app = express();
 
 app.use(helmet());
@@ -28,6 +29,7 @@ app.use('/tickets', ticketRoute);
 app.use('/tickets/:ticketId/comments', commentRoute);
 app.use('/knowledge-base', knowledgeBaseRoute);
 app.use('/ai', aiAssistantRoute);
+app.use('/settings', settingsRoute);
 app.use(notFound);
 app.use(errorHandler);
 
