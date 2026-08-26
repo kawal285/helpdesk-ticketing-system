@@ -38,6 +38,11 @@ const PRIORITY_COLOURS = {
   Critical: '#104281',
 };
 
+const ASSIGNMENT_COLOURS = {
+  Assigned: '#1baf7a',
+  Unassigned: '#f37021',
+};
+
 export default function ReportPage() {
   const [tickets, setTickets] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -126,6 +131,20 @@ export default function ReportPage() {
       unassigned: tickets.filter(
         (ticket) => !ticket.assigneeId
       ).length,
+      assignments: [
+        {
+          name: 'Assigned',
+          count: tickets.filter((ticket) =>
+            Boolean(ticket.assigneeId)
+          ).length,
+        },
+        {
+          name: 'Unassigned',
+          count: tickets.filter(
+            (ticket) => !ticket.assigneeId
+          ).length,
+        },
+      ],
       categories: [
         {
           name: 'Hardware',
@@ -293,11 +312,27 @@ export default function ReportPage() {
               }}
             >
               {summaryCards.map((card) => (
-                <div key={card.label} style={cardStyle}>
+                <div
+                  key={card.label}
+                  style={{
+                    ...cardStyle,
+                    ...(card.label === 'Overdue'
+                      ? {
+                          border: '2px solid #c62828',
+                          background: '#fff7f7',
+                        }
+                      : {}),
+                  }}
+                >
                   <div
                     style={{
-                      color: '#626b7d',
+                      color:
+                        card.label === 'Overdue'
+                          ? '#c62828'
+                          : '#626b7d',
                       fontSize: 15,
+                      fontWeight:
+                        card.label === 'Overdue' ? 700 : 400,
                     }}
                   >
                     {card.label}
@@ -360,15 +395,6 @@ export default function ReportPage() {
                     <Legend />
                   </PieChart>
                 </ChartFrame>
-
-                {report.categories.map((item) => (
-                  <ReportRow
-                    key={item.name}
-                    label={item.name}
-                    value={item.count}
-                    total={report.total}
-                  />
-                ))}
               </div>
 
               <div style={cardStyle}>
@@ -400,15 +426,6 @@ export default function ReportPage() {
                     </Bar>
                   </BarChart>
                 </ChartFrame>
-
-                {report.priorities.map((item) => (
-                  <ReportRow
-                    key={item.name}
-                    label={item.name}
-                    value={item.count}
-                    total={report.total}
-                  />
-                ))}
               </div>
 
               <div style={cardStyle}>
@@ -421,17 +438,28 @@ export default function ReportPage() {
                   Assignment overview
                 </h2>
 
-                <ReportRow
-                  label="Assigned"
-                  value={report.assigned}
-                  total={report.total}
-                />
-
-                <ReportRow
-                  label="Unassigned"
-                  value={report.unassigned}
-                  total={report.total}
-                />
+                <ChartFrame visible={report.total > 0}>
+                  <PieChart>
+                    <Pie
+                      data={report.assignments}
+                      dataKey="count"
+                      nameKey="name"
+                      innerRadius={45}
+                      outerRadius={80}
+                    >
+                      {report.assignments.map((item) => (
+                        <Cell
+                          key={item.name}
+                          fill={
+                            ASSIGNMENT_COLOURS[item.name]
+                          }
+                        />
+                      ))}
+                    </Pie>
+                    <Tooltip />
+                    <Legend />
+                  </PieChart>
+                </ChartFrame>
               </div>
 
               <div style={cardStyle}>
@@ -460,15 +488,6 @@ export default function ReportPage() {
                     />
                   </BarChart>
                 </ChartFrame>
-
-                {report.organizations.map((item) => (
-                  <ReportRow
-                    key={item.name}
-                    label={item.name}
-                    value={item.count}
-                    total={report.total}
-                  />
-                ))}
               </div>
             </section>
 
@@ -524,8 +543,21 @@ export default function ReportPage() {
                           <td style={{ padding: 12 }}>
                             {ticket.title}
                           </td>
-                          <td style={{ padding: 12 }}>
+                          <td
+                            style={{
+                              padding: 12,
+                              color: isTicketOverdue(ticket)
+                                ? '#c62828'
+                                : '#121826',
+                              fontWeight: isTicketOverdue(ticket)
+                                ? 700
+                                : 400,
+                            }}
+                          >
                             {ticket.status}
+                            {isTicketOverdue(ticket)
+                              ? ' • Overdue'
+                              : ''}
                           </td>
                           <td style={{ padding: 12 }}>
                             {ticket.priority}
@@ -566,42 +598,11 @@ function ChartFrame({ visible, children }) {
   );
 }
 
-function ReportRow({ label, value, total }) {
-  const percentage =
-    total > 0 ? Math.round((value / total) * 100) : 0;
+function isTicketOverdue(ticket) {
+  if (!ticket.dueAt) return false;
 
-  return (
-    <div style={{ marginBottom: 18 }}>
-      <div
-        style={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          marginBottom: 7,
-        }}
-      >
-        <span>{label}</span>
-        <strong>
-          {value} ({percentage}%)
-        </strong>
-      </div>
+  const completed =
+    ticket.status === 'Resolved' || ticket.status === 'Closed';
 
-      <div
-        style={{
-          height: 9,
-          borderRadius: 999,
-          background: '#e7ecf0',
-          overflow: 'hidden',
-        }}
-      >
-        <div
-          style={{
-            width: `${percentage}%`,
-            height: '100%',
-            background: '#006bb6',
-            borderRadius: 999,
-          }}
-        />
-      </div>
-    </div>
-  );
+  return !completed && new Date(ticket.dueAt) < new Date();
 }
