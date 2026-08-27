@@ -1,43 +1,27 @@
-const { searchArticles } = require('./knowledgeBaseService');
-const { getAiSuggestions } = require('./aiService');
-const { ask: ragAsk } = require('./rag/ragService');
+/*
+ * Answers a user's IT question using Retrieval-Augmented Generation.
+ *
+ * Replaces the previous implementation, which did keyword matching over the
+ * knowledge base and, when that missed, returned an ungrounded answer from
+ * the model's general knowledge. That fallback is gone: if nothing relevant
+ * is retrieved, the assistant says so and points the user at a ticket.
+ *
+ * The response shape is unchanged apart from two additions (`sources` and
+ * `topScore`), so the existing frontend keeps working.
+ */
 
-// The keyword-search fallback this replaced as the primary path. Kept as a
-// safety net: the RAG pipeline depends on Ollama (or another configured
-// embedding/generation provider) actually being reachable, which plain
-// keyword search never did -- if RAG throws for any reason, the assistant
-// degrades to this instead of failing outright.
-function legacyKeywordAssist(cleanQuestion, aiSuggestions) {
-  const matchingArticles = searchArticles(cleanQuestion);
-  const bestArticle = matchingArticles.length > 0 ? matchingArticles[0] : null;
+const { ask } = require('./rag/ragService');
 
-  if (bestArticle) {
-    return {
-      question: cleanQuestion,
-      answer: bestArticle.content,
-      knowledgeBaseMatch: true,
-      source: { id: bestArticle.id, title: bestArticle.title },
-      suggestedCategory: aiSuggestions.category,
-      suggestedPriority: aiSuggestions.priority,
-      suggestedResponse: aiSuggestions.suggestedResponse,
-      shouldCreateTicket: false,
-    };
-  }
-
-  const generalAiGuidance =
-    aiSuggestions.suggestedResponse ||
-    'I could not find approved guidance for this problem. Please create a support ticket so the IT team can investigate it safely.';
-
-  return {
-    question: cleanQuestion,
-    answer: generalAiGuidance,
-    knowledgeBaseMatch: false,
-    source: null,
-    guidanceType: aiSuggestions.suggestedResponse ? 'general-ai' : 'ticket-required',
-    suggestedCategory: aiSuggestions.category,
-    suggestedPriority: aiSuggestions.priority,
-    shouldCreateTicket: true,
-  };
+/*
+ * Knowledge-base categories are the same five values as ticket categories
+ * (see src/utils/ticketFields.js), so the category of the best-matching
+ * article is a usable suggestion for a ticket raised from this answer.
+ *
+ * This replaces a model call. It is deterministic, instant, and traceable
+ * to a specific article rather than to a model's guess.
+ */
+function suggestCategory(sources) {
+  return sources.length ? sources[0].category : null;
 }
 
 async function assistUser(question) {
@@ -49,35 +33,37 @@ async function assistUser(question) {
 
   const cleanQuestion = question.trim();
 
-  // getAiSuggestions (ticket category/priority triage) and the RAG pipeline
-  // (grounded answer retrieval) answer different questions and don't
-  // depend on each other, so they run in parallel rather than back to
-  // back -- the RAG call alone takes several seconds.
-  const [aiSuggestions, ragOutcome] = await Promise.all([
-    getAiSuggestions(cleanQuestion),
-    ragAsk(cleanQuestion).then(
-      (result) => ({ ok: true, result }),
-      (error) => ({ ok: false, error })
-    ),
-  ]);
+  const result = await ask(cleanQuestion);
 
-  if (!ragOutcome.ok) {
-    console.error(`RAG pipeline unavailable, falling back to keyword search: ${ragOutcome.error.message}`);
-    return legacyKeywordAssist(cleanQuestion, aiSuggestions);
-  }
-
-  const { result } = ragOutcome;
-  const topSource = result.sources[0] || null;
+  const best = result.sources.length ? result.sources[0] : null;
 
   return {
     question: cleanQuestion,
     answer: result.answer,
+
+    // True when the answer was generated from retrieved knowledge-base
+    // content. False means nothing cleared the relevance threshold and the
+    // model was never called.
     knowledgeBaseMatch: result.grounded,
-    source: topSource ? { id: topSource.articleId, title: topSource.title } : null,
-    suggestedCategory: aiSuggestions.category,
-    suggestedPriority: aiSuggestions.priority,
-    suggestedResponse: aiSuggestions.suggestedResponse,
+
+    // Kept for the existing frontend, which shows a single "approved source".
+    source: best ? { id: best.articleId, title: best.title } : null,
+
+    // Every article the answer drew on, with the section and score. This is
+    // what makes an answer auditable.
+    sources: result.sources,
+
+    suggestedCategory: suggestCategory(result.sources),
+    suggestedPriority: null,
+
     shouldCreateTicket: !result.grounded,
+
+    // Retrieval diagnostics. Useful in the UI during the demo and when
+    // explaining why a question was refused.
+    topScore: result.topScore,
+    threshold: result.threshold,
+    model: result.model,
+    ms: result.ms,
   };
 }
 
