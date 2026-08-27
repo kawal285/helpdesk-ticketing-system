@@ -51,6 +51,10 @@ export default function Sidebar({
     <aside className="sidebar">
       <div className="sidebar-brand">
         <div className="institution-logos">
+          <span className="aic-wordmark">AIC</span>
+
+          <div className="logo-divider" />
+
           <img
             src={opLogo}
             alt="Otago Polytechnic"

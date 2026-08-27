@@ -134,6 +134,10 @@ export default function LoginPage({
     <main className="auth-shell">
       <section className="auth-card">
         <div className="auth-institution-logos">
+          <span className="auth-aic-wordmark">AIC</span>
+
+          <div className="auth-logo-divider" />
+
           <img
             src={opLogo}
             alt="Otago Polytechnic"

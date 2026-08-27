@@ -331,6 +331,22 @@ textarea {
   gap: 10px;
 }
 
+/*
+ * AIC Dual Partner Lockup (per the institution's logo guidelines): the
+ * bold "AIC" wordmark leads, followed by the Otago Polytechnic and Future
+ * Skills partner logos. No image asset exists for this mark yet -- the
+ * guide itself renders it as plain bold type, not a graphic -- so it's
+ * built as styled text rather than an <img>, and can be swapped for a
+ * real logo file later without changing the layout around it.
+ */
+.aic-wordmark {
+  font-size: 20px;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  color: var(--text-dark);
+  white-space: nowrap;
+}
+
 .op-logo {
   width: 50px;
   max-height: 65px;
@@ -461,6 +477,10 @@ textarea {
     padding-left: 8px;
   }
 
+  .aic-wordmark {
+    font-size: 16px;
+  }
+
   .op-logo {
     width: 40px;
   }
@@ -483,6 +503,14 @@ textarea {
   margin-bottom: 18px;
   padding-bottom: 18px;
   border-bottom: 1px solid var(--border-color);
+}
+
+.auth-aic-wordmark {
+  font-size: 30px;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  color: var(--text-dark);
+  white-space: nowrap;
 }
 
 .auth-op-logo {
@@ -545,6 +573,10 @@ textarea {
 @media (max-width: 480px) {
   .auth-institution-logos {
     gap: 10px;
+  }
+
+  .auth-aic-wordmark {
+    font-size: 22px;
   }
 
   .auth-op-logo {
