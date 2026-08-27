@@ -10,6 +10,7 @@ import AdminUsersPage from './pages/AdminUsersPage';
 import AiAssistantPage from './pages/AiAssistantPage';
 import ReportPage from './pages/ReportPage';
 import SettingsPage from './pages/SettingsPage';
+import AccountPage from './pages/AccountPage';
 import Sidebar from './components/Sidebar';
 
 function App() {
@@ -89,12 +90,14 @@ function App() {
         'aiAssistant',
         'newTicket',
         'ticketDetail',
+        'account',
       ],
 
       agent: [
         'dashboard',
         'tickets',
         'ticketDetail',
+        'account',
       ],
 
       admin: [
@@ -104,6 +107,7 @@ function App() {
         'manageUsers',
         'report',
         'settings',
+        'account',
       ],
     };
 
@@ -164,7 +168,9 @@ function App() {
    * Customer pages
    */
   if (isCustomer) {
-    if (view === 'aiAssistant') {
+    if (view === 'account') {
+      content = <AccountPage user={loggedInUser} />;
+    } else if (view === 'aiAssistant') {
       content = (
         <AiAssistantPage
           onCreateTicket={() =>
@@ -212,7 +218,9 @@ function App() {
    * Agent pages
    */
   if (isAgent) {
-    if (
+    if (view === 'account') {
+      content = <AccountPage user={loggedInUser} />;
+    } else if (
       view === 'ticketDetail' &&
       selectedTicketId
     ) {
@@ -247,7 +255,9 @@ function App() {
    * Administrator pages
    */
   if (isAdmin) {
-    if (
+    if (view === 'account') {
+      content = <AccountPage user={loggedInUser} />;
+    } else if (
       view === 'ticketDetail' &&
       selectedTicketId
     ) {

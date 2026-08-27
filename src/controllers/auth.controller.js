@@ -73,4 +73,23 @@ async function getMe(req, res) {
   res.status(200).json({ status: 'success', data: { user: req.user } });
 }
 
-module.exports = { register, login, getMe, sanitizeUser };
+// PATCH /auth/change-password
+// Any logged-in user, any role -- there was previously no way for anyone
+// to change their own password after account creation.
+const changePassword = catchAsync(async (req, res, next) => {
+  const { currentPassword, newPassword } = req.body;
+
+  const user = await User.scope('withPassword').findByPk(req.user.id);
+  const passwordCorrect = await bcrypt.compare(currentPassword, user.passwordHash);
+
+  if (!passwordCorrect) {
+    return next(new AppError('Current password is incorrect.', 401));
+  }
+
+  user.passwordHash = await bcrypt.hash(newPassword, 12);
+  await user.save();
+
+  res.status(200).json({ status: 'success', message: 'Password changed successfully.' });
+});
+
+module.exports = { register, login, getMe, changePassword, sanitizeUser };
