@@ -18,4 +18,11 @@ const loginValidator = [
   body('password').notEmpty().withMessage('password is required'),
 ];
 
-module.exports = { registerValidator, loginValidator };
+const changePasswordValidator = [
+  body('currentPassword').notEmpty().withMessage('currentPassword is required'),
+  body('newPassword')
+    .isLength({ min: 8 })
+    .withMessage('newPassword must be at least 8 characters long'),
+];
+
+module.exports = { registerValidator, loginValidator, changePasswordValidator };
