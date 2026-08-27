@@ -1,5 +1,3 @@
-const { Op, Transaction } = require('sequelize');
-
 const catchAsync = require('../utils/catchAsync');
 const AppError = require('../utils/appError');
 const { computeDueAt } = require('../utils/sla');
@@ -15,10 +13,6 @@ const {
 } = require('../utils/ticketAccess');
 
 const {
-  pickLeastBusyAgent,
-} = require('../services/routingService');
-
-const {
   getAiSuggestions,
 } = require('../services/aiService');
 
@@ -29,16 +23,16 @@ const {
   notifyResolutionReviewed,
 } = require('../services/notificationService');
 
-const {
-  Ticket,
-  User,
-  sequelize,
-} = require('../models');
+const { User } = require('../models');
+const { getProvider } = require('../services/ticketProviders');
 
 /*
  * Customer: only their own tickets.
  * Agent: assigned tickets and unassigned tickets.
  * Admin: every ticket.
+ *
+ * This is the CRM-agnostic filter shape every ticket provider accepts --
+ * see src/services/ticketProviders/index.js for the full contract.
  */
 function scopeForUser(user) {
   if (user.role === 'admin') {
@@ -52,53 +46,16 @@ function scopeForUser(user) {
   }
 
   return {
-    [Op.or]: [
-      {
-        assigneeId: user.id,
-      },
-      {
-        assigneeId: null,
-      },
-    ],
+    assigneeIn: [user.id, null],
   };
 }
-
-const personIncludes = [
-  {
-    model: User,
-    as: 'requester',
-    attributes: [
-      'id',
-      'name',
-      'email',
-      'role',
-      'organization',
-    ],
-  },
-  {
-    model: User,
-    as: 'assignee',
-    attributes: [
-      'id',
-      'name',
-      'email',
-      'role',
-    ],
-    required: false,
-  },
-];
 
 /*
  * Loads a ticket together with requester and assigned-agent
  * information and applies the same access rules to every endpoint.
  */
 async function loadAccessibleTicket(req, next) {
-  const ticket = await Ticket.findByPk(
-    req.params.id,
-    {
-      include: personIncludes,
-    }
-  );
+  const ticket = await getProvider().getTicketById(req.params.id);
 
   if (
     !ticket ||
@@ -112,6 +69,41 @@ async function loadAccessibleTicket(req, next) {
   }
 
   return ticket;
+}
+
+// assigneeId validation is a User/auth concern (is this id an active
+// agent?), not a ticket-storage one, so it stays a direct User lookup
+// regardless of which ticket provider is active.
+async function findAssignableAgent(assigneeId, next) {
+  const agent = await User.findByPk(assigneeId);
+
+  if (!agent || agent.role !== 'agent' || !agent.isActive) {
+    next(
+      new AppError(
+        'assigneeId must be an active agent.',
+        400
+      )
+    );
+
+    return null;
+  }
+
+  return agent;
+}
+
+async function notifyIfAssigned(ticket) {
+  if (!ticket.assigneeId) return;
+
+  const assignedAgent = await User.findByPk(
+    ticket.assigneeId,
+    { attributes: ['id', 'name', 'email', 'role'] }
+  );
+
+  await notifyTicketAssigned({
+    ticket,
+    requester: ticket.requester,
+    assignee: assignedAgent,
+  });
 }
 
 const createTicket = catchAsync(
@@ -149,50 +141,29 @@ const createTicket = catchAsync(
     const finalPriority =
       priority || ai.priority || DEFAULT_PRIORITY;
 
-    /*
-     * Assignment and creation use one transaction so concurrent
-     * requests do not all select the same least-busy agent.
-     */
-    const ticket = await sequelize.transaction(
-      {
-        isolationLevel:
-          Transaction.ISOLATION_LEVELS.SERIALIZABLE,
-      },
-      async (transaction) => {
-        const assigneeId =
-          await pickLeastBusyAgent(transaction);
-
-        return Ticket.create(
-          {
-            title,
-            description,
-            category: finalCategory,
-            priority: finalPriority,
-            status: 'Open',
-            requesterId: req.user.id,
-            organization: req.user.organization,
-            assigneeId,
-            dueAt: computeDueAt(
-              finalPriority,
-              createdAt
-            ),
-            aiCategory: ai.category,
-            aiPriority: ai.priority,
-            aiSuggestedResponse:
-              ai.suggestedResponse,
-            aiAnalyzedAt: aiSucceeded
-              ? new Date()
-              : null,
-            room: room || null,
-            parentCaseId:
-              parentCaseId || null,
-          },
-          {
-            transaction,
-          }
-        );
-      }
-    );
+    const ticket = await getProvider().createTicket({
+      title,
+      description,
+      category: finalCategory,
+      priority: finalPriority,
+      status: 'Open',
+      requesterId: req.user.id,
+      organization: req.user.organization,
+      dueAt: computeDueAt(
+        finalPriority,
+        createdAt
+      ),
+      aiCategory: ai.category,
+      aiPriority: ai.priority,
+      aiSuggestedResponse:
+        ai.suggestedResponse,
+      aiAnalyzedAt: aiSucceeded
+        ? new Date()
+        : null,
+      room: room || null,
+      parentCaseId:
+        parentCaseId || null,
+    });
 
     const requester = await User.findByPk(
       req.user.id,
@@ -241,29 +212,29 @@ const createTicket = catchAsync(
 
 const listTickets = catchAsync(
   async (req, res) => {
-    const where = {
+    const filter = {
       ...scopeForUser(req.user),
     };
 
     if (req.query.status) {
-      where.status = req.query.status;
+      filter.status = req.query.status;
     }
 
     if (req.query.priority) {
-      where.priority = req.query.priority;
+      filter.priority = req.query.priority;
     }
 
     if (req.query.category) {
-      where.category = req.query.category;
+      filter.category = req.query.category;
     }
 
     if (req.query.organization) {
-      where.organization =
+      filter.organization =
         req.query.organization;
     }
 
     if (req.query.assigneeId) {
-      where.assigneeId =
+      filter.assigneeId =
         req.query.assigneeId;
     }
 
@@ -276,28 +247,9 @@ const listTickets = catchAsync(
     );
 
     const { rows, count } =
-      await Ticket.findAndCountAll({
-        where,
-        // createdAt only has second-level precision, so ties are
-        // common under fast/concurrent creation; id as a secondary
-        // key keeps pagination stable instead of leaving tied rows
-        // in an arbitrary order that can shift between requests.
-        order: [['createdAt', 'DESC'], ['id', 'DESC']],
+      await getProvider().listTickets(filter, {
         limit,
         offset: (page - 1) * limit,
-        include: [
-          {
-            model: User,
-            as: 'requester',
-            attributes: ['id', 'name'],
-          },
-          {
-            model: User,
-            as: 'assignee',
-            attributes: ['id', 'name'],
-            required: false,
-          },
-        ],
       });
 
     res.status(200).json({
@@ -311,39 +263,16 @@ const listTickets = catchAsync(
 
 const getOverdueTickets = catchAsync(
   async (req, res) => {
-    const where = {
+    const filter = {
       ...scopeForUser(req.user),
-      dueAt: {
-        [Op.lt]: new Date(),
-      },
-      status: {
-        [Op.notIn]: [
-          'Resolved',
-          'Closed',
-        ],
-      },
+      dueBefore: new Date(),
+      statusNotIn: [
+        'Resolved',
+        'Closed',
+      ],
     };
 
-    const tickets = await Ticket.findAll({
-      where,
-      // Same tie-break rationale as listTickets -- dueAt is derived
-      // from priority + createdAt, so same-priority tickets created
-      // in the same second share an identical dueAt.
-      order: [['dueAt', 'ASC'], ['id', 'ASC']],
-      include: [
-        {
-          model: User,
-          as: 'requester',
-          attributes: ['id', 'name'],
-        },
-        {
-          model: User,
-          as: 'assignee',
-          attributes: ['id', 'name'],
-          required: false,
-        },
-      ],
-    });
+    const tickets = await getProvider().getOverdueTickets(filter);
 
     res.status(200).json({
       tickets,
@@ -388,10 +317,6 @@ const updateTicket = catchAsync(
       parentCaseId,
     } = req.body;
 
-    const originalStatus = ticket.status;
-    const originalAssigneeId =
-      ticket.assigneeId;
-
     const isStaff =
       req.user.role === 'agent' ||
       req.user.role === 'admin';
@@ -430,33 +355,34 @@ const updateTicket = catchAsync(
       }
     }
 
+    const changes = {};
+
     if (title !== undefined) {
-      ticket.title = title;
+      changes.title = title;
     }
 
     if (description !== undefined) {
-      ticket.description = description;
+      changes.description = description;
     }
 
     if (category !== undefined) {
-      ticket.category = category;
+      changes.category = category;
     }
 
     if (priority !== undefined) {
-      ticket.priority = priority;
-
-      ticket.dueAt = computeDueAt(
+      changes.priority = priority;
+      changes.dueAt = computeDueAt(
         priority,
         ticket.createdAt
       );
     }
 
     if (room !== undefined) {
-      ticket.room = room;
+      changes.room = room;
     }
 
     if (parentCaseId !== undefined) {
-      ticket.parentCaseId = parentCaseId;
+      changes.parentCaseId = parentCaseId;
     }
 
     if (status !== undefined) {
@@ -479,66 +405,50 @@ const updateTicket = catchAsync(
       }
 
       if (status === 'Resolved') {
-        ticket.resolvedAt = new Date();
+        changes.resolvedAt = new Date();
       } else if (status === 'Closed') {
-        ticket.resolvedAt =
+        changes.resolvedAt =
           ticket.resolvedAt ||
           new Date();
       } else {
-        ticket.resolvedAt = null;
+        changes.resolvedAt = null;
       }
 
-      ticket.status = status;
+      changes.status = status;
     }
 
     if (assigneeId !== undefined) {
       if (assigneeId === null) {
-        ticket.assigneeId = null;
+        changes.assigneeId = null;
       } else {
-        const agent =
-          await User.findByPk(
-            assigneeId
-          );
+        const agent = await findAssignableAgent(assigneeId, next);
+        if (!agent) return;
 
-        if (
-          !agent ||
-          agent.role !== 'agent' ||
-          !agent.isActive
-        ) {
-          return next(
-            new AppError(
-              'assigneeId must be an active agent.',
-              400
-            )
-          );
-        }
-
-        ticket.assigneeId =
-          assigneeId;
+        changes.assigneeId = assigneeId;
       }
     }
 
-    await ticket.save();
+    const updatedTicket = await getProvider().updateTicket(ticket.id, changes);
 
     if (
       status !== undefined &&
-      originalStatus !== ticket.status
+      ticket.status !== updatedTicket.status
     ) {
       await notifyStatusChanged({
-        ticket,
-        requester: ticket.requester,
+        ticket: updatedTicket,
+        requester: updatedTicket.requester,
       });
     }
 
     if (
       assigneeId !== undefined &&
-      Number(originalAssigneeId) !==
-        Number(ticket.assigneeId) &&
-      ticket.assigneeId
+      Number(ticket.assigneeId) !==
+        Number(updatedTicket.assigneeId) &&
+      updatedTicket.assigneeId
     ) {
       const assignedAgent =
         await User.findByPk(
-          ticket.assigneeId,
+          updatedTicket.assigneeId,
           {
             attributes: [
               'id',
@@ -550,14 +460,14 @@ const updateTicket = catchAsync(
         );
 
       await notifyTicketAssigned({
-        ticket,
-        requester: ticket.requester,
+        ticket: updatedTicket,
+        requester: updatedTicket.requester,
         assignee: assignedAgent,
       });
     }
 
     res.status(200).json({
-      ticket,
+      ticket: updatedTicket,
     });
   }
 );
@@ -592,27 +502,27 @@ const updateTicketStatus = catchAsync(
       );
     }
 
+    const changes = { status };
+
     if (status === 'Resolved') {
-      ticket.resolvedAt = new Date();
+      changes.resolvedAt = new Date();
     } else if (status === 'Closed') {
-      ticket.resolvedAt =
+      changes.resolvedAt =
         ticket.resolvedAt ||
         new Date();
     } else {
-      ticket.resolvedAt = null;
+      changes.resolvedAt = null;
     }
 
-    ticket.status = status;
-
-    await ticket.save();
+    const updatedTicket = await getProvider().updateTicket(ticket.id, changes);
 
     await notifyStatusChanged({
-      ticket,
-      requester: ticket.requester,
+      ticket: updatedTicket,
+      requester: updatedTicket.requester,
     });
 
     res.status(200).json({
-      ticket,
+      ticket: updatedTicket,
     });
   }
 );
@@ -628,54 +538,23 @@ const assignTicket = catchAsync(
     if (!ticket) return;
 
     const { assigneeId } = req.body;
+    const changes = {};
 
     if (assigneeId === null) {
-      ticket.assigneeId = null;
+      changes.assigneeId = null;
     } else {
-      const agent =
-        await User.findByPk(assigneeId);
+      const agent = await findAssignableAgent(assigneeId, next);
+      if (!agent) return;
 
-      if (
-        !agent ||
-        agent.role !== 'agent' ||
-        !agent.isActive
-      ) {
-        return next(
-          new AppError(
-            'assigneeId must be an active agent.',
-            400
-          )
-        );
-      }
-
-      ticket.assigneeId = assigneeId;
+      changes.assigneeId = assigneeId;
     }
 
-    await ticket.save();
+    const updatedTicket = await getProvider().updateTicket(ticket.id, changes);
 
-    if (ticket.assigneeId) {
-      const assignedAgent =
-        await User.findByPk(
-          ticket.assigneeId,
-          {
-            attributes: [
-              'id',
-              'name',
-              'email',
-              'role',
-            ],
-          }
-        );
-
-      await notifyTicketAssigned({
-        ticket,
-        requester: ticket.requester,
-        assignee: assignedAgent,
-      });
-    }
+    await notifyIfAssigned(updatedTicket);
 
     res.status(200).json({
-      ticket,
+      ticket: updatedTicket,
     });
   }
 );
@@ -703,16 +582,15 @@ const aiAnalyzeTicket = catchAsync(
       );
     }
 
-    ticket.aiCategory = ai.category;
-    ticket.aiPriority = ai.priority;
-    ticket.aiSuggestedResponse =
-      ai.suggestedResponse;
-    ticket.aiAnalyzedAt = new Date();
-
-    await ticket.save();
+    const updatedTicket = await getProvider().updateTicket(ticket.id, {
+      aiCategory: ai.category,
+      aiPriority: ai.priority,
+      aiSuggestedResponse: ai.suggestedResponse,
+      aiAnalyzedAt: new Date(),
+    });
 
     res.status(200).json({
-      ticket,
+      ticket: updatedTicket,
     });
   }
 );
@@ -764,26 +642,25 @@ const reviewTicketResolution = catchAsync(
       );
     }
 
-    if (action === 'accept') {
-      ticket.status = 'Closed';
+    const changes = {};
 
-      ticket.resolvedAt =
+    if (action === 'accept') {
+      changes.status = 'Closed';
+      changes.resolvedAt =
         ticket.resolvedAt ||
         new Date();
     }
 
     if (action === 'reopen') {
-      ticket.status =
-        'In Progress';
-
-      ticket.resolvedAt = null;
+      changes.status = 'In Progress';
+      changes.resolvedAt = null;
     }
 
-    await ticket.save();
+    const updatedTicket = await getProvider().updateTicket(ticket.id, changes);
 
     await notifyResolutionReviewed({
-      ticket,
-      assignee: ticket.assignee,
+      ticket: updatedTicket,
+      assignee: updatedTicket.assignee,
       action,
     });
 
@@ -792,7 +669,7 @@ const reviewTicketResolution = catchAsync(
         action === 'accept'
           ? 'Resolution accepted and ticket closed.'
           : 'Ticket reopened for further investigation.',
-      ticket,
+      ticket: updatedTicket,
     });
   }
 );
