@@ -1,6 +1,5 @@
 import { useState } from 'react';
-import opLogo from '../assets/op-logo.png';
-import futureSkillsLogo from '../assets/future-skills-logo.png';
+import aicDualPartnerLockup from '../assets/aic-dual-partner-lockup.png';
 
 function MailIcon() {
   return (
@@ -134,22 +133,10 @@ export default function LoginPage({
     <main className="auth-shell">
       <section className="auth-card">
         <div className="auth-institution-logos">
-          <span className="auth-aic-wordmark">AIC</span>
-
-          <div className="auth-logo-divider" />
-
           <img
-            src={opLogo}
-            alt="Otago Polytechnic"
-            className="auth-op-logo"
-          />
-
-          <div className="auth-logo-divider" />
-
-          <img
-            src={futureSkillsLogo}
-            alt="Future Skills"
-            className="auth-future-skills-logo"
+            src={aicDualPartnerLockup}
+            alt="Auckland International Campus | Otago Polytechnic | Future Skills"
+            className="auth-aic-dual-lockup"
           />
         </div>
 

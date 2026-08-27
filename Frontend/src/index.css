@@ -331,43 +331,11 @@ textarea {
   gap: 10px;
 }
 
-/*
- * AIC Dual Partner Lockup (per the institution's logo guidelines): the
- * bold "AIC" wordmark leads, followed by the Otago Polytechnic and Future
- * Skills partner logos. No image asset exists for this mark yet -- the
- * guide itself renders it as plain bold type, not a graphic -- so it's
- * built as styled text rather than an <img>, and can be swapped for a
- * real logo file later without changing the layout around it.
- */
-.aic-wordmark {
-  font-size: 20px;
-  font-weight: 800;
-  letter-spacing: -0.01em;
-  color: var(--text-dark);
-  white-space: nowrap;
-}
-
-.op-logo {
-  width: 50px;
-  max-height: 65px;
+.aic-dual-lockup {
+  width: 200px;
+  max-width: 100%;
+  height: auto;
   object-fit: contain;
-}
-
-.future-skills-logo {
-  width: 125px;
-   max-height: 58px;
-  padding: 8px 9px;
-  object-fit: contain;
-  background: #fff1e8;
-  border: 1px solid #f37021;
-  border-radius: 6px;
-}
-
-.logo-divider {
-  width: 1px;
-  height: 48px;
-  flex-shrink: 0;
-  background: var(--border-color);
 }
 
 .helpdesk-title {
@@ -477,16 +445,8 @@ textarea {
     padding-left: 8px;
   }
 
-  .aic-wordmark {
-    font-size: 16px;
-  }
-
-  .op-logo {
-    width: 40px;
-  }
-
-  .future-skills-logo {
-    width: 102px;
+  .aic-dual-lockup {
+    width: 160px;
   }
 
   .sidebar-nav-button {
@@ -505,35 +465,11 @@ textarea {
   border-bottom: 1px solid var(--border-color);
 }
 
-.auth-aic-wordmark {
-  font-size: 30px;
-  font-weight: 800;
-  letter-spacing: -0.01em;
-  color: var(--text-dark);
-  white-space: nowrap;
-}
-
-.auth-op-logo {
-  width: 66px;
-  max-height: 82px;
+.auth-aic-dual-lockup {
+  width: 280px;
+  max-width: 100%;
+  height: auto;
   object-fit: contain;
-}
-
-.auth-future-skills-logo {
-  width: 175px;
-  max-height: 62px;
-  padding: 10px 12px;
-  object-fit: contain;
-  background: #fff1e8;
-  border: 1px solid #f37021;
-  border-radius: 7px;
-}
-
-.auth-logo-divider {
-  width: 1px;
-  height: 58px;
-  flex-shrink: 0;
-  background: var(--border-color);
 }
 
 .auth-register-text {
@@ -575,20 +511,8 @@ textarea {
     gap: 10px;
   }
 
-  .auth-aic-wordmark {
-    font-size: 22px;
-  }
-
-  .auth-op-logo {
-    width: 52px;
-  }
-
-  .auth-future-skills-logo {
-    width: 135px;
-  }
-
-  .auth-logo-divider {
-    height: 48px;
+  .auth-aic-dual-lockup {
+    width: 220px;
   }
 }
 .ticket-detail-page {

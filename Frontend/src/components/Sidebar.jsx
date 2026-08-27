@@ -1,5 +1,4 @@
-import opLogo from '../assets/op-logo.png';
-import futureSkillsLogo from '../assets/future-skills-logo.png';
+import aicDualPartnerLockup from '../assets/aic-dual-partner-lockup.png';
 const NAV_ITEMS = [
   {
     key: 'dashboard',
@@ -51,22 +50,10 @@ export default function Sidebar({
     <aside className="sidebar">
       <div className="sidebar-brand">
         <div className="institution-logos">
-          <span className="aic-wordmark">AIC</span>
-
-          <div className="logo-divider" />
-
           <img
-            src={opLogo}
-            alt="Otago Polytechnic"
-            className="op-logo"
-          />
-
-          <div className="logo-divider" />
-
-          <img
-            src={futureSkillsLogo}
-            alt="Future Skills"
-            className="future-skills-logo"
+            src={aicDualPartnerLockup}
+            alt="Auckland International Campus | Otago Polytechnic | Future Skills"
+            className="aic-dual-lockup"
           />
         </div>
 
