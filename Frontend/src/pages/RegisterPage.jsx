@@ -1,6 +1,5 @@
 import { useState } from 'react';
-import opLogo from '../assets/op-logo.png';
-import futureSkillsLogo from '../assets/future-skills-logo.png';
+import aicDualPartnerLockup from '../assets/aic-dual-partner-lockup.png';
 
 function UserIcon() {
   return (
@@ -149,17 +148,9 @@ export default function RegisterPage({ onSuccess, onSwitchToLogin }) {
       <section className="auth-card">
         <div className="auth-institution-logos">
           <img
-            src={opLogo}
-            alt="Otago Polytechnic"
-            className="auth-op-logo"
-          />
-
-          <div className="auth-logo-divider" />
-
-          <img
-            src={futureSkillsLogo}
-            alt="Future Skills"
-            className="auth-future-skills-logo"
+            src={aicDualPartnerLockup}
+            alt="Auckland International Campus | Otago Polytechnic | Future Skills"
+            className="auth-aic-dual-lockup"
           />
         </div>
 

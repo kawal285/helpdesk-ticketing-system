@@ -331,27 +331,11 @@ textarea {
   gap: 10px;
 }
 
-.op-logo {
-  width: 50px;
-  max-height: 65px;
+.aic-dual-lockup {
+  width: 200px;
+  max-width: 100%;
+  height: auto;
   object-fit: contain;
-}
-
-.future-skills-logo {
-  width: 125px;
-   max-height: 58px;
-  padding: 8px 9px;
-  object-fit: contain;
-  background: #fff1e8;
-  border: 1px solid #f37021;
-  border-radius: 6px;
-}
-
-.logo-divider {
-  width: 1px;
-  height: 48px;
-  flex-shrink: 0;
-  background: var(--border-color);
 }
 
 .helpdesk-title {
@@ -461,12 +445,8 @@ textarea {
     padding-left: 8px;
   }
 
-  .op-logo {
-    width: 40px;
-  }
-
-  .future-skills-logo {
-    width: 102px;
+  .aic-dual-lockup {
+    width: 160px;
   }
 
   .sidebar-nav-button {
@@ -485,27 +465,11 @@ textarea {
   border-bottom: 1px solid var(--border-color);
 }
 
-.auth-op-logo {
-  width: 66px;
-  max-height: 82px;
+.auth-aic-dual-lockup {
+  width: 280px;
+  max-width: 100%;
+  height: auto;
   object-fit: contain;
-}
-
-.auth-future-skills-logo {
-  width: 175px;
-  max-height: 62px;
-  padding: 10px 12px;
-  object-fit: contain;
-  background: #fff1e8;
-  border: 1px solid #f37021;
-  border-radius: 7px;
-}
-
-.auth-logo-divider {
-  width: 1px;
-  height: 58px;
-  flex-shrink: 0;
-  background: var(--border-color);
 }
 
 .auth-register-text {
@@ -547,16 +511,8 @@ textarea {
     gap: 10px;
   }
 
-  .auth-op-logo {
-    width: 52px;
-  }
-
-  .auth-future-skills-logo {
-    width: 135px;
-  }
-
-  .auth-logo-divider {
-    height: 48px;
+  .auth-aic-dual-lockup {
+    width: 220px;
   }
 }
 .ticket-detail-page {
