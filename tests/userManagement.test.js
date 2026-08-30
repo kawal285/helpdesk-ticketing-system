@@ -1,7 +1,9 @@
 const request = require('supertest');
 const app = require('../src/app');
-const { sequelize } = require('../src/models');
+const { Op } = require('sequelize');
+const { sequelize, User } = require('../src/models');
 const { createUser, createUserWithToken } = require('./helpers/testHelpers');
+const { createTicketAs, assignTicket } = require('./helpers/ticketHelpers');
 
 afterAll(async () => {
   await sequelize.close();
@@ -135,6 +137,98 @@ describe('POST /users', () => {
         password: 'Password123!',
         role: 'agent',
       });
+
+    expect(res.status).toBe(403);
+  });
+});
+
+describe('PATCH /users/:id/role', () => {
+  it('changes a customer to an agent', async () => {
+    const { token } = await createUserWithToken({ role: 'admin' });
+    const target = await createUser({ role: 'customer' });
+
+    const res = await request(app)
+      .patch(`/users/${target.id}/role`)
+      .set('Authorization', `Bearer ${token}`)
+      .send({ role: 'agent' });
+
+    expect(res.status).toBe(200);
+    expect(res.body.user.role).toBe('agent');
+  });
+
+  it('blocks demoting the last active admin', async () => {
+    const { user, token } = await createUserWithToken({ role: 'admin' });
+    // Earlier tests in this run have created other admins; deactivate them
+    // so this admin is provably the only active one, isolating the guard.
+    await User.update(
+      { isActive: false },
+      { where: { role: 'admin', isActive: true, id: { [Op.ne]: user.id } } }
+    );
+
+    const res = await request(app)
+      .patch(`/users/${user.id}/role`)
+      .set('Authorization', `Bearer ${token}`)
+      .send({ role: 'agent' });
+
+    expect(res.status).toBe(400);
+    expect(res.body.message).toMatch(/last active admin/i);
+  });
+
+  it('allows demoting an admin when another active admin exists', async () => {
+    const { token } = await createUserWithToken({ role: 'admin' });
+    const target = await createUser({ role: 'admin' });
+
+    const res = await request(app)
+      .patch(`/users/${target.id}/role`)
+      .set('Authorization', `Bearer ${token}`)
+      .send({ role: 'agent' });
+
+    expect(res.status).toBe(200);
+    expect(res.body.user.role).toBe('agent');
+  });
+
+  it('unassigns that agent\'s open tickets when they are moved off the agent role', async () => {
+    const { token: adminToken } = await createUserWithToken({ role: 'admin' });
+    const { user: agent } = await createUserWithToken({ role: 'agent' });
+    const { token: customerToken } = await createUserWithToken({ role: 'customer' });
+
+    const createRes = await createTicketAs(customerToken);
+    const ticketId = createRes.body.ticket.id;
+    // Assign as admin (not the agent) so this is deterministic regardless
+    // of which agent auto-routing picked when the ticket was created.
+    await assignTicket(adminToken, ticketId, agent.id);
+
+    await request(app)
+      .patch(`/users/${agent.id}/role`)
+      .set('Authorization', `Bearer ${adminToken}`)
+      .send({ role: 'customer' });
+
+    const ticketRes = await request(app)
+      .get(`/tickets/${ticketId}`)
+      .set('Authorization', `Bearer ${adminToken}`);
+
+    expect(ticketRes.body.ticket.assigneeId).toBeNull();
+  });
+
+  it('returns 404 for a non-existent user', async () => {
+    const { token } = await createUserWithToken({ role: 'admin' });
+
+    const res = await request(app)
+      .patch('/users/999999/role')
+      .set('Authorization', `Bearer ${token}`)
+      .send({ role: 'agent' });
+
+    expect(res.status).toBe(404);
+  });
+
+  it('rejects a non-admin with 403', async () => {
+    const { token } = await createUserWithToken({ role: 'agent' });
+    const target = await createUser({ role: 'customer' });
+
+    const res = await request(app)
+      .patch(`/users/${target.id}/role`)
+      .set('Authorization', `Bearer ${token}`)
+      .send({ role: 'agent' });
 
     expect(res.status).toBe(403);
   });
