@@ -315,3 +315,50 @@ describe('PATCH /users/:id/deactivate', () => {
     expect(res.status).toBe(403);
   });
 });
+
+describe('PATCH /users/:id/activate', () => {
+  it('reactivates a deactivated user', async () => {
+    const { token } = await createUserWithToken({ role: 'admin' });
+    const target = await createUser({ role: 'customer', isActive: false });
+
+    const res = await request(app)
+      .patch(`/users/${target.id}/activate`)
+      .set('Authorization', `Bearer ${token}`);
+
+    expect(res.status).toBe(200);
+    expect(res.body.user.isActive).toBe(true);
+  });
+
+  it('is a no-op on a user who is already active', async () => {
+    const { token } = await createUserWithToken({ role: 'admin' });
+    const target = await createUser({ role: 'customer', isActive: true });
+
+    const res = await request(app)
+      .patch(`/users/${target.id}/activate`)
+      .set('Authorization', `Bearer ${token}`);
+
+    expect(res.status).toBe(200);
+    expect(res.body.user.isActive).toBe(true);
+  });
+
+  it('returns 404 for a non-existent user', async () => {
+    const { token } = await createUserWithToken({ role: 'admin' });
+
+    const res = await request(app)
+      .patch('/users/999999/activate')
+      .set('Authorization', `Bearer ${token}`);
+
+    expect(res.status).toBe(404);
+  });
+
+  it('rejects a non-admin with 403', async () => {
+    const { token } = await createUserWithToken({ role: 'agent' });
+    const target = await createUser({ role: 'customer', isActive: false });
+
+    const res = await request(app)
+      .patch(`/users/${target.id}/activate`)
+      .set('Authorization', `Bearer ${token}`);
+
+    expect(res.status).toBe(403);
+  });
+});
