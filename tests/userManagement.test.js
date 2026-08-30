@@ -233,3 +233,85 @@ describe('PATCH /users/:id/role', () => {
     expect(res.status).toBe(403);
   });
 });
+
+describe('PATCH /users/:id/deactivate', () => {
+  it('deactivates a user', async () => {
+    const { token } = await createUserWithToken({ role: 'admin' });
+    const target = await createUser({ role: 'customer' });
+
+    const res = await request(app)
+      .patch(`/users/${target.id}/deactivate`)
+      .set('Authorization', `Bearer ${token}`);
+
+    expect(res.status).toBe(200);
+    expect(res.body.user.isActive).toBe(false);
+  });
+
+  it('blocks deactivating the last active admin', async () => {
+    const { user, token } = await createUserWithToken({ role: 'admin' });
+    await User.update(
+      { isActive: false },
+      { where: { role: 'admin', isActive: true, id: { [Op.ne]: user.id } } }
+    );
+
+    const res = await request(app)
+      .patch(`/users/${user.id}/deactivate`)
+      .set('Authorization', `Bearer ${token}`);
+
+    expect(res.status).toBe(400);
+    expect(res.body.message).toMatch(/last active admin/i);
+  });
+
+  it('allows deactivating an admin when another active admin exists', async () => {
+    const { token } = await createUserWithToken({ role: 'admin' });
+    const target = await createUser({ role: 'admin' });
+
+    const res = await request(app)
+      .patch(`/users/${target.id}/deactivate`)
+      .set('Authorization', `Bearer ${token}`);
+
+    expect(res.status).toBe(200);
+    expect(res.body.user.isActive).toBe(false);
+  });
+
+  it('unassigns a deactivated agent\'s open tickets', async () => {
+    const { token: adminToken } = await createUserWithToken({ role: 'admin' });
+    const { user: agent } = await createUserWithToken({ role: 'agent' });
+    const { token: customerToken } = await createUserWithToken({ role: 'customer' });
+
+    const createRes = await createTicketAs(customerToken);
+    const ticketId = createRes.body.ticket.id;
+    await assignTicket(adminToken, ticketId, agent.id);
+
+    await request(app)
+      .patch(`/users/${agent.id}/deactivate`)
+      .set('Authorization', `Bearer ${adminToken}`);
+
+    const ticketRes = await request(app)
+      .get(`/tickets/${ticketId}`)
+      .set('Authorization', `Bearer ${adminToken}`);
+
+    expect(ticketRes.body.ticket.assigneeId).toBeNull();
+  });
+
+  it('returns 404 for a non-existent user', async () => {
+    const { token } = await createUserWithToken({ role: 'admin' });
+
+    const res = await request(app)
+      .patch('/users/999999/deactivate')
+      .set('Authorization', `Bearer ${token}`);
+
+    expect(res.status).toBe(404);
+  });
+
+  it('rejects a non-admin with 403', async () => {
+    const { token } = await createUserWithToken({ role: 'agent' });
+    const target = await createUser({ role: 'customer' });
+
+    const res = await request(app)
+      .patch(`/users/${target.id}/deactivate`)
+      .set('Authorization', `Bearer ${token}`);
+
+    expect(res.status).toBe(403);
+  });
+});
