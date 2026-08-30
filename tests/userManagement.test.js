@@ -53,3 +53,89 @@ describe('GET /users', () => {
     expect(res.body.users.every((user) => user.role === 'agent')).toBe(true);
   });
 });
+
+describe('POST /users', () => {
+  it('lets an admin create an agent account', async () => {
+    const { token } = await createUserWithToken({ role: 'admin' });
+
+    const res = await request(app)
+      .post('/users')
+      .set('Authorization', `Bearer ${token}`)
+      .send({
+        name: 'New Agent',
+        email: 'new.agent@example.com',
+        password: 'Password123!',
+        role: 'agent',
+      });
+
+    expect(res.status).toBe(201);
+    expect(res.body.user).toMatchObject({ name: 'New Agent', email: 'new.agent@example.com', role: 'agent' });
+    expect(res.body.user).not.toHaveProperty('passwordHash');
+  });
+
+  it('lets an admin create another admin account', async () => {
+    const { token } = await createUserWithToken({ role: 'admin' });
+
+    const res = await request(app)
+      .post('/users')
+      .set('Authorization', `Bearer ${token}`)
+      .send({
+        name: 'New Admin',
+        email: 'new.admin@example.com',
+        password: 'Password123!',
+        role: 'admin',
+      });
+
+    expect(res.status).toBe(201);
+    expect(res.body.user.role).toBe('admin');
+  });
+
+  it('rejects role=customer -- only self-registration creates customers', async () => {
+    const { token } = await createUserWithToken({ role: 'admin' });
+
+    const res = await request(app)
+      .post('/users')
+      .set('Authorization', `Bearer ${token}`)
+      .send({
+        name: 'Should Fail',
+        email: 'should.fail@example.com',
+        password: 'Password123!',
+        role: 'customer',
+      });
+
+    expect(res.status).toBe(400);
+  });
+
+  it('rejects a duplicate email with 409', async () => {
+    const { token } = await createUserWithToken({ role: 'admin' });
+    const existing = await createUser({ role: 'agent' });
+
+    const res = await request(app)
+      .post('/users')
+      .set('Authorization', `Bearer ${token}`)
+      .send({
+        name: 'Duplicate',
+        email: existing.email,
+        password: 'Password123!',
+        role: 'agent',
+      });
+
+    expect(res.status).toBe(409);
+  });
+
+  it('rejects a non-admin with 403', async () => {
+    const { token } = await createUserWithToken({ role: 'agent' });
+
+    const res = await request(app)
+      .post('/users')
+      .set('Authorization', `Bearer ${token}`)
+      .send({
+        name: 'Should Fail',
+        email: 'nope@example.com',
+        password: 'Password123!',
+        role: 'agent',
+      });
+
+    expect(res.status).toBe(403);
+  });
+});
