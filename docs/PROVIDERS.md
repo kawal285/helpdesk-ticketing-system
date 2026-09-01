@@ -102,3 +102,24 @@ Both registries are covered by two kinds of test:
   `app` (`GET /knowledge-base`, `GET /tickets`, ...) are served entirely
   by that fake -- proving the swap reaches production code paths, not
   just the registry in isolation.
+
+Every consumer of ticket data was audited for direct Sequelize access
+that bypassed `getProvider()` -- two were found and fixed:
+`user.controller.js`'s agent-deactivation/demotion unassign logic, and
+`comment.controller.js`'s ticket lookup for access control. Both now
+go through the provider and are covered by the HTTP-level swap tests
+above.
+
+## Known limitation: comments still need a local ticket row
+
+`Comment.ticketId` is a real MySQL foreign key into this app's own
+`tickets` table (`comment.model.js`). That means a comment can never
+be inserted against a ticket id that has no matching row in the local
+table -- even once `TICKET_PROVIDER` points entirely at an external
+CRM and ticket *lookups* correctly go through it. In practice this
+means comments are not yet fully CRM-agnostic: a real external-CRM
+deployment would need either a lightweight local shadow row per
+external ticket, or the FK relaxed and comment access checked purely
+against the provider. That's a schema decision, not a code-path bug,
+and deliberately out of scope for this pass -- flagged here rather
+than silently worked around.
