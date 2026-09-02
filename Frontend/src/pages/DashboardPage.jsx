@@ -1,10 +1,28 @@
 import { useEffect, useState } from 'react';
+import { Flag } from 'lucide-react';
 
 const STATUS_LABELS = {
   Open: 'Open',
   'In Progress': 'In Progress',
   Resolved: 'Resolved – Awaiting Review',
   Closed: 'Reviewed and Closed',
+};
+
+// Matches the colours the admin Report page's summary cards already use
+// for the same statuses, so the two views read as one system.
+const STATUS_COLORS = {
+  Open: '#f37021',
+  'In Progress': '#006bb6',
+  Resolved: '#66a300',
+  Closed: '#263238',
+};
+
+const PRIORITY_COLORS = {
+  Critical: '#c62828',
+  High: '#f37021',
+  Medium: '#d9a404',
+  Low: '#006bb6',
+  Trivial: '#7b8794',
 };
 
 const ORGANIZATIONS = ['Future Skills', 'OP'];
@@ -447,12 +465,54 @@ export default function DashboardPage({
                     </td>
 
                     <td style={{ padding: 11 }}>
-                      {STATUS_LABELS[ticket.status] ||
-                        ticket.status}
+                      <span
+                        style={{
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: 7,
+                        }}
+                      >
+                        <span
+                          aria-hidden="true"
+                          style={{
+                            width: 9,
+                            height: 9,
+                            borderRadius: '50%',
+                            flexShrink: 0,
+                            background:
+                              STATUS_COLORS[ticket.status] ||
+                              '#7b8794',
+                          }}
+                        />
+
+                        {STATUS_LABELS[ticket.status] ||
+                          ticket.status}
+                      </span>
                     </td>
 
                     <td style={{ padding: 11 }}>
-                      {ticket.priority}
+                      <span
+                        style={{
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: 6,
+                        }}
+                      >
+                        <Flag
+                          size={14}
+                          color={
+                            PRIORITY_COLORS[ticket.priority] ||
+                            '#7b8794'
+                          }
+                          fill={
+                            PRIORITY_COLORS[ticket.priority] ||
+                            '#7b8794'
+                          }
+                          aria-hidden="true"
+                        />
+
+                        {ticket.priority}
+                      </span>
                     </td>
 
                     <td style={{ padding: 11 }}>
