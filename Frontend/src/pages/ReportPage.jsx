@@ -12,6 +12,14 @@ import {
   XAxis,
   YAxis,
 } from 'recharts';
+import {
+  AlertTriangle,
+  CheckCheck,
+  CheckCircle2,
+  Hourglass,
+  RefreshCw,
+  Ticket as TicketIcon,
+} from 'lucide-react';
 
 const API_URL = 'http://localhost:4000';
 
@@ -215,31 +223,37 @@ export default function ReportPage() {
       label: 'Total Tickets',
       value: report.total,
       colour: '#005a9c',
+      Icon: TicketIcon,
     },
     {
       label: 'Open',
       value: report.open,
       colour: '#f37021',
+      Icon: Hourglass,
     },
     {
       label: 'In Progress',
       value: report.inProgress,
       colour: '#006bb6',
+      Icon: RefreshCw,
     },
     {
       label: 'Resolved',
       value: report.resolved,
       colour: '#66a300',
+      Icon: CheckCircle2,
     },
     {
       label: 'Reviewed & Closed',
       value: report.closed,
       colour: '#263238',
+      Icon: CheckCheck,
     },
     {
       label: 'Overdue',
       value: report.overdue,
       colour: '#c62828',
+      Icon: AlertTriangle,
     },
   ];
 
@@ -326,6 +340,9 @@ export default function ReportPage() {
                 >
                   <div
                     style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 8,
                       color:
                         card.label === 'Overdue'
                           ? '#c62828'
@@ -335,6 +352,7 @@ export default function ReportPage() {
                         card.label === 'Overdue' ? 700 : 400,
                     }}
                   >
+                    <card.Icon size={16} color={card.colour} aria-hidden="true" />
                     {card.label}
                   </div>
 
