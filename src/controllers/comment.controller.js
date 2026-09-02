@@ -9,42 +9,20 @@ const {
   notifyCommentAdded,
 } = require('../services/notificationService');
 
+const { getProvider } = require('../services/ticketProviders');
+
 const {
-  Ticket,
   Comment,
   User,
 } = require('../models');
 
+// Goes through the ticket provider (not a direct Ticket.findByPk) so
+// comments still resolve their ticket correctly when TICKET_PROVIDER
+// points at a real CRM instead of this app's own tables -- see
+// docs/PROVIDERS.md. Comments themselves stay in this app's own table
+// either way; only the ticket they're attached to may live elsewhere.
 async function loadAccessibleTicket(req, next) {
-  const ticket = await Ticket.findByPk(
-    req.params.ticketId,
-    {
-      include: [
-        {
-          model: User,
-          as: 'requester',
-          attributes: [
-            'id',
-            'name',
-            'email',
-            'role',
-            'organization',
-          ],
-        },
-        {
-          model: User,
-          as: 'assignee',
-          attributes: [
-            'id',
-            'name',
-            'email',
-            'role',
-          ],
-          required: false,
-        },
-      ],
-    }
-  );
+  const ticket = await getProvider().getTicketById(req.params.ticketId);
 
   if (!ticket) {
     next(

@@ -3,6 +3,7 @@ const app = require('../src/app');
 const { sequelize } = require('../src/models');
 const { createUserWithToken } = require('./helpers/testHelpers');
 const { getProvider, registerProvider, resetProviderCache } = require('../src/services/ticketProviders');
+const { Ticket } = require('../src/models');
 
 afterAll(async () => {
   await sequelize.close();
@@ -69,5 +70,118 @@ describe('ticket provider swap reaches real HTTP requests', () => {
     expect(res.status).toBe(200);
     expect(res.body.total).toBe(1);
     expect(res.body.tickets).toEqual([fakeCrmTicket]);
+  });
+
+  // Comment.ticketId is a real MySQL foreign key into the local tickets
+  // table (comment.model.js), so a comment can never be inserted against
+  // an id that has no local row at all -- that's a schema constraint of
+  // this app's own Comment storage, independent of which ticket provider
+  // is active, and out of scope to change here. To isolate what this fix
+  // actually claims (ticket *lookup* -- access control and the data used
+  // for notifications -- goes through the provider, not Ticket.findByPk),
+  // a local row is planted only to satisfy that FK, deliberately with a
+  // requesterId that does NOT belong to the commenter. If the controller
+  // were still reading that local row, canAccessTicket would reject the
+  // customer with 403; success here is only possible because it reads
+  // the swapped-in provider's ticket instead.
+  it('lets a comment be posted using the swapped-in provider\'s ticket data, not the local row', async () => {
+    const { user: customer, token } = await createUserWithToken({ role: 'customer' });
+    const { user: someoneElse } = await createUserWithToken({ role: 'customer' });
+
+    const localPlaceholder = await Ticket.create({
+      title: 'Local placeholder row (FK only)',
+      description: 'Not the data this test should ever read.',
+      category: 'Other',
+      priority: 'Low',
+      status: 'Open',
+      requesterId: someoneElse.id,
+      organization: 'Future Skills',
+      dueAt: new Date(),
+    });
+
+    const fakeCrmTicket = {
+      id: localPlaceholder.id,
+      title: 'From the fake CRM',
+      description: 'stub',
+      category: 'Other',
+      priority: 'Low',
+      status: 'Open',
+      requesterId: customer.id,
+      assigneeId: null,
+      organization: 'Future Skills',
+      dueAt: new Date().toISOString(),
+      requester: { id: customer.id, name: customer.name },
+      assignee: null,
+    };
+
+    registerProvider('fake-crm', () => ({
+      createTicket: async () => fakeCrmTicket,
+      getTicketById: async (id) => (Number(id) === fakeCrmTicket.id ? fakeCrmTicket : null),
+      listTickets: async () => ({ rows: [fakeCrmTicket], count: 1 }),
+      getOverdueTickets: async () => [],
+      updateTicket: async () => fakeCrmTicket,
+    }));
+
+    process.env.TICKET_PROVIDER = 'fake-crm';
+    resetProviderCache();
+
+    const res = await request(app)
+      .post(`/tickets/${fakeCrmTicket.id}/comments`)
+      .set('Authorization', `Bearer ${token}`)
+      .send({ text: 'Any update on this?' });
+
+    expect(res.status).toBe(201);
+    expect(res.body.comment.text).toBe('Any update on this?');
+  });
+
+  it('unassigns a swapped-provider-backed ticket when its agent is deactivated', async () => {
+    const { token: adminToken } = await createUserWithToken({ role: 'admin' });
+    const { user: agent } = await createUserWithToken({ role: 'agent' });
+
+    // A tiny in-memory store so updateTicket's effect is actually
+    // observable, proving unassignOpenTickets (previously a direct
+    // Ticket.update call) now goes through the provider instead.
+    const store = new Map([
+      [
+        'crm-deactivate-1',
+        {
+          id: 'crm-deactivate-1',
+          status: 'Open',
+          assigneeId: agent.id,
+          requesterId: 1,
+        },
+      ],
+    ]);
+
+    registerProvider('fake-crm', () => ({
+      createTicket: async () => { throw new Error('not used in this test'); },
+      getTicketById: async (id) => store.get(id) || null,
+      listTickets: async (filter = {}) => {
+        const rows = [...store.values()].filter((ticket) => {
+          if (filter.assigneeId !== undefined && ticket.assigneeId !== filter.assigneeId) return false;
+          if (filter.statusNotIn && filter.statusNotIn.includes(ticket.status)) return false;
+          return true;
+        });
+
+        return { rows, count: rows.length };
+      },
+      getOverdueTickets: async () => [],
+      updateTicket: async (id, changes) => {
+        const ticket = store.get(id);
+        if (!ticket) return null;
+        Object.assign(ticket, changes);
+        return ticket;
+      },
+    }));
+
+    process.env.TICKET_PROVIDER = 'fake-crm';
+    resetProviderCache();
+
+    const res = await request(app)
+      .patch(`/users/${agent.id}/deactivate`)
+      .set('Authorization', `Bearer ${adminToken}`);
+
+    expect(res.status).toBe(200);
+    expect(store.get('crm-deactivate-1').assigneeId).toBeNull();
   });
 });

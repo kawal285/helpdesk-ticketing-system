@@ -2,17 +2,26 @@ const bcrypt = require('bcryptjs');
 const { Op } = require('sequelize');
 const catchAsync = require('../utils/catchAsync');
 const AppError = require('../utils/appError');
-const { User, Ticket } = require('../models');
+const { User } = require('../models');
+const { getProvider } = require('../services/ticketProviders');
 const { sanitizeUser } = require('./auth.controller');
 
 // A ticket assigned to an agent who can no longer act on it (deactivated, or
 // no longer an agent) would otherwise sit invisible to everyone but an admin
 // -- other agents' scope only includes tickets assigned to them or
 // unassigned. Freeing it here returns it to the unassigned pool immediately.
+//
+// Goes through the ticket provider (not a direct Ticket.update) so this
+// still works correctly when TICKET_PROVIDER points at a real CRM instead
+// of this app's own tables -- see docs/PROVIDERS.md.
 async function unassignOpenTickets(agentId) {
-  await Ticket.update(
-    { assigneeId: null },
-    { where: { assigneeId: agentId, status: { [Op.in]: ['Open', 'In Progress'] } } }
+  const { rows } = await getProvider().listTickets({
+    assigneeId: agentId,
+    statusNotIn: ['Resolved', 'Closed'],
+  });
+
+  await Promise.all(
+    rows.map((ticket) => getProvider().updateTicket(ticket.id, { assigneeId: null }))
   );
 }
 

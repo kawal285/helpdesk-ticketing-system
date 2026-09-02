@@ -26,36 +26,12 @@
 // itself below.
 
 const { createLocalSequelizeProvider } = require('./localSequelizeProvider');
+const { createProviderRegistry } = require('../../utils/createProviderRegistry');
 
-const registry = new Map();
-
-function registerProvider(name, factory) {
-  registry.set(name, factory);
-}
-
-let cachedProvider = null;
-
-function getProvider() {
-  if (cachedProvider) return cachedProvider;
-
-  const key = process.env.TICKET_PROVIDER || 'local-sequelize';
-  const factory = registry.get(key);
-
-  if (!factory) {
-    throw new Error(
-      `Unknown TICKET_PROVIDER "${key}". Available providers: ${[...registry.keys()].join(', ')}.`
-    );
-  }
-
-  cachedProvider = factory();
-  return cachedProvider;
-}
-
-// Test-only: forces the next getProvider() call to re-resolve instead of
-// reusing the cached instance.
-function resetProviderCache() {
-  cachedProvider = null;
-}
+const { registerProvider, getProvider, resetProviderCache } = createProviderRegistry({
+  envVar: 'TICKET_PROVIDER',
+  defaultProvider: 'local-sequelize',
+});
 
 registerProvider('local-sequelize', () => createLocalSequelizeProvider());
 
