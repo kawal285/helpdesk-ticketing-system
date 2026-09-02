@@ -1,0 +1,146 @@
+[
+  {
+    "id": 1,
+    "question": "My laptop won't connect to the VPN when I'm working from home",
+    "expectedArticleId": 7,
+    "correctAnswerMustCover": [
+      "Download/install the VPN client from the IT self-service page and sign in with institutional credentials",
+      "Approve the MFA prompt on your phone",
+      "A connect-then-disconnect pattern after a few seconds usually means an unapproved MFA prompt"
+    ]
+  },
+  {
+    "id": 2,
+    "question": "How do I reset my password?",
+    "expectedArticleId": 1,
+    "correctAnswerMustCover": [
+      "Use 'Forgot password' on the sign-in page with your institutional email",
+      "The reset link is valid for 30 minutes",
+      "Password must be at least 12 characters with upper/lower case, a number and a symbol"
+    ]
+  },
+  {
+    "id": 3,
+    "question": "I've been locked out after typing my password wrong too many times",
+    "expectedArticleId": 2,
+    "correctAnswerMustCover": [
+      "Locks after 10 failed attempts within 15 minutes and clears itself after 30 minutes",
+      "Sign out of all devices (a saved old password on a phone/tablet re-triggers the lock)",
+      "Raise an Account ticket only if it keeps relocking within minutes"
+    ]
+  },
+  {
+    "id": 4,
+    "question": "How do I set up two-factor authentication on my account?",
+    "expectedArticleId": 3,
+    "correctAnswerMustCover": [
+      "Install Microsoft Authenticator and add it as a sign-in method via account security settings",
+      "Scan the QR code and approve the test notification",
+      "Register a backup method in case the phone is lost"
+    ]
+  },
+  {
+    "id": 5,
+    "question": "I lost my student ID card, what should I do?",
+    "expectedArticleId": 4,
+    "correctAnswerMustCover": [
+      "Raise an Account ticket or visit the Help Desk immediately so the old card is deactivated",
+      "Replacement issued at the Help Desk with photo ID",
+      "First replacement each year is free; later ones carry a small fee"
+    ]
+  },
+  {
+    "id": 6,
+    "question": "The wifi in the library keeps dropping out",
+    "expectedArticleId": 6,
+    "correctAnswerMustCover": [
+      "Move closer to the centre of the room / check if others nearby have the same issue",
+      "Laptop power-saving settings can turn off the wireless adapter on battery -- check Device Manager power management",
+      "If it persists across days/locations, raise a Network ticket with building, room, time and device details"
+    ]
+  },
+  {
+    "id": 7,
+    "question": "My print job isn't coming out of the printer",
+    "expectedArticleId": 8,
+    "correctAnswerMustCover": [
+      "Check the printer's own display panel first for a jam/empty tray/toner warning",
+      "Clear the stalled print queue and cancel any Error/Deleting jobs, then send a test page",
+      "Confirm the correct printer was selected, not a previously-used default in another building"
+    ]
+  },
+  {
+    "id": 8,
+    "question": "How do I top up my print credit?",
+    "expectedArticleId": 9,
+    "correctAnswerMustCover": [
+      "Top-ups are made online through the student portal",
+      "Balance is shown on the device screen after signing in, or on the self-service printing page",
+      "Credit can take up to 10 minutes to appear at the device"
+    ]
+  },
+  {
+    "id": 9,
+    "question": "Can I install Microsoft Office on my own personal laptop?",
+    "expectedArticleId": 11,
+    "correctAnswerMustCover": [
+      "Yes, Microsoft 365 is included, covering up to 5 computers and 5 mobile devices",
+      "Install from the Microsoft 365 portal and sign in with your institutional account so the licence activates",
+      "Uninstall any existing personal Office copy first to avoid activation conflicts"
+    ]
+  },
+  {
+    "id": 10,
+    "question": "I think I received a phishing email, what should I do?",
+    "expectedArticleId": 13,
+    "correctAnswerMustCover": [
+      "Do not click links or reply; use the Report button in Outlook",
+      "IT will never ask for your password by email",
+      "If you already clicked/entered details, change your password immediately and raise an urgent Account ticket"
+    ]
+  },
+  {
+    "id": 11,
+    "question": "My OneDrive files aren't syncing anymore",
+    "expectedArticleId": 15,
+    "correctAnswerMustCover": [
+      "Check the cloud icon status (red cross = stopped, pause symbol = paused) and read the message it gives",
+      "Confirm you're still signed in and that you haven't run out of storage quota",
+      "Quit and reopen OneDrive to restart the sync before trying a full sign-out"
+    ]
+  },
+  {
+    "id": 12,
+    "question": "How long should it take for my ticket to get sorted out?",
+    "expectedArticleId": 23,
+    "correctAnswerMustCover": [
+      "Response targets depend on priority: Critical 4h, High 8h, Medium 24h, Low 72h, Trivial 120h",
+      "Targets are measured to resolution, not first response",
+      "Priority is set by impact, not by how urgently the ticket is worded"
+    ]
+  },
+  {
+    "id": 13,
+    "question": "Who won the football match last night?",
+    "expectedArticleId": null,
+    "correctAnswerMustCover": [
+      "Should refuse / say this is outside the knowledge base rather than guessing"
+    ]
+  },
+  {
+    "id": 14,
+    "question": "Can you help me write an essay about climate change?",
+    "expectedArticleId": null,
+    "correctAnswerMustCover": [
+      "Should refuse / say this is outside the knowledge base rather than guessing"
+    ]
+  },
+  {
+    "id": 15,
+    "question": "What's the best restaurant near campus?",
+    "expectedArticleId": null,
+    "correctAnswerMustCover": [
+      "Should refuse / say this is outside the knowledge base rather than guessing"
+    ]
+  }
+]
