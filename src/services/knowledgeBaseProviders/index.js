@@ -22,37 +22,12 @@
 // resolves to.
 
 const { createLocalJsonProvider } = require('./localJsonProvider');
+const { createProviderRegistry } = require('../../utils/createProviderRegistry');
 
-const registry = new Map();
-
-function registerProvider(name, factory) {
-  registry.set(name, factory);
-}
-
-let cachedProvider = null;
-
-function getProvider() {
-  if (cachedProvider) return cachedProvider;
-
-  const key = process.env.KNOWLEDGE_BASE_PROVIDER || 'local-json';
-  const factory = registry.get(key);
-
-  if (!factory) {
-    throw new Error(
-      `Unknown KNOWLEDGE_BASE_PROVIDER "${key}". Available providers: ${[...registry.keys()].join(', ')}.`
-    );
-  }
-
-  cachedProvider = factory();
-  return cachedProvider;
-}
-
-// Test-only: forces the next getProvider() call to re-resolve instead of
-// reusing the cached instance, so tests can swap KNOWLEDGE_BASE_PROVIDER
-// and see the change take effect.
-function resetProviderCache() {
-  cachedProvider = null;
-}
+const { registerProvider, getProvider, resetProviderCache } = createProviderRegistry({
+  envVar: 'KNOWLEDGE_BASE_PROVIDER',
+  defaultProvider: 'local-json',
+});
 
 registerProvider('local-json', () => createLocalJsonProvider());
 
