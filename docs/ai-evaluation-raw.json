@@ -1,0 +1,368 @@
+[
+  {
+    "id": 1,
+    "question": "My laptop won't connect to the VPN when I'm working from home",
+    "expectedArticleId": 7,
+    "correctAnswerMustCover": [
+      "Download/install the VPN client from the IT self-service page and sign in with institutional credentials",
+      "Approve the MFA prompt on your phone",
+      "A connect-then-disconnect pattern after a few seconds usually means an unapproved MFA prompt"
+    ],
+    "answer": "You've tried connecting to the VPN and it keeps disconnecting after a few seconds. This might be due to an unapproved MFA prompt on your phone. Check if you have any notifications or prompts that require you to approve something, as this could be causing the issue.\n\nIf you're still having trouble, try mapping shared drives again while the VPN is active. Since mapped drives created on campus don't always reconnect automatically from home, it's possible that they need to be re-mapped manually.\n\nAlso, make sure you have administrator rights on your computer before attempting to install any software or connect to the VPN. If you're using a personally owned laptop, try using an administrator account; if you're on a campus computer, raise a Software ticket instead of trying to work around it.",
+    "grounded": true,
+    "sources": [
+      {
+        "articleId": 7,
+        "title": "Connect to the VPN for off-campus access",
+        "section": "Common problems",
+        "category": "Network",
+        "score": 0.7786
+      }
+    ],
+    "topScore": 0.7786,
+    "threshold": 0.59,
+    "model": "ollama:llama3.2",
+    "ms": 25968
+  },
+  {
+    "id": 2,
+    "question": "How do I reset my password?",
+    "expectedArticleId": 1,
+    "correctAnswerMustCover": [
+      "Use 'Forgot password' on the sign-in page with your institutional email",
+      "The reset link is valid for 30 minutes",
+      "Password must be at least 12 characters with upper/lower case, a number and a symbol"
+    ],
+    "answer": "To reset your password, follow these steps:\n\n1. Open the sign-in page and select **Forgot password**.\n2. Enter your institutional email address - personal email addresses won't be accepted.\n3. Check your inbox for a reset link that's valid for 30 minutes.\n4. Choose a new password that meets the password rules.\n5. Sign in with the new password.\n\nYou can do this at any time, as it's a self-service option.",
+    "grounded": true,
+    "sources": [
+      {
+        "articleId": 1,
+        "title": "Reset a forgotten password",
+        "section": "Reset your own password",
+        "category": "Account",
+        "score": 0.8538
+      }
+    ],
+    "topScore": 0.8538,
+    "threshold": 0.59,
+    "model": "ollama:llama3.2",
+    "ms": 3093
+  },
+  {
+    "id": 3,
+    "question": "I've been locked out after typing my password wrong too many times",
+    "expectedArticleId": 2,
+    "correctAnswerMustCover": [
+      "Locks after 10 failed attempts within 15 minutes and clears itself after 30 minutes",
+      "Sign out of all devices (a saved old password on a phone/tablet re-triggers the lock)",
+      "Raise an Account ticket only if it keeps relocking within minutes"
+    ],
+    "answer": "You're locked out because you entered your password incorrectly too many times. The most common cause is that there's an old password stored on another device, like a phone or tablet, that keeps trying to sign in automatically. Check all your devices that are signed into your email.\n\nTo fix this, follow these steps:\n\n1. Sign out of your account on every phone, tablet, and personal computer you own.\n2. Wait 30 minutes for the lock to clear.\n3. Try signing in once on a single device and confirm it works.\n4. Then sign back in on your other devices one at a time.\n\nThis should help you regain access to your account.",
+    "grounded": true,
+    "sources": [
+      {
+        "articleId": 2,
+        "title": "Account locked after too many failed sign-in attempts",
+        "section": "Common causes",
+        "category": "Account",
+        "score": 0.7902
+      }
+    ],
+    "topScore": 0.7902,
+    "threshold": 0.59,
+    "model": "ollama:llama3.2",
+    "ms": 4344
+  },
+  {
+    "id": 4,
+    "question": "How do I set up two-factor authentication on my account?",
+    "expectedArticleId": 3,
+    "correctAnswerMustCover": [
+      "Install Microsoft Authenticator and add it as a sign-in method via account security settings",
+      "Scan the QR code and approve the test notification",
+      "Register a backup method in case the phone is lost"
+    ],
+    "answer": "To set up multi-factor authentication (MFA) on your account, follow these steps:\n\nFirst, install Microsoft Authenticator on your phone from the App Store or Google Play. Then, sign in to your account security settings on a computer and select **Add sign-in method**. Choose the authenticator app as the new sign-in method.\n\nNext, scan the QR code shown on the computer screen using the app. After that, approve the test notification that appears on your phone.",
+    "grounded": true,
+    "sources": [
+      {
+        "articleId": 3,
+        "title": "Set up multi-factor authentication",
+        "section": "Setting up the authenticator app",
+        "category": "Account",
+        "score": 0.7853
+      }
+    ],
+    "topScore": 0.7853,
+    "threshold": 0.59,
+    "model": "ollama:llama3.2",
+    "ms": 3188
+  },
+  {
+    "id": 5,
+    "question": "I lost my student ID card, what should I do?",
+    "expectedArticleId": 4,
+    "correctAnswerMustCover": [
+      "Raise an Account ticket or visit the Help Desk immediately so the old card is deactivated",
+      "Replacement issued at the Help Desk with photo ID",
+      "First replacement each year is free; later ones carry a small fee"
+    ],
+    "answer": "You should report the loss of your student ID card as soon as possible. Go to the Help Desk in person or raise a ticket under the Account category. \n\n[Note: You don't need to bring photo identification at this stage.]",
+    "grounded": true,
+    "sources": [
+      {
+        "articleId": 4,
+        "title": "Replace a lost or damaged campus ID card",
+        "section": "Report the loss first",
+        "category": "Account",
+        "score": 0.8148
+      }
+    ],
+    "topScore": 0.8148,
+    "threshold": 0.59,
+    "model": "ollama:llama3.2",
+    "ms": 1710
+  },
+  {
+    "id": 6,
+    "question": "The wifi in the library keeps dropping out",
+    "expectedArticleId": 6,
+    "correctAnswerMustCover": [
+      "Move closer to the centre of the room / check if others nearby have the same issue",
+      "Laptop power-saving settings can turn off the wireless adapter on battery -- check Device Manager power management",
+      "If it persists across days/locations, raise a Network ticket with building, room, time and device details"
+    ],
+    "answer": "To help resolve the issue with the Wi-Fi in the library, let's start by checking if the connection stabilises when moving closer to the centre of the room. This can be affected by concrete walls, lift shafts, and metal shelving which weaken the signal.\n\nNext, see if other people around you are experiencing the same problem at the same time. If they're not, it might be an issue with your device.",
+    "grounded": true,
+    "sources": [
+      {
+        "articleId": 6,
+        "title": "Wi-Fi keeps dropping or is very slow",
+        "section": "What to include in a ticket",
+        "category": "Network",
+        "score": 0.7556
+      }
+    ],
+    "topScore": 0.7556,
+    "threshold": 0.59,
+    "model": "ollama:llama3.2",
+    "ms": 2917
+  },
+  {
+    "id": 7,
+    "question": "My print job isn't coming out of the printer",
+    "expectedArticleId": 8,
+    "correctAnswerMustCover": [
+      "Check the printer's own display panel first for a jam/empty tray/toner warning",
+      "Clear the stalled print queue and cancel any Error/Deleting jobs, then send a test page",
+      "Confirm the correct printer was selected, not a previously-used default in another building"
+    ],
+    "answer": "Check the printer's display panel before doing anything on your computer to see if there are any error messages or warnings that might be stopping the print job. If you find a message, try clearing it as this may release every queued job at once.\n\nIf the issue persists, go to a campus multifunction device and tap your ID card to view your held jobs. Check which printer was selected for the print job and confirm the name matches the label on the physical device.",
+    "grounded": true,
+    "sources": [
+      {
+        "articleId": 8,
+        "title": "Printer is not printing",
+        "section": "Check the printer itself",
+        "category": "Hardware",
+        "score": 0.7646
+      },
+      {
+        "articleId": 9,
+        "title": "Print credit, print release and scanning",
+        "section": "Releasing a job",
+        "category": "Hardware",
+        "score": 0.7316
+      }
+    ],
+    "topScore": 0.7646,
+    "threshold": 0.59,
+    "model": "ollama:llama3.2",
+    "ms": 3117
+  },
+  {
+    "id": 8,
+    "question": "How do I top up my print credit?",
+    "expectedArticleId": 9,
+    "correctAnswerMustCover": [
+      "Top-ups are made online through the student portal",
+      "Balance is shown on the device screen after signing in, or on the self-service printing page",
+      "Credit can take up to 10 minutes to appear at the device"
+    ],
+    "answer": "To top up your print credit, go to the IT self-service site and log in with your student credentials. Then, click on \"Print\" and select \"Top-up Print Credit\". Follow the online instructions to complete the payment process. Alternatively, you can also check your remaining balance on the device screen after signing in.",
+    "grounded": true,
+    "sources": [
+      {
+        "articleId": 9,
+        "title": "Print credit, print release and scanning",
+        "section": "Checking and topping up your balance",
+        "category": "Hardware",
+        "score": 0.796
+      }
+    ],
+    "topScore": 0.796,
+    "threshold": 0.59,
+    "model": "ollama:llama3.2",
+    "ms": 2225
+  },
+  {
+    "id": 9,
+    "question": "Can I install Microsoft Office on my own personal laptop?",
+    "expectedArticleId": 11,
+    "correctAnswerMustCover": [
+      "Yes, Microsoft 365 is included, covering up to 5 computers and 5 mobile devices",
+      "Install from the Microsoft 365 portal and sign in with your institutional account so the licence activates",
+      "Uninstall any existing personal Office copy first to avoid activation conflicts"
+    ],
+    "answer": "You can install Microsoft 365 on your personal laptop. However, you need to uninstall any existing personal version of Office first. This is because two versions of Office on one computer can cause activation conflicts. \n\nTo do this, follow the steps in [2] Install Microsoft 365 on a personal device — Installing.",
+    "grounded": true,
+    "sources": [
+      {
+        "articleId": 11,
+        "title": "Install Microsoft 365 on a personal device",
+        "section": "Existing personal copies",
+        "category": "Software",
+        "score": 0.7549
+      }
+    ],
+    "topScore": 0.7549,
+    "threshold": 0.59,
+    "model": "ollama:llama3.2",
+    "ms": 2189
+  },
+  {
+    "id": 10,
+    "question": "I think I received a phishing email, what should I do?",
+    "expectedArticleId": 13,
+    "correctAnswerMustCover": [
+      "Do not click links or reply; use the Report button in Outlook",
+      "IT will never ask for your password by email",
+      "If you already clicked/entered details, change your password immediately and raise an urgent Account ticket"
+    ],
+    "answer": "If you think you've received a phishing email, don't click any links or reply. Instead, use the Report button in Outlook to send the message for analysis and remove it from your mailbox. If the Report button is unavailable, forward the message to the Help Desk (our team) and then delete it.",
+    "grounded": true,
+    "sources": [
+      {
+        "articleId": 13,
+        "title": "Recognise and report a phishing email",
+        "section": "Warning signs",
+        "category": "Account",
+        "score": 0.8091
+      }
+    ],
+    "topScore": 0.8091,
+    "threshold": 0.59,
+    "model": "ollama:llama3.2",
+    "ms": 2207
+  },
+  {
+    "id": 11,
+    "question": "My OneDrive files aren't syncing anymore",
+    "expectedArticleId": 15,
+    "correctAnswerMustCover": [
+      "Check the cloud icon status (red cross = stopped, pause symbol = paused) and read the message it gives",
+      "Confirm you're still signed in and that you haven't run out of storage quota",
+      "Quit and reopen OneDrive to restart the sync before trying a full sign-out"
+    ],
+    "answer": "You've checked that you're signed in to your account, but your files still aren't syncing. Let's try restarting the sync. Quit OneDrive from the icon menu, then reopen it from the Start menu or Applications folder. This should resolve most stalls and get your files syncing again. If this doesn't work, we can explore other options together.",
+    "grounded": true,
+    "sources": [
+      {
+        "articleId": 15,
+        "title": "OneDrive is not syncing",
+        "section": "First checks",
+        "category": "Software",
+        "score": 0.8204
+      }
+    ],
+    "topScore": 0.8204,
+    "threshold": 0.59,
+    "model": "ollama:llama3.2",
+    "ms": 2491
+  },
+  {
+    "id": 12,
+    "question": "How long should it take for my ticket to get sorted out?",
+    "expectedArticleId": 23,
+    "correctAnswerMustCover": [
+      "Response targets depend on priority: Critical 4h, High 8h, Medium 24h, Low 72h, Trivial 120h",
+      "Targets are measured to resolution, not first response",
+      "Priority is set by impact, not by how urgently the ticket is worded"
+    ],
+    "answer": "You've submitted a new ticket. The priority level you choose will affect how quickly we respond. \n\nCritical issues are usually resolved within 4 hours, High issues within 8 hours, Medium issues within 24 hours, Low issues within 72 hours, and Trivial issues default to 120 hours.\n\nIf your issue is not time-critical, waiting for the lockout period to expire (30 minutes) might be faster than raising a ticket.",
+    "grounded": true,
+    "sources": [
+      {
+        "articleId": 23,
+        "title": "Ticket priorities and expected response times",
+        "section": "The priority levels",
+        "category": "Other",
+        "score": 0.7439
+      },
+      {
+        "articleId": 2,
+        "title": "Account locked after too many failed sign-in attempts",
+        "section": "How long the lock lasts",
+        "category": "Account",
+        "score": 0.7429
+      },
+      {
+        "articleId": 21,
+        "title": "Request access to a shared drive or Teams site",
+        "section": "How long it takes",
+        "category": "Account",
+        "score": 0.7001
+      }
+    ],
+    "topScore": 0.7439,
+    "threshold": 0.59,
+    "model": "ollama:llama3.2",
+    "ms": 3084
+  },
+  {
+    "id": 13,
+    "question": "Who won the football match last night?",
+    "expectedArticleId": null,
+    "correctAnswerMustCover": [
+      "Should refuse / say this is outside the knowledge base rather than guessing"
+    ],
+    "answer": "I couldn't find anything in the IT knowledge base that covers this, so I don't want to guess. If it's an IT problem, raising a ticket will get it to someone who can help properly.",
+    "grounded": false,
+    "sources": [],
+    "topScore": 0.4921,
+    "threshold": 0.59,
+    "model": "ollama:llama3.2",
+    "ms": 44
+  },
+  {
+    "id": 14,
+    "question": "Can you help me write an essay about climate change?",
+    "expectedArticleId": null,
+    "correctAnswerMustCover": [
+      "Should refuse / say this is outside the knowledge base rather than guessing"
+    ],
+    "answer": "I couldn't find anything in the IT knowledge base that covers this, so I don't want to guess. If it's an IT problem, raising a ticket will get it to someone who can help properly.",
+    "grounded": false,
+    "sources": [],
+    "topScore": 0.5304,
+    "threshold": 0.59,
+    "model": "ollama:llama3.2",
+    "ms": 46
+  },
+  {
+    "id": 15,
+    "question": "What's the best restaurant near campus?",
+    "expectedArticleId": null,
+    "correctAnswerMustCover": [
+      "Should refuse / say this is outside the knowledge base rather than guessing"
+    ],
+    "answer": "I couldn't find anything in the IT knowledge base that covers this, so I don't want to guess. If it's an IT problem, raising a ticket will get it to someone who can help properly.",
+    "grounded": false,
+    "sources": [],
+    "topScore": 0.5685,
+    "threshold": 0.59,
+    "model": "ollama:llama3.2",
+    "ms": 33
+  }
+]
