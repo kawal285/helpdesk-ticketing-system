@@ -1,10 +1,33 @@
 import { useEffect, useState } from 'react';
+import {
+  CheckCheck,
+  CheckCircle2,
+  Flag,
+  Hourglass,
+  RefreshCw,
+  Ticket as TicketIcon,
+} from 'lucide-react';
 
 const STATUS_LABELS = {
   Open: 'Open',
   'In Progress': 'In Progress',
   Resolved: 'Resolved – Awaiting Review',
   Closed: 'Reviewed and Closed',
+};
+
+const STATUS_COLORS = {
+  Open: '#f37021',
+  'In Progress': '#006bb6',
+  Resolved: '#66a300',
+  Closed: '#263238',
+};
+
+const PRIORITY_COLORS = {
+  Critical: '#c62828',
+  High: '#f37021',
+  Medium: '#d9a404',
+  Low: '#006bb6',
+  Trivial: '#7b8794',
 };
 
 function authHeaders() {
@@ -124,30 +147,35 @@ export default function AdminDashboardPage({
       value: counts.total,
       colour: '#005a9c',
       background: '#eaf4fa',
+      Icon: TicketIcon,
     },
     {
       label: 'Open Tickets',
       value: counts.open,
       colour: '#075985',
       background: '#e0f2fe',
+      Icon: Hourglass,
     },
     {
       label: 'In Progress',
       value: counts.inProgress,
       colour: '#854d0e',
       background: '#fef3c7',
+      Icon: RefreshCw,
     },
     {
       label: 'Awaiting Review',
       value: counts.resolved,
       colour: '#166534',
       background: '#dcfce7',
+      Icon: CheckCircle2,
     },
     {
       label: 'Reviewed & Closed',
       value: counts.closed,
       colour: '#374151',
       background: '#e5e7eb',
+      Icon: CheckCheck,
     },
   ];
 
@@ -209,10 +237,14 @@ export default function AdminDashboardPage({
           >
             <div
               style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 7,
                 color: '#656a7d',
                 fontSize: 14,
               }}
             >
+              <card.Icon size={15} color={card.colour} aria-hidden="true" />
               {card.label}
             </div>
 
@@ -333,7 +365,16 @@ export default function AdminDashboardPage({
                       TK-{ticket.id}
                     </td>
 
-                    <td style={{ padding: 10 }}>
+                    <td
+                      style={{
+                        padding: 10,
+                        maxWidth: 260,
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                        whiteSpace: 'nowrap',
+                      }}
+                      title={ticket.title}
+                    >
                       {ticket.title}
                     </td>
 
@@ -343,12 +384,54 @@ export default function AdminDashboardPage({
                     </td>
 
                     <td style={{ padding: 10 }}>
-                      {ticket.priority}
+                      <span
+                        style={{
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: 6,
+                        }}
+                      >
+                        <Flag
+                          size={14}
+                          color={
+                            PRIORITY_COLORS[ticket.priority] ||
+                            '#7b8794'
+                          }
+                          fill={
+                            PRIORITY_COLORS[ticket.priority] ||
+                            '#7b8794'
+                          }
+                          aria-hidden="true"
+                        />
+
+                        {ticket.priority}
+                      </span>
                     </td>
 
                     <td style={{ padding: 10 }}>
-                      {STATUS_LABELS[ticket.status] ||
-                        ticket.status}
+                      <span
+                        style={{
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: 7,
+                        }}
+                      >
+                        <span
+                          aria-hidden="true"
+                          style={{
+                            width: 9,
+                            height: 9,
+                            borderRadius: '50%',
+                            flexShrink: 0,
+                            background:
+                              STATUS_COLORS[ticket.status] ||
+                              '#7b8794',
+                          }}
+                        />
+
+                        {STATUS_LABELS[ticket.status] ||
+                          ticket.status}
+                      </span>
                     </td>
 
                     <td style={{ padding: 10 }}>

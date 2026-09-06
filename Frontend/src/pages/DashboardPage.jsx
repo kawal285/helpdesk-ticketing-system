@@ -460,7 +460,16 @@ export default function DashboardPage({
                       TK-{ticket.id}
                     </td>
 
-                    <td style={{ padding: 11 }}>
+                    <td
+                      style={{
+                        padding: 11,
+                        maxWidth: 260,
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                        whiteSpace: 'nowrap',
+                      }}
+                      title={ticket.title}
+                    >
                       {ticket.title}
                     </td>
 
