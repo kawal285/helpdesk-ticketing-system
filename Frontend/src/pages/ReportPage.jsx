@@ -558,7 +558,16 @@ export default function ReportPage() {
                           <td style={{ padding: 12 }}>
                             TK-{ticket.id}
                           </td>
-                          <td style={{ padding: 12 }}>
+                          <td
+                            style={{
+                              padding: 12,
+                              maxWidth: 220,
+                              overflow: 'hidden',
+                              textOverflow: 'ellipsis',
+                              whiteSpace: 'nowrap',
+                            }}
+                            title={ticket.title}
+                          >
                             {ticket.title}
                           </td>
                           <td
