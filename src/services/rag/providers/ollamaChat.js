@@ -3,7 +3,12 @@
  *
  * Contract (mirrors the embedding providers):
  *   name
- *   generate(messages) -> string
+ *   generate(messages, overrides) -> string
+ *
+ * overrides are merged into Ollama's options object, so a caller can ask
+ * for a shorter or more deterministic reply than the defaults below.
+ * Ticket classification uses this; the RAG assistant passes nothing and
+ * gets the defaults.
  */
 
 const DEFAULT_HOST = 'http://127.0.0.1:11434';
@@ -35,7 +40,7 @@ const MAX_TOKENS = Number(process.env.GENERATION_MAX_TOKENS) || 300;
  */
 const KEEP_ALIVE = process.env.OLLAMA_KEEP_ALIVE || '30m';
 
-async function generate(messages) {
+async function generate(messages, overrides = {}) {
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), TIMEOUT_MS);
 
@@ -50,7 +55,11 @@ async function generate(messages) {
         messages,
         stream: false,
         keep_alive: KEEP_ALIVE,
-        options: { temperature, num_predict: MAX_TOKENS },
+        options: {
+          temperature,
+          num_predict: MAX_TOKENS,
+          ...overrides,
+        },
       }),
       signal: controller.signal,
     });
