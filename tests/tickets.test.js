@@ -5,6 +5,7 @@ jest.mock('../src/services/aiService', () => ({
 const request = require('supertest');
 const app = require('../src/app');
 const { sequelize, Ticket } = require('../src/models');
+const { getAiSuggestions } = require('../src/services/aiService');
 const { createUserWithToken } = require('./helpers/testHelpers');
 const { createTicketAs, assignTicket } = require('./helpers/ticketHelpers');
 
@@ -43,6 +44,32 @@ describe('POST /tickets', () => {
     expect(res.status).toBe(201);
     expect(res.body.ticket.category).toBe('Other');
     expect(res.body.ticket.priority).toBe('Trivial');
+  });
+
+  it("uses the AI's predicted priority and category, and computes the due date from it, when the client supplies neither", async () => {
+    getAiSuggestions.mockResolvedValueOnce({
+      category: 'Network',
+      priority: 'High',
+      suggestedResponse: 'Check the VPN gateway logs.',
+    });
+
+    const { token } = await createUserWithToken({ role: 'customer' });
+
+    const res = await createTicketAs(token, {
+      description: 'My VPN keeps disconnecting every few minutes.',
+    });
+
+    expect(res.status).toBe(201);
+    const { ticket } = res.body;
+    expect(ticket.category).toBe('Network');
+    expect(ticket.priority).toBe('High');
+    expect(ticket.aiCategory).toBe('Network');
+    expect(ticket.aiPriority).toBe('High');
+    expect(ticket.aiAnalyzedAt).not.toBeNull();
+
+    const dueAt = new Date(ticket.dueAt).getTime();
+    const createdAt = new Date(ticket.createdAt).getTime();
+    expect(dueAt - createdAt).toBeCloseTo(8 * 60 * 60 * 1000, -3);
   });
 
   it('computes a 120-hour due date for Trivial priority', async () => {
