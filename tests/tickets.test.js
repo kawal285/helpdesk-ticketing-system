@@ -356,6 +356,42 @@ describe('PATCH /tickets/:id (edit)', () => {
     expect(res.body.ticket.resolvedAt).not.toBeNull();
   });
 
+  it("lets an agent override the AI-assigned priority, recomputing the due date from the new priority", async () => {
+    getAiSuggestions.mockResolvedValueOnce({
+      category: 'Network',
+      priority: 'Low',
+      suggestedResponse: 'Check the VPN gateway logs.',
+    });
+
+    const { token: ownerToken } = await createUserWithToken({ role: 'customer' });
+    const { token: adminToken } = await createUserWithToken({ role: 'admin' });
+    const { user: agent, token: agentToken } = await createUserWithToken({ role: 'agent' });
+
+    const created = await createTicketAs(ownerToken, {
+      description: 'My VPN keeps disconnecting every few minutes.',
+    });
+    const ticketId = created.body.ticket.id;
+    expect(created.body.ticket.priority).toBe('Low');
+    expect(created.body.ticket.aiPriority).toBe('Low');
+
+    await assignTicket(adminToken, ticketId, agent.id);
+
+    const res = await request(app)
+      .patch(`/tickets/${ticketId}`)
+      .set('Authorization', `Bearer ${agentToken}`)
+      .send({ priority: 'Critical' });
+
+    expect(res.status).toBe(200);
+    const { ticket } = res.body;
+    expect(ticket.priority).toBe('Critical');
+    // The AI's original suggestion stays on record even after an override.
+    expect(ticket.aiPriority).toBe('Low');
+
+    const dueAt = new Date(ticket.dueAt).getTime();
+    const createdAt = new Date(ticket.createdAt).getTime();
+    expect(dueAt - createdAt).toBeCloseTo(4 * 60 * 60 * 1000, -3);
+  });
+
   it('lets an admin reassign a ticket via PATCH /tickets/:id', async () => {
     const { token: ownerToken } = await createUserWithToken({ role: 'customer' });
     const { token: adminToken } = await createUserWithToken({ role: 'admin' });
