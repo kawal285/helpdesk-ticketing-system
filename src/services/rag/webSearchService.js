@@ -24,7 +24,11 @@ if (!provider) {
   );
 }
 
-const WEB_SEARCH_TIMEOUT_MS = Number(process.env.WEB_SEARCH_TIMEOUT_MS) || 6000;
+// DuckDuckGo's free HTML endpoint is noticeably slower under repeated
+// automated requests (observed anywhere from under a second to over ten
+// seconds) -- matches aiService.js's AI_TIMEOUT_MS so the two external
+// calls ask() makes in parallel get a comparable budget.
+const WEB_SEARCH_TIMEOUT_MS = Number(process.env.WEB_SEARCH_TIMEOUT_MS) || 8000;
 const DEFAULT_MAX_RESULTS = Number(process.env.WEB_SEARCH_MAX_RESULTS) || 3;
 
 // Promise.race never cancels the loser, so a plain setTimeout here would
