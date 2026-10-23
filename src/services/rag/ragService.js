@@ -39,11 +39,18 @@ function summariseKbSources(matches) {
   return [...byArticle.values()].sort((a, b) => b.score - a.score);
 }
 
+/*
+ * snippet travels with the summary (unlike the KB summary's score) because
+ * a caller that wants to save this result to the knowledge base needs the
+ * original search snippet, not the model's blended answer, as the thing
+ * actually being saved.
+ */
 function summariseWebSources(results) {
   return results.map((result) => ({
     type: 'web',
     title: result.title,
     url: result.url,
+    snippet: result.snippet,
   }));
 }
 

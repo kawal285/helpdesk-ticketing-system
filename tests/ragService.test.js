@@ -107,6 +107,7 @@ describe('ragService.ask', () => {
         type: 'web',
         title: 'Fix a stuck print queue on Windows 11',
         url: 'https://support.example.com/windows/print-queue',
+        snippet: 'Open Services, restart the Print Spooler, then resend the job.',
       },
     ]);
   });

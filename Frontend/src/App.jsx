@@ -97,6 +97,7 @@ function App() {
         'dashboard',
         'tickets',
         'ticketDetail',
+        'aiAssistant',
         'account',
       ],
 
@@ -107,6 +108,7 @@ function App() {
         'manageUsers',
         'report',
         'settings',
+        'aiAssistant',
         'account',
       ],
     };
@@ -173,6 +175,7 @@ function App() {
     } else if (view === 'aiAssistant') {
       content = (
         <AiAssistantPage
+          user={loggedInUser}
           onCreateTicket={() =>
             handleNavigate('newTicket')
           }
@@ -220,6 +223,15 @@ function App() {
   if (isAgent) {
     if (view === 'account') {
       content = <AccountPage user={loggedInUser} />;
+    } else if (view === 'aiAssistant') {
+      content = (
+        <AiAssistantPage
+          user={loggedInUser}
+          onCreateTicket={() =>
+            handleNavigate('newTicket')
+          }
+        />
+      );
     } else if (
       view === 'ticketDetail' &&
       selectedTicketId
@@ -257,6 +269,15 @@ function App() {
   if (isAdmin) {
     if (view === 'account') {
       content = <AccountPage user={loggedInUser} />;
+    } else if (view === 'aiAssistant') {
+      content = (
+        <AiAssistantPage
+          user={loggedInUser}
+          onCreateTicket={() =>
+            handleNavigate('newTicket')
+          }
+        />
+      );
     } else if (
       view === 'ticketDetail' &&
       selectedTicketId
