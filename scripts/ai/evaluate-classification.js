@@ -23,38 +23,8 @@ const fs = require('fs');
 const path = require('path');
 
 const { getAiSuggestions } = require('../../src/services/aiService');
+const { summariseByField, confusionPairs } = require('./classificationStats');
 const testSet = require('../../tests/classification/ticket-classification-evaluation-set.json');
-
-function summariseByField(results, field, expectedField) {
-  const byValue = {};
-
-  for (const result of results) {
-    const expected = result[expectedField];
-
-    if (!byValue[expected]) {
-      byValue[expected] = { correct: 0, total: 0 };
-    }
-
-    byValue[expected].total += 1;
-
-    if (result[`${field}Correct`]) {
-      byValue[expected].correct += 1;
-    }
-  }
-
-  return byValue;
-}
-
-function confusionPairs(results, expectedField, predictedField) {
-  const pairs = {};
-
-  for (const result of results) {
-    const key = `${result[expectedField]} -> ${result[predictedField] || '(no prediction)'}`;
-    pairs[key] = (pairs[key] || 0) + 1;
-  }
-
-  return Object.entries(pairs).sort((a, b) => b[1] - a[1]);
-}
 
 function printBreakdown(title, byValue) {
   console.log(`\n${title}`);
