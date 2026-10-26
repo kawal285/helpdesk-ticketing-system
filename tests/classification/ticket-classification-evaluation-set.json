@@ -1,0 +1,142 @@
+[
+  {
+    "id": 1,
+    "description": "My laptop screen is completely black and won't turn on, even after holding the power button.",
+    "expectedCategory": "Hardware",
+    "expectedPriority": "High",
+    "reasoning": "A dead device blocks all work with no stated alternative, but it's one person's machine, not an outage -- High, not Critical."
+  },
+  {
+    "id": 2,
+    "description": "I can't install the new version of Photoshop, I keep getting error code 0x80070005.",
+    "expectedCategory": "Software",
+    "expectedPriority": "Medium",
+    "reasoning": "Work is affected but the previous version presumably still runs -- an alternative exists."
+  },
+  {
+    "id": 3,
+    "description": "The office WiFi keeps disconnecting every few minutes, it's happening to me all morning.",
+    "expectedCategory": "Network",
+    "expectedPriority": "Medium",
+    "reasoning": "Disruptive but intermittent, and wired/mobile data is a plausible fallback -- not a full outage."
+  },
+  {
+    "id": 4,
+    "description": "I forgot my password and can't log into my email account at all.",
+    "expectedCategory": "Account",
+    "expectedPriority": "High",
+    "reasoning": "Total lockout from a core system, no alternative -- but self-service reset exists and it's one account, not Critical."
+  },
+  {
+    "id": 5,
+    "description": "My mouse cursor is frozen and not moving at all.",
+    "expectedCategory": "Hardware",
+    "expectedPriority": "Medium",
+    "reasoning": "Annoying but the laptop's own touchpad or keyboard navigation is a working alternative in most cases."
+  },
+  {
+    "id": 6,
+    "description": "Excel keeps crashing whenever I try to open a specific shared spreadsheet.",
+    "expectedCategory": "Software",
+    "expectedPriority": "Medium",
+    "reasoning": "One file/app is affected; other spreadsheet tools or a colleague's copy are reasonable alternatives."
+  },
+  {
+    "id": 7,
+    "description": "I can't connect to the VPN from home, it just times out every time I try.",
+    "expectedCategory": "Network",
+    "expectedPriority": "High",
+    "reasoning": "Blocks remote access entirely for this person with no stated alternative -- important work cannot continue."
+  },
+  {
+    "id": 8,
+    "description": "The printer on the 3rd floor is out of toner.",
+    "expectedCategory": "Hardware",
+    "expectedPriority": "Low",
+    "reasoning": "Minor, and other printers on campus are an obvious alternative."
+  },
+  {
+    "id": 9,
+    "description": "Could I get a second monitor for my desk? Not urgent, just would help productivity.",
+    "expectedCategory": "Hardware",
+    "expectedPriority": "Trivial",
+    "reasoning": "Explicitly a nice-to-have request, not a problem blocking anything."
+  },
+  {
+    "id": 10,
+    "description": "Our team's shared drive access was revoked overnight and we can't retrieve the files for tomorrow's funding deadline.",
+    "expectedCategory": "Account",
+    "expectedPriority": "High",
+    "reasoning": "Blocks a team from critical work with a hard deadline and no alternative -- High under the agreed criteria, since it's not a system-wide outage or a safety/security incident."
+  },
+  {
+    "id": 11,
+    "description": "Zoom freezes every time I try to share my screen during client meetings.",
+    "expectedCategory": "Software",
+    "expectedPriority": "Medium",
+    "reasoning": "Disruptive but another conferencing tool (Teams, Meet) is a workable alternative."
+  },
+  {
+    "id": 12,
+    "description": "A student forwarded us an email asking them to confirm their password through a link -- looks like phishing.",
+    "expectedCategory": "Account",
+    "expectedPriority": "Critical",
+    "reasoning": "A live phishing attempt is a security incident under the agreed criteria, regardless of how many people are affected so far."
+  },
+  {
+    "id": 13,
+    "description": "The projector bulb in Lecture Hall 2 just burned out and class starts in ten minutes.",
+    "expectedCategory": "Hardware",
+    "expectedPriority": "High",
+    "reasoning": "Urgent and blocks the class, but a single room's equipment failure isn't a major outage or safety/security issue -- High, not Critical."
+  },
+  {
+    "id": 14,
+    "description": "The entire building lost network connectivity about five minutes ago -- no one can get online.",
+    "expectedCategory": "Network",
+    "expectedPriority": "Critical",
+    "reasoning": "A building-wide outage is exactly the 'major outage' case the Critical tier describes."
+  },
+  {
+    "id": 15,
+    "description": "My OneDrive hasn't synced in three days and I'm worried about losing recent changes.",
+    "expectedCategory": "Software",
+    "expectedPriority": "Medium",
+    "reasoning": "A real risk but not yet a confirmed loss, and local copies still work in the meantime."
+  },
+  {
+    "id": 16,
+    "description": "I'd like to request admin access to the marketing shared drive for a new starter joining next month.",
+    "expectedCategory": "Account",
+    "expectedPriority": "Trivial",
+    "reasoning": "A routine, scheduled request with no urgency and no current blocker."
+  },
+  {
+    "id": 17,
+    "description": "Smoke is coming out of the back of the server rack in the IT closet.",
+    "expectedCategory": "Hardware",
+    "expectedPriority": "Critical",
+    "reasoning": "A literal safety issue (fire risk) -- the clearest possible Critical case."
+  },
+  {
+    "id": 18,
+    "description": "The online learning portal is extremely slow today, pages take 20-30 seconds to load.",
+    "expectedCategory": "Software",
+    "expectedPriority": "High",
+    "reasoning": "A widely-used system degraded for everyone, with no real alternative -- important work (coursework access) cannot continue normally, but it's degraded rather than fully down."
+  },
+  {
+    "id": 19,
+    "description": "My keyboard is missing the 'E' key cap, it fell off, but the key still types fine if I press the stem.",
+    "expectedCategory": "Hardware",
+    "expectedPriority": "Low",
+    "reasoning": "Cosmetic/minor annoyance; the keyboard is still fully functional."
+  },
+  {
+    "id": 20,
+    "description": "I can't find the setting to change my display language in the student portal, can someone point me to it?",
+    "expectedCategory": "Other",
+    "expectedPriority": "Trivial",
+    "reasoning": "A how-to question rather than a fault with hardware, software or network, and nothing is actually broken."
+  }
+]
