@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 
 const STATUSES = [
   'Open',
@@ -148,10 +148,6 @@ export default function TicketDetailPage({
   const isAdmin = user.role === 'admin';
 
   useEffect(() => {
-    loadEverything();
-  }, [ticketId]);
-
-  useEffect(() => {
     if (!isAdmin) return;
 
     const token = localStorage.getItem('token');
@@ -166,7 +162,7 @@ export default function TicketDetailPage({
       .catch(() => setAgents([]));
   }, [isAdmin]);
 
-  async function loadEverything() {
+  const loadEverything = useCallback(async () => {
     setLoading(true);
     setError('');
 
@@ -211,7 +207,11 @@ export default function TicketDetailPage({
     } finally {
       setLoading(false);
     }
-  }
+  }, [ticketId]);
+
+  useEffect(() => {
+    loadEverything();
+  }, [loadEverything]);
 
   function startEditing() {
     setEditTitle(ticket.title);
