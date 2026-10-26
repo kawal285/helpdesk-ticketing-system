@@ -1,83 +1,78 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState } from "react";
 
-import LoginPage from './pages/LoginPage';
-import RegisterPage from './pages/RegisterPage';
-import DashboardPage from './pages/DashboardPage';
-import AdminDashboardPage from './pages/AdminDashboardPage';
-import NewTicketPage from './pages/NewTicketPage';
-import TicketDetailPage from './pages/TicketDetailPage';
-import AdminUsersPage from './pages/AdminUsersPage';
-import AiAssistantPage from './pages/AiAssistantPage';
-import ReportPage from './pages/ReportPage';
-import SettingsPage from './pages/SettingsPage';
-import AccountPage from './pages/AccountPage';
-import Sidebar from './components/Sidebar';
+import LoginPage from "./pages/LoginPage";
+import RegisterPage from "./pages/RegisterPage";
+import DashboardPage from "./pages/DashboardPage";
+import TicketsPage from "./pages/TicketsPage";
+import AdminDashboardPage from "./pages/AdminDashboardPage";
+import NewTicketPage from "./pages/NewTicketPage";
+import TicketDetailPage from "./pages/TicketDetailPage";
+import AdminUsersPage from "./pages/AdminUsersPage";
+import AiAssistantPage from "./pages/AiAssistantPage";
+import ReportPage from "./pages/ReportPage";
+import SettingsPage from "./pages/SettingsPage";
+import AccountPage from "./pages/AccountPage";
+import Sidebar from "./components/Sidebar";
 
 function App() {
-  const [mode, setMode] = useState('login');
+  const [mode, setMode] = useState("login");
   const [loggedInUser, setLoggedInUser] = useState(null);
-  const [checkingSession, setCheckingSession] =
-    useState(true);
-  const [view, setView] = useState('dashboard');
-  const [selectedTicketId, setSelectedTicketId] =
-    useState(null);
+  const [checkingSession, setCheckingSession] = useState(true);
+  const [view, setView] = useState("dashboard");
+  const [selectedTicketId, setSelectedTicketId] = useState(null);
   const [refreshKey, setRefreshKey] = useState(0);
 
   useEffect(() => {
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem("token");
 
     if (!token) {
       setCheckingSession(false);
       return;
     }
 
-    fetch('http://localhost:4000/auth/me', {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
+    fetch("http://localhost:4000/auth/me", {
+      headers: { Authorization: `Bearer ${token}` },
     })
       .then(async (response) => {
         if (!response.ok) {
-          throw new Error('Session is no longer valid.');
+          throw new Error("Session is no longer valid.");
         }
 
         return response.json();
       })
       .then((data) => {
         setLoggedInUser(data.data.user);
-        setView('dashboard');
+        setView("dashboard");
       })
       .catch(() => {
-        localStorage.removeItem('token');
+        localStorage.removeItem("token");
         setLoggedInUser(null);
       })
-      .finally(() => {
-        setCheckingSession(false);
-      });
+      .finally(() => setCheckingSession(false));
   }, []);
 
   function handleLoginSuccess(user) {
     setLoggedInUser(user);
     setSelectedTicketId(null);
-    setView('dashboard');
+    setView("dashboard");
   }
 
   function handleLogout() {
-    localStorage.removeItem('token');
+    localStorage.removeItem("token");
     setLoggedInUser(null);
     setSelectedTicketId(null);
-    setMode('login');
-    setView('dashboard');
+    setMode("login");
+    setView("dashboard");
   }
 
   function handleTicketCreated() {
-    setView('tickets');
+    setView("tickets");
     setRefreshKey((currentKey) => currentKey + 1);
   }
 
   function handleSelectTicket(id) {
     setSelectedTicketId(id);
-    setView('ticketDetail');
+    setView("ticketDetail");
   }
 
   function handleNavigate(nextView) {
@@ -85,51 +80,37 @@ function App() {
 
     const allowedViews = {
       customer: [
-        'dashboard',
-        'tickets',
-        'aiAssistant',
-        'newTicket',
-        'ticketDetail',
-        'account',
-      ],
-
-      agent: [
-        'dashboard',
-        'tickets',
-        'ticketDetail',
-        'aiAssistant',
-        'account',
-      ],
-
+        "dashboard",
+        "tickets",
+        "aiAssistant",
+        "newTicket",
+        "ticketDetail",
+        "account",
+      ]
+      agent: ["dashboard", "tickets", "ticketDetail", "account"],
       admin: [
-        'dashboard',
-        'tickets',
-        'ticketDetail',
-        'manageUsers',
-        'report',
-        'settings',
-        'aiAssistant',
-        'account',
+        "dashboard",
+        "tickets",
+        "ticketDetail",
+        "manageUsers",
+        "report",
+        "settings",
+        "account",
+ main
       ],
     };
 
-    const roleViews =
-      allowedViews[loggedInUser.role] || [];
-
-    if (roleViews.includes(nextView)) {
-      setView(nextView);
-    } else {
-      setView('dashboard');
-    }
+    const roleViews = allowedViews[loggedInUser.role] || [];
+    setView(roleViews.includes(nextView) ? nextView : "dashboard");
   }
 
   if (checkingSession) {
     return (
       <div
         style={{
-          minHeight: '100vh',
-          display: 'grid',
-          placeItems: 'center',
+          minHeight: "100vh",
+          display: "grid",
+          placeItems: "center",
         }}
       >
         Loading helpdesk…
@@ -138,66 +119,58 @@ function App() {
   }
 
   if (!loggedInUser) {
-    return mode === 'login' ? (
+    return mode === "login" ? (
       <LoginPage
         onSuccess={handleLoginSuccess}
-        onSwitchToRegister={() =>
-          setMode('register')
-        }
+        onSwitchToRegister={() => setMode("register")}
       />
     ) : (
       <RegisterPage
         onSuccess={handleLoginSuccess}
-        onSwitchToLogin={() =>
-          setMode('login')
-        }
+        onSwitchToLogin={() => setMode("login")}
       />
     );
   }
 
-  const isCustomer =
-    loggedInUser.role === 'customer';
-
-  const isAgent =
-    loggedInUser.role === 'agent';
-
-  const isAdmin =
-    loggedInUser.role === 'admin';
+  const isCustomer = loggedInUser.role === "customer";
+  const isAgent = loggedInUser.role === "agent";
+  const isAdmin = loggedInUser.role === "admin";
 
   let content;
 
-  /*
-   * Customer pages
-   */
+  /* Customer pages */
   if (isCustomer) {
-    if (view === 'account') {
+    if (view === "account") {
       content = <AccountPage user={loggedInUser} />;
-    } else if (view === 'aiAssistant') {
+    } else if (view === "aiAssistant") {
       content = (
-        <AiAssistantPage
-          user={loggedInUser}
-          onCreateTicket={() =>
-            handleNavigate('newTicket')
-          }
-        />
+
+        <AiAssistantPage onCreateTicket={() => handleNavigate("newTicket")} 
+    main
       );
-    } else if (view === 'newTicket') {
+    } else if (view === "newTicket") {
       content = (
         <NewTicketPage
           onCreated={handleTicketCreated}
-          onCancel={() =>
-            handleNavigate('tickets')
-          }
+          onCancel={() => handleNavigate("tickets")}
         />
       );
-    } else if (view === 'ticketDetail') {
+    } else if (view === "ticketDetail") {
       content = (
         <TicketDetailPage
           ticketId={selectedTicketId}
           user={loggedInUser}
-          onBack={() =>
-            handleNavigate('tickets')
-          }
+          onBack={() => handleNavigate("tickets")}
+        />
+      );
+    } else if (view === "tickets") {
+      content = (
+        <TicketsPage
+          key={refreshKey}
+          user={loggedInUser}
+          onNewTicket={() => handleNavigate("newTicket")}
+          onSelectTicket={handleSelectTicket}
+          onAiAssistant={() => handleNavigate("aiAssistant")}
         />
       );
     } else {
@@ -205,24 +178,18 @@ function App() {
         <DashboardPage
           key={refreshKey}
           user={loggedInUser}
-          onNewTicket={() =>
-            handleNavigate('newTicket')
-          }
+          onNewTicket={() => handleNavigate("newTicket")}
           onSelectTicket={handleSelectTicket}
-          onAiAssistant={() =>
-            handleNavigate('aiAssistant')
-          }
+          onAiAssistant={() => handleNavigate("aiAssistant")}
         />
       );
     }
   }
 
-  /*
-   * Agent pages
-   */
+  /* Agent pages */
   if (isAgent) {
-    if (view === 'account') {
-      content = <AccountPage user={loggedInUser} />;
+    if (view === "account") {
+      content = <AccountPage user={loggedInUser} />; backend-harpreet
     } else if (view === 'aiAssistant') {
       content = (
         <AiAssistantPage
@@ -236,18 +203,18 @@ function App() {
       view === 'ticketDetail' &&
       selectedTicketId
     ) {
+
+ main
       content = (
         <TicketDetailPage
           ticketId={selectedTicketId}
           user={loggedInUser}
-          onBack={() =>
-            handleNavigate('tickets')
-          }
+          onBack={() => handleNavigate("tickets")}
         />
       );
-    } else if (view === 'tickets') {
+    } else if (view === "tickets") {
       content = (
-        <DashboardPage
+        <TicketsPage
           key={refreshKey}
           user={loggedInUser}
           onSelectTicket={handleSelectTicket}
@@ -263,12 +230,11 @@ function App() {
     }
   }
 
-  /*
-   * Administrator pages
-   */
+  /* Administrator pages */
   if (isAdmin) {
-    if (view === 'account') {
+    if (view === "account") {
       content = <AccountPage user={loggedInUser} />;
+
     } else if (view === 'aiAssistant') {
       content = (
         <AiAssistantPage
@@ -282,38 +248,27 @@ function App() {
       view === 'ticketDetail' &&
       selectedTicketId
     ) {
+ main
       content = (
         <TicketDetailPage
           ticketId={selectedTicketId}
           user={loggedInUser}
-          onBack={() =>
-            handleNavigate('tickets')
-          }
+          onBack={() => handleNavigate("tickets")}
         />
       );
-    } else if (view === 'manageUsers') {
-      content = (
-        <AdminUsersPage
-          onBack={() =>
-            handleNavigate('dashboard')
-          }
-        />
-      );
-    } else if (view === 'report') {
-      content = (
-  content = <ReportPage />
-      );
-    } else if (view === 'settings') {
+    } else if (view === "manageUsers") {
+      content = <AdminUsersPage onBack={() => handleNavigate("dashboard")} />;
+    } else if (view === "report") {
+      content = <ReportPage />;
+    } else if (view === "settings") {
       content = <SettingsPage />;
-    } else if (view === 'tickets') {
+    } else if (view === "tickets") {
       content = (
-        <DashboardPage
+        <TicketsPage
           key={refreshKey}
           user={loggedInUser}
           onSelectTicket={handleSelectTicket}
-          onManageUsers={() =>
-            handleNavigate('manageUsers')
-          }
+          onManageUsers={() => handleNavigate("manageUsers")}
         />
       );
     } else {
@@ -327,18 +282,10 @@ function App() {
   }
 
   const activeSidebarItem =
-    view === 'newTicket' ||
-    view === 'ticketDetail'
-      ? 'tickets'
-      : view;
+    view === "newTicket" || view === "ticketDetail" ? "tickets" : view;
 
   return (
-    <div
-      style={{
-        display: 'flex',
-        minHeight: '100vh',
-      }}
-    >
+    <div style={{ display: "flex", minHeight: "100vh" }}>
       <Sidebar
         active={activeSidebarItem}
         user={loggedInUser}
@@ -346,15 +293,7 @@ function App() {
         onLogout={handleLogout}
       />
 
-      <div
-        style={{
-          flex: 1,
-          minWidth: 0,
-          overflowX: 'auto',
-        }}
-      >
-        {content}
-      </div>
+      <div style={{ flex: 1, minWidth: 0, overflowX: "auto" }}>{content}</div>
     </div>
   );
 }
