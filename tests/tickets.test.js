@@ -5,6 +5,7 @@ jest.mock('../src/services/aiService', () => ({
 const request = require('supertest');
 const app = require('../src/app');
 const { sequelize, Ticket } = require('../src/models');
+const { getAiSuggestions } = require('../src/services/aiService');
 const { createUserWithToken } = require('./helpers/testHelpers');
 const { createTicketAs, assignTicket } = require('./helpers/ticketHelpers');
 
@@ -43,6 +44,32 @@ describe('POST /tickets', () => {
     expect(res.status).toBe(201);
     expect(res.body.ticket.category).toBe('Other');
     expect(res.body.ticket.priority).toBe('Trivial');
+  });
+
+  it("uses the AI's predicted priority and category, and computes the due date from it, when the client supplies neither", async () => {
+    getAiSuggestions.mockResolvedValueOnce({
+      category: 'Network',
+      priority: 'High',
+      suggestedResponse: 'Check the VPN gateway logs.',
+    });
+
+    const { token } = await createUserWithToken({ role: 'customer' });
+
+    const res = await createTicketAs(token, {
+      description: 'My VPN keeps disconnecting every few minutes.',
+    });
+
+    expect(res.status).toBe(201);
+    const { ticket } = res.body;
+    expect(ticket.category).toBe('Network');
+    expect(ticket.priority).toBe('High');
+    expect(ticket.aiCategory).toBe('Network');
+    expect(ticket.aiPriority).toBe('High');
+    expect(ticket.aiAnalyzedAt).not.toBeNull();
+
+    const dueAt = new Date(ticket.dueAt).getTime();
+    const createdAt = new Date(ticket.createdAt).getTime();
+    expect(dueAt - createdAt).toBeCloseTo(8 * 60 * 60 * 1000, -3);
   });
 
   it('computes a 120-hour due date for Trivial priority', async () => {
@@ -327,6 +354,42 @@ describe('PATCH /tickets/:id (edit)', () => {
     expect(res.body.ticket.priority).toBe('High');
     expect(res.body.ticket.status).toBe('Resolved');
     expect(res.body.ticket.resolvedAt).not.toBeNull();
+  });
+
+  it("lets an agent override the AI-assigned priority, recomputing the due date from the new priority", async () => {
+    getAiSuggestions.mockResolvedValueOnce({
+      category: 'Network',
+      priority: 'Low',
+      suggestedResponse: 'Check the VPN gateway logs.',
+    });
+
+    const { token: ownerToken } = await createUserWithToken({ role: 'customer' });
+    const { token: adminToken } = await createUserWithToken({ role: 'admin' });
+    const { user: agent, token: agentToken } = await createUserWithToken({ role: 'agent' });
+
+    const created = await createTicketAs(ownerToken, {
+      description: 'My VPN keeps disconnecting every few minutes.',
+    });
+    const ticketId = created.body.ticket.id;
+    expect(created.body.ticket.priority).toBe('Low');
+    expect(created.body.ticket.aiPriority).toBe('Low');
+
+    await assignTicket(adminToken, ticketId, agent.id);
+
+    const res = await request(app)
+      .patch(`/tickets/${ticketId}`)
+      .set('Authorization', `Bearer ${agentToken}`)
+      .send({ priority: 'Critical' });
+
+    expect(res.status).toBe(200);
+    const { ticket } = res.body;
+    expect(ticket.priority).toBe('Critical');
+    // The AI's original suggestion stays on record even after an override.
+    expect(ticket.aiPriority).toBe('Low');
+
+    const dueAt = new Date(ticket.dueAt).getTime();
+    const createdAt = new Date(ticket.createdAt).getTime();
+    expect(dueAt - createdAt).toBeCloseTo(4 * 60 * 60 * 1000, -3);
   });
 
   it('lets an admin reassign a ticket via PATCH /tickets/:id', async () => {

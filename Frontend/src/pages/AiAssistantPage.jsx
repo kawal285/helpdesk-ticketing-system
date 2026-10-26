@@ -3,6 +3,7 @@ import AnswerText from '../components/AnswerText';
 import './AiAssistant.css';
 
 const API_URL = 'http://localhost:4000/ai/assist';
+const SAVE_WEB_RESULT_URL = 'http://localhost:4000/knowledge-base/save-web-result';
 
 /*
  * Starter questions are drawn from real knowledge-base topics, one per
@@ -41,7 +42,7 @@ function tickCount(score) {
   return Math.max(1, Math.min(5, scaled));
 }
 
-export default function AiAssistantPage({ onCreateTicket }) {
+export default function AiAssistantPage({ user, onCreateTicket }) {
   const [question, setQuestion] = useState('');
   const [turns, setTurns] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -234,6 +235,7 @@ export default function AiAssistantPage({ onCreateTicket }) {
             ) : (
               <AnswerCard
                 assistant={turn.assistant}
+                user={user}
                 onCreateTicket={onCreateTicket}
               />
             )}
@@ -284,9 +286,46 @@ export default function AiAssistantPage({ onCreateTicket }) {
   );
 }
 
-function AnswerCard({ assistant, onCreateTicket }) {
+function AnswerCard({ assistant, user, onCreateTicket }) {
   const grounded = assistant.knowledgeBaseMatch;
   const sources = assistant.sources || [];
+  const kbSources = sources.filter((source) => source.type !== 'web');
+  const webSources = sources.filter((source) => source.type === 'web');
+
+  const canCurateKnowledgeBase =
+    user && (user.role === 'agent' || user.role === 'admin');
+
+  const [saveStatus, setSaveStatus] = useState({});
+
+  async function saveToKnowledgeBase(source) {
+    setSaveStatus((previous) => ({ ...previous, [source.url]: 'saving' }));
+
+    try {
+      const token = localStorage.getItem('token');
+
+      const response = await fetch(SAVE_WEB_RESULT_URL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          title: source.title,
+          url: source.url,
+          snippet: source.snippet,
+          category: assistant.suggestedCategory || undefined,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error();
+      }
+
+      setSaveStatus((previous) => ({ ...previous, [source.url]: 'saved' }));
+    } catch {
+      setSaveStatus((previous) => ({ ...previous, [source.url]: 'error' }));
+    }
+  }
 
   return (
     <div
@@ -337,14 +376,14 @@ function AnswerCard({ assistant, onCreateTicket }) {
           {grounded ? 'Still stuck? Raise a ticket' : 'Raise a ticket'}
         </button>
 
-        {grounded && sources.length > 0 && (
+        {grounded && kbSources.length > 0 && (
           <div className="chat__sources">
             <div className="chat__sources-label">
-              Sourced from {sources.length}{' '}
-              {sources.length === 1 ? 'section' : 'sections'}
+              Sourced from {kbSources.length}{' '}
+              {kbSources.length === 1 ? 'section' : 'sections'}
             </div>
 
-            {sources.map((source, index) => (
+            {kbSources.map((source, index) => (
               <div className="chat__source" key={source.articleId}>
                 <span className="chat__source-index">
                   {String(index + 1).padStart(2, '0')}
@@ -377,6 +416,44 @@ function AnswerCard({ assistant, onCreateTicket }) {
                     {source.score}
                   </span>
                 </span>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {grounded && webSources.length > 0 && (
+          <div className="chat__sources chat__sources--web">
+            <div className="chat__sources-label">
+              From the web ({webSources.length})
+            </div>
+
+            {webSources.map((source) => (
+              <div className="chat__source chat__source--web" key={source.url}>
+                <a
+                  href={source.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="chat__source-title"
+                >
+                  {source.title}
+                </a>
+
+                {canCurateKnowledgeBase && (
+                  <button
+                    type="button"
+                    className="chat__save-to-kb"
+                    disabled={saveStatus[source.url] === 'saving'}
+                    onClick={() => saveToKnowledgeBase(source)}
+                  >
+                    {saveStatus[source.url] === 'saved'
+                      ? 'Saved to KB'
+                      : saveStatus[source.url] === 'saving'
+                        ? 'Saving…'
+                        : saveStatus[source.url] === 'error'
+                          ? 'Failed, retry?'
+                          : 'Save to knowledge base'}
+                  </button>
+                )}
               </div>
             ))}
           </div>

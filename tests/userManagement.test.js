@@ -1,3 +1,11 @@
+// Tickets created in this file never pass a category/priority, which
+// otherwise triggers a real Gemini call -- slow and occasionally slower
+// than Jest's default 5s test timeout. Mocked for the same reason as
+// tickets.test.js and routing.test.js: fast, deterministic, offline.
+jest.mock('../src/services/aiService', () => ({
+  getAiSuggestions: jest.fn().mockResolvedValue({ category: null, priority: null, suggestedResponse: null }),
+}));
+
 const request = require('supertest');
 const app = require('../src/app');
 const { Op } = require('sequelize');
