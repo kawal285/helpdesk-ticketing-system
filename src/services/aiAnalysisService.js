@@ -1,34 +1,47 @@
-const { GoogleGenerativeAI } = require('@google/generative-ai');
+/*
+ * Classifies a new ticket: category, priority, and a suggested response
+ * for the agent who picks it up.
+ *
+ * Previously this called Gemini directly. It now goes through the same
+ * generation provider as the AI assistant, so both AI features run on one
+ * configurable backend -- currently Ollama locally, and the college API
+ * when its details arrive -- with no API key or quota involved.
+ *
+ * The prompt and the parser are unchanged, so the existing parseAnalysis
+ * tests still apply.
+ */
+
+const { generate } = require('./rag/generationService');
 const ticketPrompt = require('../prompts/ticketPrompt');
 const { CATEGORIES, PRIORITIES } = require('../utils/ticketFields');
 
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+/*
+ * The reply is three short lines, so the token budget is small. This is
+ * what keeps classification fast enough to run while a ticket is being
+ * created, rather than the several seconds a full answer would take.
+ */
+const MAX_TOKENS = 160;
 
-// A realistic fallback used only when the AI quota is exhausted, so
-// development isn't blocked by Gemini's free-tier daily limit.
-function mockResponse(description) {
-  return `Category: General\nPriority: Medium\nSuggested Response: (AI quota reached - this is a placeholder response for "${description.slice(0, 50)}...")`;
-}
+// Classification is a labelling task, not a writing one. Near-zero
+// temperature keeps the same description mapping to the same category.
+const TEMPERATURE = 0.1;
 
 async function generateAnalysis(description) {
-  try {
-    const model = genAI.getGenerativeModel({
-      model:
-  process.env.GEMINI_MODEL ||
-  'gemini-3.6-flash',
-      systemInstruction: ticketPrompt,
-    });
+  const messages = [
+    { role: 'system', content: ticketPrompt },
+    { role: 'user', content: description },
+  ];
 
-    const result = await model.generateContent(description);
-    return result.response.text();
-  } catch (err) {
-    if (err.status === 429) {
-      return mockResponse(description);
-    }
-    throw err; // any other kind of error should still show up normally
-  }
+  return generate(messages, {
+    num_predict: MAX_TOKENS,
+    temperature: TEMPERATURE,
+  });
 }
 
+/*
+ * Values outside the allowed lists fall back to safe defaults, so a model
+ * inventing a category cannot write an invalid value into the database.
+ */
 function parseAnalysis(text) {
   const categoryMatch = text.match(/Category:\s*(.+)/i);
   const priorityMatch = text.match(/Priority:\s*(.+)/i);
@@ -46,6 +59,7 @@ function parseAnalysis(text) {
 
 async function analyzeTicket(description) {
   const raw = await generateAnalysis(description);
+
   return parseAnalysis(raw);
 }
 
