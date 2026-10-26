@@ -11,6 +11,7 @@ const { saveWebResultValidator } = require('../validators/knowledgeBase.validato
 const validate = require('../middleware/validate');
 const protect = require('../middleware/protect');
 const authorize = require('../middleware/authorize');
+const { kbWriteLimiter } = require('../middleware/rateLimiters');
 
 const router = express.Router();
 
@@ -54,6 +55,7 @@ router.get('/search', (req, res, next) => {
 router.post(
   '/save-web-result',
   authorize('agent', 'admin'),
+  kbWriteLimiter,
   saveWebResultValidator,
   validate,
   async (req, res, next) => {
