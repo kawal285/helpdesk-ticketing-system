@@ -124,4 +124,53 @@ describe('knowledgeBaseWriteService.saveWebResultToKnowledgeBase', () => {
 
     expect(embedDocuments).not.toHaveBeenCalled();
   });
+
+  it('leaves the knowledge-base file untouched when embedding fails', async () => {
+    const filePath = writeFixture(SEED_ARTICLES);
+    const { saveWebResultToKnowledgeBase } = createKnowledgeBaseWriteService(filePath);
+
+    embedDocuments.mockRejectedValue(new Error('Ollama is not reachable'));
+
+    await expect(
+      saveWebResultToKnowledgeBase({
+        title: 'A result that fails to embed',
+        url: 'https://support.example.com/windows/print-queue',
+        snippet: 'Restart the Print Spooler service.',
+        category: 'Hardware',
+      })
+    ).rejects.toThrow('Ollama is not reachable');
+
+    const onDisk = JSON.parse(fs.readFileSync(filePath, 'utf8'));
+    expect(onDisk).toEqual(SEED_ARTICLES);
+
+    const rows = await KbChunk.findAll({ where: { articleTitle: 'A result that fails to embed' } });
+    expect(rows).toHaveLength(0);
+  });
+
+  it('leaves the knowledge-base file untouched when the chunk insert fails', async () => {
+    const filePath = writeFixture(SEED_ARTICLES);
+    const { saveWebResultToKnowledgeBase } = createKnowledgeBaseWriteService(filePath);
+
+    // A dimension mismatch is a realistic way for the insert itself to
+    // fail even though embedding "succeeded" -- e.g. a misconfigured
+    // provider returning the wrong vector length.
+    embedDocuments.mockResolvedValue([[0.1, 0.2]]);
+    getModelInfo.mockReturnValue({ name: 'ollama:nomic-embed-text', dimensions: 4 });
+
+    jest.spyOn(KbChunk, 'bulkCreate').mockRejectedValueOnce(new Error('insert failed'));
+
+    await expect(
+      saveWebResultToKnowledgeBase({
+        title: 'Another web result',
+        url: 'https://example.com/other',
+        snippet: 'Some snippet.',
+        category: 'Hardware',
+      })
+    ).rejects.toThrow('insert failed');
+
+    const onDisk = JSON.parse(fs.readFileSync(filePath, 'utf8'));
+    expect(onDisk).toEqual(SEED_ARTICLES);
+
+    KbChunk.bulkCreate.mockRestore();
+  });
 });

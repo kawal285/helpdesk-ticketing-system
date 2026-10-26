@@ -94,12 +94,12 @@ function createKnowledgeBaseWriteService(filePath = DEFAULT_KB_FILE) {
       sourceUrl: url.trim(),
     };
 
-    articles.push(article);
-    writeArticles(articles);
-
-    // Index immediately rather than waiting for the next offline
-    // "npm run kb:index" run -- a saved result that isn't searchable yet
-    // isn't useful to the next person who asks a related question.
+    // Index before writing anything persistent. Both steps below call out
+    // to something that can fail for reasons outside our control (the
+    // embedding provider, the database) -- if either throws before the
+    // file is touched, the knowledge base is left exactly as it was: no
+    // orphaned article with zero indexed content sitting in the file,
+    // invisible to search but still listed to anyone browsing the KB.
     const chunks = chunkArticle(article);
     const model = getModelInfo();
     const vectors = await embedDocuments(chunks.map((chunk) => chunk.text));
@@ -119,6 +119,16 @@ function createKnowledgeBaseWriteService(filePath = DEFAULT_KB_FILE) {
     }));
 
     await KbChunk.bulkCreate(rows, { validate: true });
+
+    // The file write happens last and is the one step in this pipeline
+    // with no external dependency, so it is the least likely to fail --
+    // this ordering minimises the window for any inconsistency rather
+    // than eliminating it outright (a crash between this line and the
+    // next could still leave indexed chunks for an article the file
+    // doesn't know about, but that is harmless: it just sits unused
+    // until the next successful save recomputes the same next id).
+    articles.push(article);
+    writeArticles(articles);
 
     refreshRetrievalCache();
 
