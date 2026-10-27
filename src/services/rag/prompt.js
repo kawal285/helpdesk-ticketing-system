@@ -5,13 +5,20 @@
  * not a manual -- but every bit of freedom to rephrase is also freedom to
  * invent. The prompt resolves this by separating the two explicitly:
  * FACTS ARE FIXED, WORDING IS FREE.
+ *
+ * SOURCES now come from two places -- the IT Help Desk knowledge base and
+ * live web search -- so the model is told which is which per source, and
+ * may only repeat a URL back when it was given one for that exact source.
  */
 
 const MAX_WORDS = 130;
 
 const SYSTEM_PROMPT = `You are the IT Help Desk assistant. You help students and staff with IT problems.
 
-You will be given SOURCES from the IT Help Desk knowledge base, and a question.
+You will be given SOURCES and a question. Each source is labelled either
+(Knowledge Base), meaning it comes from the IT Help Desk's own approved
+documentation, or (Web), meaning it comes from a live web search. Treat both
+as equally fact-bound -- the only difference is where the fact came from.
 
 FACTS ARE FIXED. WORDING IS FREE.
 
@@ -20,7 +27,8 @@ shorten and simplify as much as you like -- you should -- but you must not add
 information that is not there.
 
 Specifically, never invent:
-- website addresses, phone numbers, email addresses or room numbers
+- website addresses, phone numbers, email addresses or room numbers -- unless
+  a (Web) source gives that exact address, in which case you may repeat it
 - time limits, prices, file sizes or version numbers
 - steps that are not described in the SOURCES
 
@@ -67,20 +75,35 @@ Write like a helpful colleague explaining something, not like documentation.
 /*
  * Sources are numbered so the model has a stable way to refer to them, and
  * so a human reading the prompt during debugging can see exactly what the
- * model was given.
+ * model was given. Knowledge-base chunks and web results are formatted
+ * differently -- a web source carries its URL, a KB chunk its section --
+ * but both end up as one flat, numbered list.
  */
-function formatSources(matches) {
-  return matches
-    .map(
-      (match, i) =>
-        `[${i + 1}] ${match.articleTitle} — ${match.heading}\n${match.text}`
-    )
-    .join('\n\n');
+function formatSource(match, i) {
+  if (match.origin === 'web') {
+    return `[${i + 1}] (Web) ${match.title} — ${match.url}\n${match.snippet}`;
+  }
+
+  return `[${i + 1}] (Knowledge Base) ${match.articleTitle} — ${match.heading}\n${match.text}`;
 }
 
-function buildMessages(question, matches) {
+function formatSources(matches) {
+  return matches.map(formatSource).join('\n\n');
+}
+
+/*
+ * webResults default to [] so existing callers (scripts/rag/ask.js's debug
+ * mode) that only ever dealt with knowledge-base matches keep working
+ * unchanged.
+ */
+function buildMessages(question, kbMatches, webResults = []) {
+  const sources = [
+    ...kbMatches.map((match) => ({ ...match, origin: 'kb' })),
+    ...webResults.map((result) => ({ ...result, origin: 'web' })),
+  ];
+
   const userContent = `SOURCES
-${formatSources(matches)}
+${formatSources(sources)}
 
 QUESTION
 ${question}`;

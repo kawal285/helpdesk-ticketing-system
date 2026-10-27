@@ -24,12 +24,18 @@ function getModelInfo() {
   return { provider: selected, name: provider.name };
 }
 
-function generate(messages) {
+/*
+ * options are passed straight to the provider. Ticket classification uses
+ * them to cap the reply length, because it needs three short lines rather
+ * than a full answer -- which keeps it fast enough to run during ticket
+ * creation.
+ */
+function generate(messages, options = {}) {
   if (!Array.isArray(messages) || !messages.length) {
     throw new Error('generate requires a non-empty messages array.');
   }
 
-  return provider.generate(messages);
+  return provider.generate(messages, options);
 }
 
 module.exports = { generate, getModelInfo };
