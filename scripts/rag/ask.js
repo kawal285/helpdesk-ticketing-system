@@ -54,7 +54,11 @@ async function main() {
     console.log('Sources:');
 
     for (const source of result.sources) {
-      console.log(`  - ${source.title} — ${source.section} (${source.score})`);
+      if (source.type === 'web') {
+        console.log(`  - [web] ${source.title} — ${source.url}`);
+      } else {
+        console.log(`  - ${source.title} — ${source.section} (${source.score})`);
+      }
     }
   } else {
     console.log(`(no sources — top score ${result.topScore}, threshold ${result.threshold})`);
@@ -62,7 +66,7 @@ async function main() {
 
   console.log('');
   console.log(
-    `[grounded: ${result.grounded} | ${result.model} | ${result.ms}ms]`
+    `[grounded: ${result.grounded} | ${result.model} | web: ${result.webSearchProvider} | ${result.ms}ms]`
   );
   console.log('');
 }
