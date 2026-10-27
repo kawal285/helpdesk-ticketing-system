@@ -71,6 +71,26 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.DATE,
         allowNull: true,
       },
+
+      
+      emotion: {
+        type: DataTypes.ENUM(
+          'angry',
+          'frustrated',
+          'calm',
+          'neutral'
+        ),
+        allowNull: true,
+      },
+      emotionReason: {
+        type: DataTypes.STRING(250),
+        allowNull: true,
+      },
+      emotionAnalyzedAt: {
+        type: DataTypes.DATE,
+        allowNull: true,
+      },
+
       room: {
         type: DataTypes.STRING,
         allowNull: true,

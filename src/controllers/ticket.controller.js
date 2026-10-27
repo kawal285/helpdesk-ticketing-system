@@ -16,6 +16,12 @@ const {
   getAiSuggestions,
 } = require('../services/aiService');
 
+
+const {
+  detectEmotion,
+} = require('../services/emotionDetectionService');
+
+
 const {
   notifyTicketCreated,
   notifyTicketAssigned,
@@ -133,6 +139,31 @@ const createTicket = catchAsync(
           suggestedResponse: null,
         };
 
+        
+    // Emotion detection is advisory only and must not block ticket creation.
+    let emotionAnalysis = {
+      emotion: null,
+      reason: null,
+      analyzedAt: null,
+    };
+
+    try {
+      const result = await detectEmotion(description);
+
+      emotionAnalysis = {
+        emotion: result.emotion,
+        reason: result.reason,
+        analyzedAt: new Date(),
+      };
+    } catch (error) {
+      // Keep ticket creation working if Ollama is unavailable.
+      console.error(
+        'Emotion detection unavailable:',
+        error.message
+      );
+    }
+
+
     const aiSucceeded = ai.category !== null;
 
     const finalCategory =
@@ -160,6 +191,12 @@ const createTicket = catchAsync(
       aiAnalyzedAt: aiSucceeded
         ? new Date()
         : null,
+
+      emotion: emotionAnalysis.emotion,
+      emotionReason: emotionAnalysis.reason,
+      emotionAnalyzedAt: emotionAnalysis.analyzedAt,
+
+
       room: room || null,
       parentCaseId:
         parentCaseId || null,

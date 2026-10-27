@@ -624,6 +624,34 @@ export default function TicketDetailPage({
                 <h3>Description</h3>
                 <p>{ticket.description}</p>
               </div>
+               
+              {isStaff && ticket.emotion && (
+                <div className="ticket-description">
+                  <h3>AI Emotion Suggestion</h3>
+
+                  <p>
+                    <strong>Suggested emotion:</strong>{' '}
+                    {ticket.emotion.charAt(0).toUpperCase() +
+                      ticket.emotion.slice(1)}
+                  </p>
+
+                  {ticket.emotionReason && (
+                    <p>
+                      <strong>Reason:</strong>{' '}
+                      {ticket.emotionReason}
+                    </p>
+                  )}
+
+                  <p>
+                    <small>
+                      AI-generated suggestion based on the ticket
+                      wording. It may be inaccurate and should be
+                      reviewed by support staff.
+                    </small>
+                  </p>
+                </div>
+              )}
+
 
               {isStaff && (
                 <button
