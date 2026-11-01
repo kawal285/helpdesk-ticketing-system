@@ -1,3 +1,4 @@
+// Mock AI services so tests remain fast, deterministic and offline.
 jest.mock('../src/services/aiService', () => ({
   getAiSuggestions: jest.fn().mockResolvedValue({
     category: null,
@@ -13,8 +14,6 @@ jest.mock('../src/services/emotionDetectionService', () => ({
     isSuggestion: true,
   }),
 }));
-
-
 const request = require('supertest');
 const app = require('../src/app');
 const { Op } = require('sequelize');

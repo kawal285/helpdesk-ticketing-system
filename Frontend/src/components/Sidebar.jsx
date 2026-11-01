@@ -13,7 +13,7 @@ const NAV_ITEMS = [
   {
     key: 'aiAssistant',
     label: 'AI Assistant',
-    roles: ['customer'],
+    roles: ['customer', 'agent', 'admin'],
   },
   {
     key: 'manageUsers',
