@@ -123,23 +123,15 @@ const createTicket = catchAsync(
       parentCaseId,
     } = req.body;
 
-    const createdAt = new Date();
+      const createdAt = new Date();
 
     /*
-     * AI is only required when category or priority was not
-     * selected. AI failure must never prevent ticket creation.
+     * AI analyses every ticket for staff recommendations.
+     * Customer-selected values always take priority.
+     * AI failure must never prevent ticket creation.
      */
-    const needsAi = !category || !priority;
+    const ai = await getAiSuggestions(description);
 
-    const ai = needsAi
-      ? await getAiSuggestions(description)
-      : {
-          category: null,
-          priority: null,
-          suggestedResponse: null,
-        };
-
-        
     // Emotion detection is advisory only and must not block ticket creation.
     let emotionAnalysis = {
       emotion: null,
