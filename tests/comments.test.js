@@ -2,6 +2,13 @@ jest.mock('../src/services/aiService', () => ({
   getAiSuggestions: jest.fn().mockResolvedValue({ category: null, priority: null, suggestedResponse: null }),
 }));
 
+jest.mock('../src/services/emotionDetectionService', () => ({
+  detectEmotion: jest.fn().mockResolvedValue({
+    emotion: 'neutral',
+    reason: 'Test emotion result.',
+    isSuggestion: true,
+  }),
+}));
 const request = require('supertest');
 const app = require('../src/app');
 const { sequelize } = require('../src/models');
