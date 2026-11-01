@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useState } from 'react';
 
 const CATEGORIES = [
   'Hardware',
@@ -8,44 +8,10 @@ const CATEGORIES = [
   'Other',
 ];
 
-const PRIORITIES = [
-  {
-    value: 'Trivial',
-    label: 'P5 – Trivial',
-    description: 'Trivial request or cosmetic issue',
-    businessDays: 20,
-  },
-  {
-    value: 'Low',
-    label: 'P4 – Low',
-    description: 'General request or minor issue',
-    businessDays: 10,
-  },
-  {
-    value: 'Medium',
-    label: 'P3 – Medium',
-    description: 'Work is affected, but an alternative is available',
-    businessDays: 5,
-  },
-  {
-    value: 'High',
-    label: 'P2 – High',
-    description: 'Important work cannot continue',
-    businessDays: 2,
-  },
-  {
-    value: 'Critical',
-    label: 'P1 – Critical',
-    description: 'Major outage, safety issue or security incident',
-    businessDays: 1,
-  },
-];
-
 const EMPTY_FORM = {
   title: '',
   description: '',
   category: '',
-  priority: '',
   room: '',
 };
 
@@ -187,17 +153,6 @@ const styles = {
     lineHeight: 1.55,
   },
 
-  priorityBox: {
-    marginTop: 10,
-    padding: 12,
-    color: '#7a3a00',
-    background: '#fff4e8',
-    borderLeft: '4px solid #f37021',
-    borderRadius: 4,
-    fontSize: 13,
-    lineHeight: 1.5,
-  },
-
   actionRow: {
     display: 'flex',
     flexWrap: 'wrap',
@@ -237,22 +192,10 @@ export default function NewTicketPage({
       initialData.category ||
       initialData.suggestedCategory ||
       '',
-    priority:
-      initialData.priority ||
-      initialData.suggestedPriority ||
-      '',
   });
 
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-
-  const selectedPriority = useMemo(
-    () =>
-      PRIORITIES.find(
-        (priority) => priority.value === form.priority
-      ),
-    [form.priority]
-  );
 
   function updateField(key, value) {
     setForm((currentForm) => ({
@@ -300,10 +243,6 @@ export default function NewTicketPage({
 
       ...(form.category && {
         category: form.category,
-      }),
-
-      ...(form.priority && {
-        priority: form.priority,
       }),
 
       ...(form.room.trim() && {
@@ -445,52 +384,6 @@ export default function NewTicketPage({
               </small>
             </div>
 
-            <div className="field">
-              <label htmlFor="priority">
-                Priority
-              </label>
-
-              <select
-                id="priority"
-                name="priority"
-                value={form.priority}
-                onChange={(event) =>
-                  updateField('priority', event.target.value)
-                }
-              >
-                <option value="">Let AI suggest</option>
-
-                {PRIORITIES.map((priority) => (
-                  <option
-                    key={priority.value}
-                    value={priority.value}
-                  >
-                    {priority.label} – {priority.businessDays}{' '}
-                    business day
-                    {priority.businessDays === 1 ? '' : 's'}
-                  </option>
-                ))}
-              </select>
-
-              {selectedPriority && (
-                <div style={styles.priorityBox}>
-                  <strong>{selectedPriority.label}</strong>
-                  <br />
-
-                  {selectedPriority.description}
-                  <br />
-
-                  Target completion:{' '}
-                  <strong>
-                    {selectedPriority.businessDays} business day
-                    {selectedPriority.businessDays === 1
-                      ? ''
-                      : 's'}
-                  </strong>
-                </div>
-              )}
-            </div>
-
             <div style={styles.fullWidth} className="field">
               <label htmlFor="room">
                 Room
@@ -548,11 +441,13 @@ export default function NewTicketPage({
 
           <p style={styles.informationText}>
             The system records your name and email from your
-            logged-in account. AI reviews the description and can
-            suggest a category, priority and initial response. An
-            administrator can then assign the appropriate support
-            agent. Your ticket will show its status, assigned
-            person and target completion date.
+            logged-in account. AI reviews the description to set
+            the ticket's priority and target completion date, and
+            can suggest a category and initial response. A support
+            agent may adjust the priority after reviewing your
+            case. An administrator can then assign the appropriate
+            support agent. Your ticket will show its status,
+            assigned person and target completion date.
           </p>
         </div>
 
