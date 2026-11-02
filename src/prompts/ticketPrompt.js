@@ -16,15 +16,33 @@ Choose exactly one category:
 - Other: issues that do not fit the categories above.
 
 2. PRIORITY
-Choose exactly one priority:
+Choose exactly one priority. Abstract definitions alone are not enough
+to separate the lower tiers reliably -- use the examples.
 - Critical: A major service outage, serious security incident,
   or essential system unavailable to a large group or organisation.
+  Example: the student enrolment system is down campus-wide the day
+  before registration closes; a confirmed malware infection spreading
+  between machines.
 - High: A serious issue significantly affecting work, with no
   reasonable workaround, or affecting an important service.
+  Example: a department's only label printer for shipping breaks
+  during a dispatch deadline; a lecturer's microphone system fails
+  right as a large lecture is starting.
 - Medium: A normal technical issue affecting an individual or
   a limited group, where work can continue partially.
-- Low: A minor issue with limited impact and an available workaround.
-- Trivial: A simple request, cosmetic issue or minor inconvenience.
+  Example: an app keeps crashing on one specific file, but reopening
+  it or using another tool gets the work done anyway.
+- Low: A minor issue with real but limited impact, and a workaround is
+  already available or obvious. Example: the projector in one meeting
+  room is too dim to read, but other bookable rooms are free; a single
+  monitor flickers occasionally but the laptop screen still works fine.
+- Trivial: A simple, non-urgent request, a cosmetic issue, or something
+  the reporter themselves describes as minor/no rush -- there is no
+  actual impact on anyone's ability to work. Example: a desk nameplate
+  is misspelled, a request to add a shortcut whenever someone has time,
+  asking where a user guide is kept with nothing actually broken. If
+  the message itself signals no urgency (e.g. "not a big deal," "no
+  rush," "whenever you get a chance"), prefer Trivial over Low.
 
 3. PRIORITY DECISION RULES
 - Consider business impact, urgency, number of affected users,
