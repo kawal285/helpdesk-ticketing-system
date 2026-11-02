@@ -1,6 +1,17 @@
-import { useCallback, useEffect, useState } from 'react';
-import { Flag } from 'lucide-react';
 
+import { useEffect, useState } from 'react';
+import {
+  ArrowRight,
+  BookOpen,
+  Bot,
+  CheckCircle2,
+  CircleDot,
+  Clock3,
+  Flag,
+} from 'lucide-react';
+
+
+// Shared status labels keep customer and staff views consistent.
 const STATUS_LABELS = {
   Open: 'Open',
   'In Progress': 'In Progress',
@@ -42,22 +53,26 @@ export default function DashboardPage({
   const [organizationFilter, setOrganizationFilter] = useState('');
   const [agents, setAgents] = useState([]);
 
-  const isCustomer = user.role === 'customer';
-  const isAgent = user.role === 'agent';
-  const isAdmin = user.role === 'admin';
+  const isCustomer = user?.role === 'customer';
+  const isAgent = user?.role === 'agent';
+  const isAdmin = user?.role === 'admin';
   const isStaff = isAgent || isAdmin;
+
+  const storedName = user?.name?.trim() || 'User';
+  const displayName =
+    storedName.charAt(0).toUpperCase() + storedName.slice(1);
 
   const pageTitle = isAdmin
     ? 'All Tickets'
     : isAgent
       ? 'Support Queue'
-      : 'My Tickets';
+      : `Welcome back, ${displayName}`;
 
   const pageDescription = isAdmin
     ? 'Monitor, assign and manage all support tickets.'
     : isAgent
       ? 'View assigned and available support tickets.'
-      : 'Create and track your support requests.';
+      : 'Here is an overview of your support requests.';
 
   useEffect(() => {
     if (!isAdmin) return;
@@ -175,6 +190,97 @@ export default function DashboardPage({
       : `Agent #${ticket.assigneeId}`;
   }
 
+  const customerCounts = {
+    Open: tickets.filter((ticket) => ticket.status === 'Open').length,
+    'In Progress': tickets.filter(
+      (ticket) => ticket.status === 'In Progress'
+    ).length,
+    Resolved: tickets.filter(
+      (ticket) => ticket.status === 'Resolved'
+    ).length,
+    Closed: tickets.filter((ticket) => ticket.status === 'Closed')
+      .length,
+  };
+
+  const totalCustomerTickets = tickets.length;
+  const openEnd = totalCustomerTickets
+    ? (customerCounts.Open / totalCustomerTickets) * 100
+    : 0;
+  const progressEnd = totalCustomerTickets
+    ? openEnd +
+      (customerCounts['In Progress'] / totalCustomerTickets) * 100
+    : 0;
+  const resolvedEnd = totalCustomerTickets
+    ? progressEnd +
+      (customerCounts.Resolved / totalCustomerTickets) * 100
+    : 0;
+
+  const chartBackground = totalCustomerTickets
+    ? `conic-gradient(
+        ${STATUS_COLORS.Open} 0 ${openEnd}%,
+        ${STATUS_COLORS['In Progress']} ${openEnd}% ${progressEnd}%,
+        ${STATUS_COLORS.Resolved} ${progressEnd}% ${resolvedEnd}%,
+        ${STATUS_COLORS.Closed} ${resolvedEnd}% 100%
+      )`
+    : '#e5e9ed';
+
+  const customerSummaryCards = [
+    {
+      label: 'Open',
+      value: customerCounts.Open,
+      color: STATUS_COLORS.Open,
+      background: '#fff5ee',
+      icon: CircleDot,
+    },
+    {
+      label: 'In Progress',
+      value: customerCounts['In Progress'],
+      color: STATUS_COLORS['In Progress'],
+      background: '#eef7fd',
+      icon: Clock3,
+    },
+    {
+      label: 'Awaiting Review',
+      value: customerCounts.Resolved,
+      color: STATUS_COLORS.Resolved,
+      background: '#f4fae9',
+      icon: CheckCircle2,
+    },
+    {
+      label: 'Closed',
+      value: customerCounts.Closed,
+      color: STATUS_COLORS.Closed,
+      background: '#f1f3f4',
+      icon: CheckCircle2,
+    },
+  ];
+
+  const recentCustomerTickets = [...tickets]
+    .sort(
+      (first, second) =>
+        new Date(second.updatedAt || second.createdAt || 0) -
+        new Date(first.updatedAt || first.createdAt || 0)
+    )
+    .slice(0, 3);
+
+  const helpTopics = [
+    'Password and sign-in help',
+    'Wi-Fi and network problems',
+    'Printer troubleshooting',
+  ];
+
+  function formatTicketDate(ticket) {
+    const value = ticket.updatedAt || ticket.createdAt;
+
+    if (!value) return 'Recently updated';
+
+    return `Updated ${new Date(value).toLocaleDateString('en-NZ', {
+      day: 'numeric',
+      month: 'short',
+      year: 'numeric',
+    })}`;
+  }
+
   return (
     <main
       style={{
@@ -230,7 +336,7 @@ export default function DashboardPage({
                 color: '#7b8794',
               }}
             >
-              Logged in as {user.name} ({user.role})
+              Logged in as {user?.name || 'User'} ({user?.role || 'customer'})
             </small>
           </div>
 
@@ -381,7 +487,400 @@ export default function DashboardPage({
           <div className="error-text">{error}</div>
         )}
 
-        {!loading && !error && tickets.length === 0 && (
+        {isCustomer && !loading && !error && (
+          <>
+            <div
+              style={{
+                display: 'grid',
+                gridTemplateColumns:
+                  'repeat(auto-fit, minmax(170px, 1fr))',
+                gap: 14,
+                marginBottom: 22,
+              }}
+            >
+              {customerSummaryCards.map((card) => {
+                const Icon = card.icon;
+
+                return (
+                  <div
+                    key={card.label}
+                    style={{
+                      padding: 18,
+                      border: `1px solid ${card.color}33`,
+                      borderLeft: `5px solid ${card.color}`,
+                      borderRadius: 10,
+                      background: card.background,
+                    }}
+                  >
+                    <div
+                      style={{
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
+                        gap: 12,
+                      }}
+                    >
+                      <div>
+                        <div
+                          style={{
+                            color: '#656a7d',
+                            fontSize: 13,
+                            fontWeight: 700,
+                            textTransform: 'uppercase',
+                            letterSpacing: 0.4,
+                          }}
+                        >
+                          {card.label}
+                        </div>
+
+                        <div
+                          style={{
+                            marginTop: 5,
+                            color: '#10142b',
+                            fontSize: 30,
+                            fontWeight: 800,
+                          }}
+                        >
+                          {card.value}
+                        </div>
+                      </div>
+
+                      <Icon
+                        size={28}
+                        color={card.color}
+                        aria-hidden="true"
+                      />
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+
+            <div
+              style={{
+                display: 'grid',
+                gridTemplateColumns:
+                  'repeat(auto-fit, minmax(300px, 1fr))',
+                gap: 18,
+                marginBottom: 22,
+              }}
+            >
+              <section
+                style={{
+                  padding: 20,
+                  border: '1px solid #d9e1e8',
+                  borderRadius: 10,
+                  background: '#ffffff',
+                }}
+              >
+                <h2
+                  style={{
+                    margin: '0 0 18px',
+                    color: '#10142b',
+                    fontSize: 20,
+                  }}
+                >
+                  Ticket progress
+                </h2>
+
+                <div
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: 28,
+                    flexWrap: 'wrap',
+                  }}
+                >
+                  <div
+                    role="img"
+                    aria-label={`${totalCustomerTickets} total tickets grouped by status`}
+                    style={{
+                      position: 'relative',
+                      width: 150,
+                      height: 150,
+                      borderRadius: '50%',
+                      background: chartBackground,
+                    }}
+                  >
+                    <div
+                      style={{
+                        position: 'absolute',
+                        inset: 28,
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        borderRadius: '50%',
+                        background: '#ffffff',
+                      }}
+                    >
+                      <strong
+                        style={{
+                          color: '#10142b',
+                          fontSize: 26,
+                        }}
+                      >
+                        {totalCustomerTickets}
+                      </strong>
+                      <span
+                        style={{
+                          color: '#7b8794',
+                          fontSize: 12,
+                        }}
+                      >
+                        Total tickets
+                      </span>
+                    </div>
+                  </div>
+
+                  <div
+                    style={{
+                      display: 'grid',
+                      gap: 10,
+                    }}
+                  >
+                    {Object.entries(STATUS_LABELS).map(
+                      ([status, label]) => (
+                        <div
+                          key={status}
+                          style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: 8,
+                            color: '#4f5668',
+                            fontSize: 13,
+                          }}
+                        >
+                          <span
+                            aria-hidden="true"
+                            style={{
+                              width: 10,
+                              height: 10,
+                              borderRadius: '50%',
+                              background: STATUS_COLORS[status],
+                            }}
+                          />
+                          {label}
+                        </div>
+                      )
+                    )}
+                  </div>
+                </div>
+              </section>
+
+              <section
+                style={{
+                  padding: 20,
+                  border: '1px solid #d9e1e8',
+                  borderRadius: 10,
+                  background: '#ffffff',
+                }}
+              >
+                <div
+                  style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    gap: 12,
+                    marginBottom: 12,
+                  }}
+                >
+                  <h2
+                    style={{
+                      margin: 0,
+                      color: '#10142b',
+                      fontSize: 20,
+                    }}
+                  >
+                    Recent activity
+                  </h2>
+
+                  <span
+                    style={{
+                      color: '#7b8794',
+                      fontSize: 12,
+                    }}
+                  >
+                    Latest 3
+                  </span>
+                </div>
+
+                {recentCustomerTickets.length === 0 ? (
+                  <div
+                    style={{
+                      padding: '26px 12px',
+                      color: '#656a7d',
+                      textAlign: 'center',
+                    }}
+                  >
+                    You have not created any tickets yet.
+                  </div>
+                ) : (
+                  <div style={{ display: 'grid', gap: 8 }}>
+                    {recentCustomerTickets.map((ticket) => (
+                      <button
+                        key={ticket.id}
+                        type="button"
+                        onClick={() => onSelectTicket(ticket.id)}
+                        style={{
+                          display: 'grid',
+                          gridTemplateColumns: '1fr auto',
+                          gap: 12,
+                          width: '100%',
+                          padding: 12,
+                          color: '#10142b',
+                          background: '#f7f9fb',
+                          border: '1px solid #e5e9ed',
+                          borderRadius: 8,
+                          textAlign: 'left',
+                          cursor: 'pointer',
+                        }}
+                      >
+                        <span style={{ minWidth: 0 }}>
+                          <strong
+                            style={{
+                              display: 'block',
+                              overflow: 'hidden',
+                              textOverflow: 'ellipsis',
+                              whiteSpace: 'nowrap',
+                            }}
+                            title={ticket.title}
+                          >
+                            TK-{ticket.id} · {ticket.title}
+                          </strong>
+                          <small
+                            style={{
+                              display: 'block',
+                              marginTop: 4,
+                              color: '#7b8794',
+                            }}
+                          >
+                            {formatTicketDate(ticket)}
+                          </small>
+                        </span>
+
+                        <span
+                          style={{
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: 7,
+                            color: '#4f5668',
+                            fontSize: 12,
+                            whiteSpace: 'nowrap',
+                          }}
+                        >
+                          <span
+                            aria-hidden="true"
+                            style={{
+                              width: 8,
+                              height: 8,
+                              borderRadius: '50%',
+                              background:
+                                STATUS_COLORS[ticket.status] ||
+                                '#7b8794',
+                            }}
+                          />
+                          {STATUS_LABELS[ticket.status] ||
+                            ticket.status}
+                        </span>
+                      </button>
+                    ))}
+                  </div>
+                )}
+
+                <p
+                  style={{
+                    margin: '12px 0 0',
+                    color: '#7b8794',
+                    fontSize: 12,
+                    textAlign: 'right',
+                  }}
+                >
+                  Use the Tickets menu to view the complete list.
+                </p>
+              </section>
+            </div>
+
+            <section
+              style={{
+                padding: 20,
+                border: '1px solid #d9e1e8',
+                borderRadius: 10,
+                background: '#f7f9fb',
+              }}
+            >
+              <div
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 9,
+                  marginBottom: 14,
+                }}
+              >
+                <BookOpen
+                  size={21}
+                  color="#005a9c"
+                  aria-hidden="true"
+                />
+                <h2
+                  style={{
+                    margin: 0,
+                    color: '#10142b',
+                    fontSize: 20,
+                  }}
+                >
+                  Suggested help
+                </h2>
+              </div>
+
+              <div
+                style={{
+                  display: 'grid',
+                  gridTemplateColumns:
+                    'repeat(auto-fit, minmax(210px, 1fr))',
+                  gap: 12,
+                }}
+              >
+                {helpTopics.map((topic) => (
+                  <button
+                    key={topic}
+                    type="button"
+                    onClick={onAiAssistant}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      gap: 12,
+                      padding: 14,
+                      color: '#005a9c',
+                      background: '#ffffff',
+                      border: '1px solid #d9e1e8',
+                      borderRadius: 8,
+                      fontWeight: 700,
+                      textAlign: 'left',
+                      cursor: 'pointer',
+                    }}
+                  >
+                    <span
+                      style={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: 9,
+                      }}
+                    >
+                      <Bot size={18} aria-hidden="true" />
+                      {topic}
+                    </span>
+                    <ArrowRight size={17} aria-hidden="true" />
+                  </button>
+                ))}
+              </div>
+            </section>
+          </>
+        )}
+
+        {isStaff && !loading && !error && tickets.length === 0 && (
           <div
             style={{
               padding: 24,
@@ -391,13 +890,11 @@ export default function DashboardPage({
               textAlign: 'center',
             }}
           >
-            {isCustomer
-              ? 'You have not created any tickets yet.'
-              : 'No tickets are currently available.'}
+            No tickets are currently available.
           </div>
         )}
 
-        {!loading && !error && tickets.length > 0 && (
+        {isStaff && !loading && !error && tickets.length > 0 && (
           <div style={{ overflowX: 'auto' }}>
             <table
               style={{
