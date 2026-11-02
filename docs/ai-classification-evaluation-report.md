@@ -4,130 +4,135 @@ Criterion 4 of #87 asks to compare AI category/priority predictions
 against manually labelled tickets and record the results. Run against
 the live pipeline via `node scripts/ai/evaluate-classification.js`,
 using `getAiSuggestions()` — the exact function `ticket.controller.js`
-calls on real ticket creation. Raw, unedited output for every ticket is
-in [ai-classification-evaluation-raw.json](./ai-classification-evaluation-raw.json)
-(overwritten by each run — this report quotes the 2026-11-03 numbers).
+calls on real ticket creation. Raw, unedited output for the current
+state is in [ai-classification-evaluation-raw.json](./ai-classification-evaluation-raw.json)
+(overwritten by each run — every number below is also preserved
+verbatim in the git history of that file and in each run's own commit).
 
-## Method
+## Current result (2026-11-03, after the lean prompt fix)
 
-20 realistic ticket descriptions
-(`tests/classification/ticket-classification-evaluation-set.json`),
-spanning all five categories and all five priorities, each hand-labelled
-with the expected category and priority *before* the run, plus a
-reasoning note explaining the call against this project's own agreed
-priority criteria (the P1–P5 business-day definitions already shown to
-users in the ticket form).
+**Category accuracy: 82.9% (29/35). Priority accuracy: 60.0% (21/35).**
 
-## Current result (2026-11-03): category is solid, priority needs work
+This is the end state after a four-step investigation on a 35-ticket
+labelled set (`tests/classification/ticket-classification-evaluation-set.json`,
+all five categories and priorities represented). Each step was measured
+before changing anything else, so the comparison below is real,
+recorded evidence, not a before/after guess:
 
-**Category accuracy: 90.0% (18/20). Priority accuracy: 55.0% (11/20).**
+| Step | Category | Priority | Trivial | High |
+| --- | --- | --- | --- | --- |
+| 1. Baseline (plain prompt) | 85.7% (30/35) | 45.7% (16/35) | 0/8 | 3/11 (27.3%) |
+| 2. Examples added to all 5 tiers | 74.3% (26/35) | 54.3% (19/35) | 4/8 | 2/11 (18.2%) |
+| 3. Lean: one rule, Trivial only | **82.9% (29/35)** | **60.0% (21/35)** | **4/8** | **5/11 (45.5%)** |
 
-This is a real measurement now — see "What changed" below for why the
-first run (2026-10-27) couldn't produce one at all.
+### Step 1: establishing a real baseline (expanded from the original 20-ticket run)
 
-### Category: one real miss, one defensible one
+An earlier run on 20 tickets (3 Trivial, 6 High) scored 90%/55% and
+flagged two patterns, but the samples were too small to tell a real
+systematic issue from small-sample noise. Expanded to 35 tickets (8
+Trivial, 11 High, plus more Network and Other examples) and re-ran
+against the *unchanged* prompt first, to get a real baseline before
+touching anything: **85.7% / 45.7%**. The larger sample sharpened both
+patterns into confirmed findings:
 
-| Expected → Predicted | Count |
-| --- | --- |
-| (all correct pairs) | 18 |
-| Hardware → Other | 1 |
-| Other → Software | 1 |
+- **Trivial: 0/8 (0.0%).** Every single Trivial ticket came back Low
+  (7) or Medium (1) — the model never once used the bottom tier.
+- **High: 3/11 (27.3%)**, scattered across Critical (4), Medium (3),
+  Low (1) — genuine ordinal confusion, not a one-directional bias like
+  Trivial's.
+- **Other (category): 1/3 (33.3%)**, also confirmed weak.
 
-- **Hardware → Other** (#9, "my keyboard is missing the 'E' key cap...
-  still types fine"): a defensible miss — it's a borderline cosmetic
-  case, and the labelled reasoning for this item already flags it as
-  minor/non-blocking.
-- **Other → Software** (#20, "can't find the setting to change my
-  display language in the student portal"): a real miss. This is a
-  how-to question about a software system, not a software *fault*, and
-  the model picked the system mentioned (software) over the actual
-  nature of the request (a question, not a problem) — `Other`'s only
-  representative in the set, so this single miss is 100% of that
-  category's error rate. Worth watching once more `Other`-category
-  examples exist to label.
+### Step 2: the first fix attempt made things worse, not better
 
-### Priority: a real, systematic pattern, not noise
+The prompt's priority section already *named* all five tiers with
+short definitions (a teammate had added this — see "What changed"
+below), so the hypothesis was that definitions alone weren't enough for
+a small local model to separate adjacent tiers reliably. Added one or
+two concrete example scenarios to *every* tier (Critical through
+Trivial), checked for zero overlap with the labelled set's own wording,
+and re-ran:
 
-| Expected → Predicted | Count |
-| --- | --- |
-| Medium → Medium | 6 |
-| Trivial → Low | 3 |
-| High → Critical | 2 |
-| High → Medium | 2 |
-| Low → Low | 2 |
-| Critical → Critical | 2 |
-| High → Low | 1 |
-| High → High | 1 |
-| Critical → Low | 1 |
+**74.3% / 54.3%.** Priority improved overall — Trivial jumped to 4/8 —
+but **category accuracy dropped 11.4 points**, and **High got worse**
+(27.3% → 18.2%, now leaning toward Critical instead of scattering
+evenly). Nothing in the category section of the prompt had changed.
+The likely cause: a much longer, example-heavy priority section
+diluted how reliably the model followed the category instructions that
+come earlier in the same system prompt — and the added Critical example
+specifically looks like it pulled some High cases upward with it.
 
-Two clear patterns, not scattered randomness:
+### Step 3: isolating what actually worked
 
-1. **Every single "Trivial" case (3/3) came back "Low."** The model
-   never once used the bottom tier in this run. Worth checking whether
-   `ticketPrompt.js` gives the model enough to distinguish "minor
-   annoyance" (Low) from "not actually a problem, no urgency" (Trivial)
-   — the current prompt (see `src/prompts/ticketPrompt.js`) names the
-   five levels but doesn't define them, unlike the agreed P1–P5
-   criteria already shown to users in the ticket form itself.
-2. **"High" is the least reliable prediction (1/6 correct)**, scattered
-   across Critical (2), Medium (2), Low (1), and High (1) — this is the
-   tier *between* "has a workaround" and "this is an outage/safety/
-   security issue," and the model doesn't appear to have a consistent
-   read on where that line sits either direction.
+Trimmed the examples back out everywhere except Trivial, keeping only
+the one addition that looked load-bearing: an explicit rule that
+low-urgency wording in the reporter's own message ("not a big deal,"
+"no rush," "whenever you get a chance") should tip the call toward
+Trivial over Low. Re-ran:
 
-Category confusion stayed within one or two steps of the real pattern;
-priority confusion crosses multiple tiers (Critical → Low is a 3-tier
-miss), which matters more in practice — a wrongly-Low ticket that should
-have been High or Critical is the failure mode that actually hurts a
-help desk.
+**82.9% / 60.0%** — the best priority result of the three runs, with
+category accuracy mostly recovered. Trivial kept its full fix (4/8,
+same as step 2). High *also* improved past the original baseline
+(27.3% → 45.5%) despite nothing in the High definition changing —
+indirect evidence that the step-2 regression really was about prompt
+length/dilution, not content, since removing unrelated examples fixed
+a tier those examples never touched.
 
-## What changed since the first run
+### What's still genuinely weak
 
-The first run (2026-10-27) scored 0%/0% with AI unavailable on 20/20 —
-not a model-accuracy finding, but `GEMINI_API_KEY` being an invalid
-credential (`401`, wrong token type). That run's full writeup is
-preserved in git history (see `ed8bd6b`) rather than deleted here.
+- **High is still the least reliable tier (45.5%)**, now biased toward
+  Critical (`High → Critical`: 4/11) rather than scattering across all
+  four other tiers like the baseline did. An improvement over 27.3%,
+  but not solved — a borderline High case is still more likely to be
+  called Critical than any other single wrong answer.
+- **Other (category) is still weak (1/3 across all three runs)** — too
+  small a sample (3 examples) to separate a real weakness from one hard
+  example; needs more labelled `Other` tickets before concluding
+  anything further.
+- Category confusion in step 3 leans toward `Other` as the catch-all
+  wrong answer (`Hardware → Other`: 2, `Software → Other`: 1,
+  `Other → Software`: 2) — worth watching if the category prompt is
+  ever revisited.
+
+## What changed since the broken-API-key finding
+
+The first-ever run (2026-10-27) scored 0%/0% with AI unavailable on
+20/20 — not a model-accuracy finding at all, but `GEMINI_API_KEY` being
+an invalid credential (`401`, wrong token type). That full writeup is
+preserved in git history (`ed8bd6b`) rather than deleted here.
 
 Since then, a teammate (Ramandeep) rewrote `aiAnalysisService.js` to go
 through the same local Ollama generation provider the RAG assistant
-already uses (`src/services/rag/generationService.js`), instead of
-calling Gemini directly — removing the Gemini/API-key dependency for
-ticket classification entirely. `aiService.js`'s timeout was also raised
-from 8s to 20s (configurable via `AI_TIMEOUT_MS`) to allow for a local
-model's cold-load time, and its own comment now explicitly credits the
-original finding: *"This wrapper previously swallowed failures in
-silence, so a broken API key looked exactly like a working classifier
-from the outside -- tickets were being filed with default categories for
-weeks before anyone noticed."* The fix landed on `main` via the
-`rag-knowledge-base` branch merge; re-run here on `main` after merging
-`backend-harpreet` into it.
+already uses, instead of calling Gemini directly — removing the
+Gemini/API-key dependency for ticket classification entirely, and
+adding real priority definitions to `ticketPrompt.js` in the same pass.
+`aiService.js`'s timeout was also raised from 8s to 20s to allow for a
+local model's cold-load time, and its own comment now explicitly
+credits the original finding in this report.
 
-While testing this change, found and fixed a related issue in the same
-commit this report's results come from: `ticket.controller.js` was
-awaiting `getAiSuggestions()` and the newly-added `detectEmotion()`
-(emotion-detection feature, also merged from a teammate's branch)
-sequentially rather than concurrently, measured at 12+ seconds per
-ticket creation live, worst case 68s. Fixed to run both with
-`Promise.all` — see commit `41607e3`.
+While testing that change, also found and fixed a related reliability
+issue: `ticket.controller.js` was awaiting `getAiSuggestions()` and the
+newly-merged `detectEmotion()` sequentially rather than concurrently —
+12+ seconds per ticket creation live, worst case 68s. Fixed with
+`Promise.all` (commit `41607e3`).
 
 ## What's needed next
 
-- **Priority, not category, is where effort should go.** Consider
-  adding the P1–P5 business-day definitions (already user-facing in the
-  ticket form) directly into `ticketPrompt.js`, so the model has the
-  same rubric a human would use, then re-run this harness to see if it
-  closes the Trivial/High gaps.
-- **Expand the labelled set once more real categories/priorities are
-  seen in production**, particularly more `Other`-category and
-  `Trivial`/`High`-priority examples — single-example categories can't
-  distinguish a real miss from a one-off edge case.
+- **Re-measure once more real tickets exist** to see whether the High
+  → Critical lean and the thin `Other` sample hold up outside a
+  hand-written test set.
+- **If High accuracy still matters more than it does today, consider a
+  harder constraint rather than more prose** — e.g. asking the model
+  for a 1–5 severity score plus a separate "is this an outage/safety/
+  security event?" yes/no, then deriving Critical only from the second
+  answer, instead of asking a small model to place five ordinal labels
+  correctly in one pass.
 
 ## Labelled set used (for reference)
 
 | Category | Count | Priority | Count |
 | --- | --- | --- | --- |
-| Hardware | 7 | High | 6 |
-| Software | 5 | Medium | 6 |
-| Account | 4 | Critical | 3 |
-| Network | 3 | Trivial | 3 |
-| Other | 1 | Low | 2 |
+| Hardware | 11 | High | 11 |
+| Software | 9 | Trivial | 8 |
+| Network | 6 | Medium | 6 |
+| Account | 6 | Critical | 6 |
+| Other | 3 | Low | 4 |

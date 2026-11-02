@@ -94,11 +94,13 @@ This document.
   already uses, removing the Gemini/API-key dependency for ticket
   classification entirely (`aiService.js`'s own comment now credits the
   original finding from this report). Re-ran the classification
-  evaluation against the fix: 90% category / 55% priority accuracy, a
-  real measurement for the first time. See
+  evaluation against the fix, then expanded the labelled set from 20 to
+  35 tickets and iterated on the priority prompt: current state is 82.9%
+  category / 60.0% priority accuracy, up from an original 45.7% priority
+  baseline at the larger sample size. See
   [ai-classification-evaluation-report.md](./ai-classification-evaluation-report.md)
-  for the current numbers and what they show. Testing this fix also
-  surfaced a new, separate reliability issue — see below.
+  for the full investigation and what's still weak. Testing this fix
+  also surfaced a new, separate reliability issue — see below.
 - **Ticket creation was awaiting two independent AI calls sequentially**
   (`getAiSuggestions()` and the newly-merged `detectEmotion()`), found
   while testing the fix above: 12+ seconds per ticket creation measured
