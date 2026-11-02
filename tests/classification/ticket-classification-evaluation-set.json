@@ -138,5 +138,110 @@
     "expectedCategory": "Other",
     "expectedPriority": "Trivial",
     "reasoning": "A how-to question rather than a fault with hardware, software or network, and nothing is actually broken."
+  },
+  {
+    "id": 21,
+    "description": "The office WiFi has completely vanished from the list of available networks on every device, not just mine.",
+    "expectedCategory": "Network",
+    "expectedPriority": "High",
+    "reasoning": "A serious issue significantly affecting work with no reasonable workaround stated -- ticketPrompt.js's own High definition."
+  },
+  {
+    "id": 22,
+    "description": "Video calls keep freezing for everyone on our team during client meetings, happened twice this morning already.",
+    "expectedCategory": "Network",
+    "expectedPriority": "High",
+    "reasoning": "Significantly affects work for a team with no workaround offered -- client-facing, no reasonable alternative stated."
+  },
+  {
+    "id": 23,
+    "description": "I can't print over the network from my desk, but I can save the file to a USB stick and print from another computer down the hall.",
+    "expectedCategory": "Network",
+    "expectedPriority": "Low",
+    "reasoning": "Minor impact with a clearly available workaround -- the prompt's own Low definition, almost verbatim."
+  },
+  {
+    "id": 24,
+    "description": "Quick question -- what's the policy on using a personal phone for two-factor authentication?",
+    "expectedCategory": "Other",
+    "expectedPriority": "Trivial",
+    "reasoning": "A policy question, not a fault; nothing is broken and nothing is urgent."
+  },
+  {
+    "id": 25,
+    "description": "Could someone point me to the IT training videos for new starters? No rush, just getting settled in.",
+    "expectedCategory": "Other",
+    "expectedPriority": "Trivial",
+    "reasoning": "Explicitly \"no rush\"; a simple request with no technical problem behind it."
+  },
+  {
+    "id": 26,
+    "description": "None of the laptops in the training room will turn on and a certification exam starts in 20 minutes.",
+    "expectedCategory": "Hardware",
+    "expectedPriority": "High",
+    "reasoning": "Serious, time-critical, no workaround -- but scoped to one room's equipment, not an essential system down for a large group/org, so High rather than Critical."
+  },
+  {
+    "id": 27,
+    "description": "The license for our design software expired overnight and nobody on the team can open their project files until it's renewed.",
+    "expectedCategory": "Software",
+    "expectedPriority": "High",
+    "reasoning": "Blocks a whole team from their work with no reasonable workaround -- a licensing problem, not an outage affecting a large group/org, so High."
+  },
+  {
+    "id": 28,
+    "description": "My work email is completely locked and I can't reach anyone for help -- I have a client proposal due today.",
+    "expectedCategory": "Account",
+    "expectedPriority": "High",
+    "reasoning": "Total lockout from a core system with real business impact today and no stated alternative -- not an org-wide outage, so High."
+  },
+  {
+    "id": 29,
+    "description": "The clock on the breakroom microwave is showing the wrong time. Not a big deal, just noticed it.",
+    "expectedCategory": "Hardware",
+    "expectedPriority": "Trivial",
+    "reasoning": "Explicitly minor (\"not a big deal\"), cosmetic, and doesn't affect anyone's actual work."
+  },
+  {
+    "id": 30,
+    "description": "My desktop wallpaper keeps resetting to the default company image every time I log back in.",
+    "expectedCategory": "Software",
+    "expectedPriority": "Trivial",
+    "reasoning": "Cosmetic annoyance with zero effect on the ability to do any actual work."
+  },
+  {
+    "id": 31,
+    "description": "Could I get the newer version of Slack installed sometime? Whenever's convenient, no particular hurry.",
+    "expectedCategory": "Software",
+    "expectedPriority": "Trivial",
+    "reasoning": "Explicitly no hurry; a simple request rather than something broken."
+  },
+  {
+    "id": 32,
+    "description": "The payroll system is completely down for the entire finance team, and the pay run deadline is this afternoon.",
+    "expectedCategory": "Software",
+    "expectedPriority": "Critical",
+    "reasoning": "An essential system unavailable to a whole team with a hard same-day deadline -- squarely the prompt's own Critical definition."
+  },
+  {
+    "id": 33,
+    "description": "I'm getting sign-in alerts for my account from a country I've never been to -- I think someone's trying to get in.",
+    "expectedCategory": "Account",
+    "expectedPriority": "Critical",
+    "reasoning": "A live, serious security incident -- Critical regardless of how many people are affected so far."
+  },
+  {
+    "id": 34,
+    "description": "The badge reader at the staff entrance has stopped recognising any cards and people are stuck outside in the rain.",
+    "expectedCategory": "Hardware",
+    "expectedPriority": "Critical",
+    "reasoning": "A genuine safety issue (people stuck outside in weather) plus an essential access system down for everyone -- Critical."
+  },
+  {
+    "id": 35,
+    "description": "The shared printer on my floor isn't working, but I can email the file to a colleague nearby and have them print it for me.",
+    "expectedCategory": "Hardware",
+    "expectedPriority": "Low",
+    "reasoning": "Minor impact with an available workaround already in use -- Low."
   }
 ]
