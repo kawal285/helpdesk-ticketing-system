@@ -1,7 +1,7 @@
 {
-  "generatedAt": "2026-11-02T23:36:37.660Z",
-  "categoryAccuracy": 74.3,
-  "priorityAccuracy": 54.3,
+  "generatedAt": "2026-11-02T23:39:38.039Z",
+  "categoryAccuracy": 82.9,
+  "priorityAccuracy": 60,
   "total": 35,
   "aiUnavailableCount": 0,
   "results": [
@@ -15,7 +15,7 @@
       "categoryCorrect": true,
       "priorityCorrect": false,
       "aiUnavailable": false,
-      "ms": 5263
+      "ms": 3707
     },
     {
       "id": 2,
@@ -27,7 +27,7 @@
       "categoryCorrect": true,
       "priorityCorrect": true,
       "aiUnavailable": false,
-      "ms": 3573
+      "ms": 2449
     },
     {
       "id": 3,
@@ -39,7 +39,7 @@
       "categoryCorrect": true,
       "priorityCorrect": true,
       "aiUnavailable": false,
-      "ms": 2734
+      "ms": 2346
     },
     {
       "id": 4,
@@ -51,7 +51,7 @@
       "categoryCorrect": true,
       "priorityCorrect": false,
       "aiUnavailable": false,
-      "ms": 3519
+      "ms": 2779
     },
     {
       "id": 5,
@@ -59,11 +59,11 @@
       "expectedCategory": "Hardware",
       "expectedPriority": "Medium",
       "predictedCategory": "Hardware",
-      "predictedPriority": "Low",
+      "predictedPriority": "Medium",
       "categoryCorrect": true,
-      "priorityCorrect": false,
+      "priorityCorrect": true,
       "aiUnavailable": false,
-      "ms": 3037
+      "ms": 2880
     },
     {
       "id": 6,
@@ -75,7 +75,7 @@
       "categoryCorrect": true,
       "priorityCorrect": true,
       "aiUnavailable": false,
-      "ms": 3681
+      "ms": 2498
     },
     {
       "id": 7,
@@ -87,7 +87,7 @@
       "categoryCorrect": true,
       "priorityCorrect": false,
       "aiUnavailable": false,
-      "ms": 3031
+      "ms": 2980
     },
     {
       "id": 8,
@@ -99,7 +99,7 @@
       "categoryCorrect": true,
       "priorityCorrect": true,
       "aiUnavailable": false,
-      "ms": 3097
+      "ms": 1776
     },
     {
       "id": 9,
@@ -111,7 +111,7 @@
       "categoryCorrect": false,
       "priorityCorrect": true,
       "aiUnavailable": false,
-      "ms": 1929
+      "ms": 2985
     },
     {
       "id": 10,
@@ -119,11 +119,11 @@
       "expectedCategory": "Account",
       "expectedPriority": "High",
       "predictedCategory": "Account",
-      "predictedPriority": "Critical",
+      "predictedPriority": "High",
       "categoryCorrect": true,
-      "priorityCorrect": false,
+      "priorityCorrect": true,
       "aiUnavailable": false,
-      "ms": 3166
+      "ms": 3373
     },
     {
       "id": 11,
@@ -135,7 +135,7 @@
       "categoryCorrect": true,
       "priorityCorrect": true,
       "aiUnavailable": false,
-      "ms": 2408
+      "ms": 2490
     },
     {
       "id": 12,
@@ -143,23 +143,23 @@
       "expectedCategory": "Account",
       "expectedPriority": "Critical",
       "predictedCategory": "Account",
-      "predictedPriority": "Critical",
+      "predictedPriority": "Trivial",
       "categoryCorrect": true,
-      "priorityCorrect": true,
+      "priorityCorrect": false,
       "aiUnavailable": false,
-      "ms": 4033
+      "ms": 2412
     },
     {
       "id": 13,
       "description": "The projector bulb in Lecture Hall 2 just burned out and class starts in ten minutes.",
       "expectedCategory": "Hardware",
       "expectedPriority": "High",
-      "predictedCategory": "Other",
-      "predictedPriority": "Low",
-      "categoryCorrect": false,
+      "predictedCategory": "Hardware",
+      "predictedPriority": "Critical",
+      "categoryCorrect": true,
       "priorityCorrect": false,
       "aiUnavailable": false,
-      "ms": 3719
+      "ms": 2428
     },
     {
       "id": 14,
@@ -171,7 +171,7 @@
       "categoryCorrect": true,
       "priorityCorrect": true,
       "aiUnavailable": false,
-      "ms": 3664
+      "ms": 2652
     },
     {
       "id": 15,
@@ -179,11 +179,11 @@
       "expectedCategory": "Software",
       "expectedPriority": "Medium",
       "predictedCategory": "Software",
-      "predictedPriority": "Medium",
+      "predictedPriority": "High",
       "categoryCorrect": true,
-      "priorityCorrect": true,
+      "priorityCorrect": false,
       "aiUnavailable": false,
-      "ms": 3284
+      "ms": 2743
     },
     {
       "id": 16,
@@ -195,7 +195,7 @@
       "categoryCorrect": true,
       "priorityCorrect": false,
       "aiUnavailable": false,
-      "ms": 2757
+      "ms": 2759
     },
     {
       "id": 17,
@@ -207,19 +207,19 @@
       "categoryCorrect": true,
       "priorityCorrect": true,
       "aiUnavailable": false,
-      "ms": 2493
+      "ms": 1977
     },
     {
       "id": 18,
       "description": "The online learning portal is extremely slow today, pages take 20-30 seconds to load.",
       "expectedCategory": "Software",
       "expectedPriority": "High",
-      "predictedCategory": "Network",
+      "predictedCategory": "Software",
       "predictedPriority": "High",
-      "categoryCorrect": false,
+      "categoryCorrect": true,
       "priorityCorrect": true,
       "aiUnavailable": false,
-      "ms": 2413
+      "ms": 2796
     },
     {
       "id": 19,
@@ -231,19 +231,19 @@
       "categoryCorrect": true,
       "priorityCorrect": true,
       "aiUnavailable": false,
-      "ms": 3006
+      "ms": 2967
     },
     {
       "id": 20,
       "description": "I can't find the setting to change my display language in the student portal, can someone point me to it?",
       "expectedCategory": "Other",
       "expectedPriority": "Trivial",
-      "predictedCategory": "Account",
+      "predictedCategory": "Software",
       "predictedPriority": "Low",
       "categoryCorrect": false,
       "priorityCorrect": false,
       "aiUnavailable": false,
-      "ms": 2916
+      "ms": 3302
     },
     {
       "id": 21,
@@ -251,11 +251,11 @@
       "expectedCategory": "Network",
       "expectedPriority": "High",
       "predictedCategory": "Network",
-      "predictedPriority": "Medium",
+      "predictedPriority": "High",
       "categoryCorrect": true,
-      "priorityCorrect": false,
+      "priorityCorrect": true,
       "aiUnavailable": false,
-      "ms": 3119
+      "ms": 2957
     },
     {
       "id": 22,
@@ -267,7 +267,7 @@
       "categoryCorrect": true,
       "priorityCorrect": true,
       "aiUnavailable": false,
-      "ms": 2533
+      "ms": 2366
     },
     {
       "id": 23,
@@ -279,19 +279,19 @@
       "categoryCorrect": true,
       "priorityCorrect": false,
       "aiUnavailable": false,
-      "ms": 2261
+      "ms": 2927
     },
     {
       "id": 24,
       "description": "Quick question -- what's the policy on using a personal phone for two-factor authentication?",
       "expectedCategory": "Other",
       "expectedPriority": "Trivial",
-      "predictedCategory": "Account",
+      "predictedCategory": "Software",
       "predictedPriority": "Medium",
       "categoryCorrect": false,
       "priorityCorrect": false,
       "aiUnavailable": false,
-      "ms": 2770
+      "ms": 3372
     },
     {
       "id": 25,
@@ -303,7 +303,7 @@
       "categoryCorrect": true,
       "priorityCorrect": true,
       "aiUnavailable": false,
-      "ms": 3553
+      "ms": 3137
     },
     {
       "id": 26,
@@ -315,7 +315,7 @@
       "categoryCorrect": true,
       "priorityCorrect": false,
       "aiUnavailable": false,
-      "ms": 2757
+      "ms": 3177
     },
     {
       "id": 27,
@@ -323,11 +323,11 @@
       "expectedCategory": "Software",
       "expectedPriority": "High",
       "predictedCategory": "Software",
-      "predictedPriority": "Critical",
+      "predictedPriority": "High",
       "categoryCorrect": true,
-      "priorityCorrect": false,
+      "priorityCorrect": true,
       "aiUnavailable": false,
-      "ms": 3218
+      "ms": 3242
     },
     {
       "id": 28,
@@ -339,7 +339,7 @@
       "categoryCorrect": true,
       "priorityCorrect": false,
       "aiUnavailable": false,
-      "ms": 3192
+      "ms": 2961
     },
     {
       "id": 29,
@@ -351,7 +351,7 @@
       "categoryCorrect": false,
       "priorityCorrect": true,
       "aiUnavailable": false,
-      "ms": 2521
+      "ms": 2299
     },
     {
       "id": 30,
@@ -363,7 +363,7 @@
       "categoryCorrect": true,
       "priorityCorrect": false,
       "aiUnavailable": false,
-      "ms": 2693
+      "ms": 2547
     },
     {
       "id": 31,
@@ -375,19 +375,19 @@
       "categoryCorrect": false,
       "priorityCorrect": true,
       "aiUnavailable": false,
-      "ms": 3075
+      "ms": 3545
     },
     {
       "id": 32,
       "description": "The payroll system is completely down for the entire finance team, and the pay run deadline is this afternoon.",
       "expectedCategory": "Software",
       "expectedPriority": "Critical",
-      "predictedCategory": "Other",
+      "predictedCategory": "Software",
       "predictedPriority": "Critical",
-      "categoryCorrect": false,
+      "categoryCorrect": true,
       "priorityCorrect": true,
       "aiUnavailable": false,
-      "ms": 3298
+      "ms": 2865
     },
     {
       "id": 33,
@@ -399,31 +399,31 @@
       "categoryCorrect": true,
       "priorityCorrect": false,
       "aiUnavailable": false,
-      "ms": 4142
+      "ms": 2379
     },
     {
       "id": 34,
       "description": "The badge reader at the staff entrance has stopped recognising any cards and people are stuck outside in the rain.",
       "expectedCategory": "Hardware",
       "expectedPriority": "Critical",
-      "predictedCategory": "Hardware",
+      "predictedCategory": "Network",
       "predictedPriority": "Critical",
-      "categoryCorrect": true,
+      "categoryCorrect": false,
       "priorityCorrect": true,
       "aiUnavailable": false,
-      "ms": 3384
+      "ms": 2903
     },
     {
       "id": 35,
       "description": "The shared printer on my floor isn't working, but I can email the file to a colleague nearby and have them print it for me.",
       "expectedCategory": "Hardware",
       "expectedPriority": "Low",
-      "predictedCategory": "Other",
+      "predictedCategory": "Hardware",
       "predictedPriority": "Low",
-      "categoryCorrect": false,
+      "categoryCorrect": true,
       "priorityCorrect": true,
       "aiUnavailable": false,
-      "ms": 2487
+      "ms": 2510
     }
   ]
 }
