@@ -18,6 +18,7 @@ const request = require('supertest');
 const app = require('../src/app');
 const { sequelize, Ticket } = require('../src/models');
 const { getAiSuggestions } = require('../src/services/aiService');
+const { detectEmotion } = require('../src/services/emotionDetectionService');
 const { createUserWithToken } = require('./helpers/testHelpers');
 const { createTicketAs, assignTicket } = require('./helpers/ticketHelpers');
 
@@ -82,6 +83,34 @@ describe('POST /tickets', () => {
     const dueAt = new Date(ticket.dueAt).getTime();
     const createdAt = new Date(ticket.createdAt).getTime();
     expect(dueAt - createdAt).toBeCloseTo(8 * 60 * 60 * 1000, -3);
+  });
+
+  it('runs AI classification and emotion detection concurrently, not one after the other', async () => {
+    // These are two independent calls to two different services (Gemini,
+    // local Ollama). Measured sequentially in this environment, ticket
+    // creation took 12s+ -- the sum of both calls -- with a worst case
+    // of 8s + 60s. This proves they are dispatched together: if emotion
+    // detection only started once the (slow) AI call fully resolved, it
+    // would run after 'ai-end' instead of before it.
+    const callOrder = [];
+
+    getAiSuggestions.mockImplementationOnce(async () => {
+      callOrder.push('ai-start');
+      await new Promise((resolve) => setTimeout(resolve, 50));
+      callOrder.push('ai-end');
+      return { category: null, priority: null, suggestedResponse: null };
+    });
+
+    detectEmotion.mockImplementationOnce(async () => {
+      callOrder.push('emotion-start');
+      return { emotion: 'neutral', reason: 'Test emotion result.', isSuggestion: true };
+    });
+
+    const { token } = await createUserWithToken({ role: 'customer' });
+    const res = await createTicketAs(token);
+
+    expect(res.status).toBe(201);
+    expect(callOrder.indexOf('emotion-start')).toBeLessThan(callOrder.indexOf('ai-end'));
   });
 
   it('computes a 120-hour due date for Trivial priority', async () => {
