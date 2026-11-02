@@ -1,7 +1,7 @@
 {
-  "generatedAt": "2026-11-02T23:32:28.197Z",
-  "categoryAccuracy": 85.7,
-  "priorityAccuracy": 45.7,
+  "generatedAt": "2026-11-02T23:36:37.660Z",
+  "categoryAccuracy": 74.3,
+  "priorityAccuracy": 54.3,
   "total": 35,
   "aiUnavailableCount": 0,
   "results": [
@@ -15,7 +15,7 @@
       "categoryCorrect": true,
       "priorityCorrect": false,
       "aiUnavailable": false,
-      "ms": 6163
+      "ms": 5263
     },
     {
       "id": 2,
@@ -27,7 +27,7 @@
       "categoryCorrect": true,
       "priorityCorrect": true,
       "aiUnavailable": false,
-      "ms": 3432
+      "ms": 3573
     },
     {
       "id": 3,
@@ -39,7 +39,7 @@
       "categoryCorrect": true,
       "priorityCorrect": true,
       "aiUnavailable": false,
-      "ms": 2774
+      "ms": 2734
     },
     {
       "id": 4,
@@ -51,7 +51,7 @@
       "categoryCorrect": true,
       "priorityCorrect": false,
       "aiUnavailable": false,
-      "ms": 3161
+      "ms": 3519
     },
     {
       "id": 5,
@@ -59,11 +59,11 @@
       "expectedCategory": "Hardware",
       "expectedPriority": "Medium",
       "predictedCategory": "Hardware",
-      "predictedPriority": "Medium",
+      "predictedPriority": "Low",
       "categoryCorrect": true,
-      "priorityCorrect": true,
+      "priorityCorrect": false,
       "aiUnavailable": false,
-      "ms": 2265
+      "ms": 3037
     },
     {
       "id": 6,
@@ -75,7 +75,7 @@
       "categoryCorrect": true,
       "priorityCorrect": true,
       "aiUnavailable": false,
-      "ms": 2421
+      "ms": 3681
     },
     {
       "id": 7,
@@ -87,7 +87,7 @@
       "categoryCorrect": true,
       "priorityCorrect": false,
       "aiUnavailable": false,
-      "ms": 2965
+      "ms": 3031
     },
     {
       "id": 8,
@@ -99,7 +99,7 @@
       "categoryCorrect": true,
       "priorityCorrect": true,
       "aiUnavailable": false,
-      "ms": 3545
+      "ms": 3097
     },
     {
       "id": 9,
@@ -107,11 +107,11 @@
       "expectedCategory": "Hardware",
       "expectedPriority": "Trivial",
       "predictedCategory": "Other",
-      "predictedPriority": "Low",
+      "predictedPriority": "Trivial",
       "categoryCorrect": false,
-      "priorityCorrect": false,
+      "priorityCorrect": true,
       "aiUnavailable": false,
-      "ms": 2643
+      "ms": 1929
     },
     {
       "id": 10,
@@ -119,11 +119,11 @@
       "expectedCategory": "Account",
       "expectedPriority": "High",
       "predictedCategory": "Account",
-      "predictedPriority": "High",
+      "predictedPriority": "Critical",
       "categoryCorrect": true,
-      "priorityCorrect": true,
+      "priorityCorrect": false,
       "aiUnavailable": false,
-      "ms": 2878
+      "ms": 3166
     },
     {
       "id": 11,
@@ -135,7 +135,7 @@
       "categoryCorrect": true,
       "priorityCorrect": true,
       "aiUnavailable": false,
-      "ms": 2444
+      "ms": 2408
     },
     {
       "id": 12,
@@ -143,23 +143,23 @@
       "expectedCategory": "Account",
       "expectedPriority": "Critical",
       "predictedCategory": "Account",
-      "predictedPriority": "Low",
+      "predictedPriority": "Critical",
       "categoryCorrect": true,
-      "priorityCorrect": false,
+      "priorityCorrect": true,
       "aiUnavailable": false,
-      "ms": 3100
+      "ms": 4033
     },
     {
       "id": 13,
       "description": "The projector bulb in Lecture Hall 2 just burned out and class starts in ten minutes.",
       "expectedCategory": "Hardware",
       "expectedPriority": "High",
-      "predictedCategory": "Hardware",
-      "predictedPriority": "Critical",
-      "categoryCorrect": true,
+      "predictedCategory": "Other",
+      "predictedPriority": "Low",
+      "categoryCorrect": false,
       "priorityCorrect": false,
       "aiUnavailable": false,
-      "ms": 3203
+      "ms": 3719
     },
     {
       "id": 14,
@@ -171,7 +171,7 @@
       "categoryCorrect": true,
       "priorityCorrect": true,
       "aiUnavailable": false,
-      "ms": 2788
+      "ms": 3664
     },
     {
       "id": 15,
@@ -183,7 +183,7 @@
       "categoryCorrect": true,
       "priorityCorrect": true,
       "aiUnavailable": false,
-      "ms": 2788
+      "ms": 3284
     },
     {
       "id": 16,
@@ -195,7 +195,7 @@
       "categoryCorrect": true,
       "priorityCorrect": false,
       "aiUnavailable": false,
-      "ms": 2775
+      "ms": 2757
     },
     {
       "id": 17,
@@ -207,19 +207,19 @@
       "categoryCorrect": true,
       "priorityCorrect": true,
       "aiUnavailable": false,
-      "ms": 4198
+      "ms": 2493
     },
     {
       "id": 18,
       "description": "The online learning portal is extremely slow today, pages take 20-30 seconds to load.",
       "expectedCategory": "Software",
       "expectedPriority": "High",
-      "predictedCategory": "Software",
-      "predictedPriority": "Medium",
-      "categoryCorrect": true,
-      "priorityCorrect": false,
+      "predictedCategory": "Network",
+      "predictedPriority": "High",
+      "categoryCorrect": false,
+      "priorityCorrect": true,
       "aiUnavailable": false,
-      "ms": 2867
+      "ms": 2413
     },
     {
       "id": 19,
@@ -231,19 +231,19 @@
       "categoryCorrect": true,
       "priorityCorrect": true,
       "aiUnavailable": false,
-      "ms": 3104
+      "ms": 3006
     },
     {
       "id": 20,
       "description": "I can't find the setting to change my display language in the student portal, can someone point me to it?",
       "expectedCategory": "Other",
       "expectedPriority": "Trivial",
-      "predictedCategory": "Software",
+      "predictedCategory": "Account",
       "predictedPriority": "Low",
       "categoryCorrect": false,
       "priorityCorrect": false,
       "aiUnavailable": false,
-      "ms": 3264
+      "ms": 2916
     },
     {
       "id": 21,
@@ -255,7 +255,7 @@
       "categoryCorrect": true,
       "priorityCorrect": false,
       "aiUnavailable": false,
-      "ms": 3152
+      "ms": 3119
     },
     {
       "id": 22,
@@ -267,7 +267,7 @@
       "categoryCorrect": true,
       "priorityCorrect": true,
       "aiUnavailable": false,
-      "ms": 3097
+      "ms": 2533
     },
     {
       "id": 23,
@@ -279,7 +279,7 @@
       "categoryCorrect": true,
       "priorityCorrect": false,
       "aiUnavailable": false,
-      "ms": 2642
+      "ms": 2261
     },
     {
       "id": 24,
@@ -287,11 +287,11 @@
       "expectedCategory": "Other",
       "expectedPriority": "Trivial",
       "predictedCategory": "Account",
-      "predictedPriority": "Low",
+      "predictedPriority": "Medium",
       "categoryCorrect": false,
       "priorityCorrect": false,
       "aiUnavailable": false,
-      "ms": 3633
+      "ms": 2770
     },
     {
       "id": 25,
@@ -299,11 +299,11 @@
       "expectedCategory": "Other",
       "expectedPriority": "Trivial",
       "predictedCategory": "Other",
-      "predictedPriority": "Low",
+      "predictedPriority": "Trivial",
       "categoryCorrect": true,
-      "priorityCorrect": false,
+      "priorityCorrect": true,
       "aiUnavailable": false,
-      "ms": 3457
+      "ms": 3553
     },
     {
       "id": 26,
@@ -315,7 +315,7 @@
       "categoryCorrect": true,
       "priorityCorrect": false,
       "aiUnavailable": false,
-      "ms": 3085
+      "ms": 2757
     },
     {
       "id": 27,
@@ -323,11 +323,11 @@
       "expectedCategory": "Software",
       "expectedPriority": "High",
       "predictedCategory": "Software",
-      "predictedPriority": "High",
+      "predictedPriority": "Critical",
       "categoryCorrect": true,
-      "priorityCorrect": true,
+      "priorityCorrect": false,
       "aiUnavailable": false,
-      "ms": 3103
+      "ms": 3218
     },
     {
       "id": 28,
@@ -339,7 +339,7 @@
       "categoryCorrect": true,
       "priorityCorrect": false,
       "aiUnavailable": false,
-      "ms": 2570
+      "ms": 3192
     },
     {
       "id": 29,
@@ -347,11 +347,11 @@
       "expectedCategory": "Hardware",
       "expectedPriority": "Trivial",
       "predictedCategory": "Other",
-      "predictedPriority": "Low",
+      "predictedPriority": "Trivial",
       "categoryCorrect": false,
-      "priorityCorrect": false,
+      "priorityCorrect": true,
       "aiUnavailable": false,
-      "ms": 2377
+      "ms": 2521
     },
     {
       "id": 30,
@@ -363,31 +363,31 @@
       "categoryCorrect": true,
       "priorityCorrect": false,
       "aiUnavailable": false,
-      "ms": 2429
+      "ms": 2693
     },
     {
       "id": 31,
       "description": "Could I get the newer version of Slack installed sometime? Whenever's convenient, no particular hurry.",
       "expectedCategory": "Software",
       "expectedPriority": "Trivial",
-      "predictedCategory": "Software",
-      "predictedPriority": "Low",
-      "categoryCorrect": true,
-      "priorityCorrect": false,
+      "predictedCategory": "Other",
+      "predictedPriority": "Trivial",
+      "categoryCorrect": false,
+      "priorityCorrect": true,
       "aiUnavailable": false,
-      "ms": 2309
+      "ms": 3075
     },
     {
       "id": 32,
       "description": "The payroll system is completely down for the entire finance team, and the pay run deadline is this afternoon.",
       "expectedCategory": "Software",
       "expectedPriority": "Critical",
-      "predictedCategory": "Software",
+      "predictedCategory": "Other",
       "predictedPriority": "Critical",
-      "categoryCorrect": true,
+      "categoryCorrect": false,
       "priorityCorrect": true,
       "aiUnavailable": false,
-      "ms": 2931
+      "ms": 3298
     },
     {
       "id": 33,
@@ -399,31 +399,31 @@
       "categoryCorrect": true,
       "priorityCorrect": false,
       "aiUnavailable": false,
-      "ms": 3027
+      "ms": 4142
     },
     {
       "id": 34,
       "description": "The badge reader at the staff entrance has stopped recognising any cards and people are stuck outside in the rain.",
       "expectedCategory": "Hardware",
       "expectedPriority": "Critical",
-      "predictedCategory": "Network",
+      "predictedCategory": "Hardware",
       "predictedPriority": "Critical",
-      "categoryCorrect": false,
+      "categoryCorrect": true,
       "priorityCorrect": true,
       "aiUnavailable": false,
-      "ms": 2801
+      "ms": 3384
     },
     {
       "id": 35,
       "description": "The shared printer on my floor isn't working, but I can email the file to a colleague nearby and have them print it for me.",
       "expectedCategory": "Hardware",
       "expectedPriority": "Low",
-      "predictedCategory": "Hardware",
+      "predictedCategory": "Other",
       "predictedPriority": "Low",
-      "categoryCorrect": true,
+      "categoryCorrect": false,
       "priorityCorrect": true,
       "aiUnavailable": false,
-      "ms": 2977
+      "ms": 2487
     }
   ]
 }
