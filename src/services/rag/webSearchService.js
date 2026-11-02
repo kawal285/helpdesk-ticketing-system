@@ -68,6 +68,7 @@ async function search(query, options = {}) {
       provider: provider.name,
     };
   } catch (error) {
+    console.warn('[web-search] failed:', error.message);
     return { results: [], provider: provider.name, error: error.message };
   } finally {
     cancel();

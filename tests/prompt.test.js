@@ -40,6 +40,14 @@ describe('prompt.buildMessages', () => {
     );
   });
 
+  it('includes an earlier question as context only when one is given', () => {
+    const [, withEarlier] = buildMessages('what else can i do', [KB_MATCH], [], 'my printer is offline');
+    const [, without] = buildMessages('what else can i do', [KB_MATCH], []);
+
+    expect(withEarlier.content).toContain('EARLIER QUESTION (context only)\nmy printer is offline');
+    expect(without.content).not.toContain('EARLIER QUESTION');
+  });
+
   it('defaults webResults to empty so existing two-argument callers still work', () => {
     const [, userMessage] = buildMessages('printer stuck', [KB_MATCH]);
 

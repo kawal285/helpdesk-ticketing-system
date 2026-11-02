@@ -14,7 +14,11 @@ jest.mock('../src/services/rag/webSearchService');
 const { retrieve } = require('../src/services/rag/retrievalService');
 const { generate, getModelInfo } = require('../src/services/rag/generationService');
 const webSearchService = require('../src/services/rag/webSearchService');
-const { ask } = require('../src/services/rag/ragService');
+const {
+  ask,
+  buildSearchContext,
+  stripCitationMarkers,
+} = require('../src/services/rag/ragService');
 
 const KB_MATCH = {
   id: 1,
@@ -157,5 +161,62 @@ describe('ragService.ask', () => {
         score: 0.81,
       },
     ]);
+  });
+});
+
+describe('ragService follow-up handling', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    getModelInfo.mockReturnValue({ name: 'ollama:llama3.2' });
+  });
+
+  it('adds the previous question to a short follow-up before searching', async () => {
+    retrieve.mockResolvedValue(grounded([KB_MATCH]));
+    webSearchService.search.mockResolvedValue({ results: [], provider: 'duckduckgo' });
+    generate.mockResolvedValue('answer');
+
+    await ask('its not working what else can i do', {
+      history: ['my printer is offline'],
+    });
+
+    expect(retrieve.mock.calls[0][0]).toContain('my printer is offline');
+    expect(webSearchService.search.mock.calls[0][0]).toContain('my printer is offline');
+
+    const userMessage = generate.mock.calls[0][0].find((m) => m.role === 'user').content;
+    expect(userMessage).toContain('EARLIER QUESTION');
+  });
+
+  it('leaves a new, self-contained question alone even when there is history', () => {
+    const result = buildSearchContext('how do i reset my password', ['my printer is offline']);
+
+    expect(result.searchText).toBe('how do i reset my password');
+    expect(result.previousQuestion).toBeNull();
+  });
+
+  it('ignores history on a long question', () => {
+    const long = 'my laptop will not connect to the wifi in the library and it keeps asking for a password';
+    const result = buildSearchContext(long, ['my printer is offline']);
+
+    expect(result.searchText).toBe(long);
+  });
+
+  it('treats a missing or malformed history as no history', () => {
+    expect(buildSearchContext('what else can i do', undefined).previousQuestion).toBeNull();
+    expect(buildSearchContext('what else can i do', 'nope').previousQuestion).toBeNull();
+  });
+
+  it('removes source numbers the model echoed into its answer', async () => {
+    retrieve.mockResolvedValue(grounded([KB_MATCH]));
+    webSearchService.search.mockResolvedValue({ results: [WEB_RESULT], provider: 'duckduckgo' });
+    generate.mockResolvedValue('Try this, as in [1]. Also see wikiHow ([5]) for more.');
+
+    const result = await ask('my printer is stuck');
+
+    expect(result.answer).not.toMatch(/\[\d+\]/);
+    expect(result.answer).toContain('Try this');
+  });
+
+  it('leaves non-string model output untouched', () => {
+    expect(stripCitationMarkers(undefined)).toBeUndefined();
   });
 });
