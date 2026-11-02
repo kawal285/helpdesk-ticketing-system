@@ -626,3 +626,89 @@ describe('PATCH /tickets/:id/review', () => {
     expect(res.status).toBe(400);
   });
 });
+
+describe('POST /tickets/:id/ai-analyze', () => {
+  it('rejects an unauthenticated request with 401', async () => {
+    const { token: ownerToken } = await createUserWithToken({ role: 'customer' });
+    const created = await createTicketAs(ownerToken);
+
+    const res = await request(app).post(`/tickets/${created.body.ticket.id}/ai-analyze`);
+
+    expect(res.status).toBe(401);
+  });
+
+  it('rejects a customer with 403, even on their own ticket', async () => {
+    const { token: ownerToken } = await createUserWithToken({ role: 'customer' });
+    const created = await createTicketAs(ownerToken);
+
+    const res = await request(app)
+      .post(`/tickets/${created.body.ticket.id}/ai-analyze`)
+      .set('Authorization', `Bearer ${ownerToken}`);
+
+    expect(res.status).toBe(403);
+  });
+
+  it('returns 404 for a ticket an agent cannot access, same as GET /tickets/:id', async () => {
+    const { token: ownerToken } = await createUserWithToken({ role: 'customer' });
+    const { token: adminToken } = await createUserWithToken({ role: 'admin' });
+    const { user: assignedAgent } = await createUserWithToken({ role: 'agent' });
+    const { token: otherAgentToken } = await createUserWithToken({ role: 'agent' });
+
+    const created = await createTicketAs(ownerToken);
+    const ticketId = created.body.ticket.id;
+    await assignTicket(adminToken, ticketId, assignedAgent.id);
+
+    const res = await request(app)
+      .post(`/tickets/${ticketId}/ai-analyze`)
+      .set('Authorization', `Bearer ${otherAgentToken}`);
+
+    expect(res.status).toBe(404);
+  });
+
+  it('returns a clear 503, and leaves the ticket unchanged, when the AI has nothing to offer', async () => {
+    const { token: ownerToken } = await createUserWithToken({ role: 'customer' });
+    const { token: adminToken } = await createUserWithToken({ role: 'admin' });
+    const { user: agent, token: agentToken } = await createUserWithToken({ role: 'agent' });
+    const created = await createTicketAs(ownerToken, { category: 'Hardware', priority: 'Low' });
+    const ticketId = created.body.ticket.id;
+    await assignTicket(adminToken, ticketId, agent.id);
+
+    getAiSuggestions.mockResolvedValueOnce({ category: null, priority: null, suggestedResponse: null });
+
+    const res = await request(app)
+      .post(`/tickets/${ticketId}/ai-analyze`)
+      .set('Authorization', `Bearer ${agentToken}`);
+
+    expect(res.status).toBe(503);
+    expect(res.body.message).toBe('AI analysis is currently unavailable. Please try again later.');
+
+    const after = await request(app).get(`/tickets/${ticketId}`).set('Authorization', `Bearer ${agentToken}`);
+    expect(after.body.ticket.aiAnalyzedAt).toBeNull();
+    expect(after.body.ticket.category).toBe('Hardware');
+  });
+
+  it('updates the AI fields and returns 200 when the AI succeeds', async () => {
+    const { token: ownerToken } = await createUserWithToken({ role: 'customer' });
+    const { token: adminToken } = await createUserWithToken({ role: 'admin' });
+    const { user: agent, token: agentToken } = await createUserWithToken({ role: 'agent' });
+    const created = await createTicketAs(ownerToken);
+    const ticketId = created.body.ticket.id;
+    await assignTicket(adminToken, ticketId, agent.id);
+
+    getAiSuggestions.mockResolvedValueOnce({
+      category: 'Network',
+      priority: 'High',
+      suggestedResponse: 'Check the VPN gateway logs.',
+    });
+
+    const res = await request(app)
+      .post(`/tickets/${ticketId}/ai-analyze`)
+      .set('Authorization', `Bearer ${agentToken}`);
+
+    expect(res.status).toBe(200);
+    expect(res.body.ticket.aiCategory).toBe('Network');
+    expect(res.body.ticket.aiPriority).toBe('High');
+    expect(res.body.ticket.aiSuggestedResponse).toBe('Check the VPN gateway logs.');
+    expect(res.body.ticket.aiAnalyzedAt).not.toBeNull();
+  });
+});
