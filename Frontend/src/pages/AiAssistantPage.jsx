@@ -25,7 +25,7 @@ const STARTERS = [
  * also makes the retrieval step visible to anyone watching a demo.
  */
 const STAGES = [
-  'Searching the knowledge base…',
+  'Searching the knowledge base and the web…',
   'Reading the closest sections…',
   'Writing the answer…',
 ];
@@ -101,6 +101,13 @@ export default function AiAssistantPage({ user, onCreateTicket }) {
       return;
     }
 
+    // The last couple of questions that got an answer, so a short follow-up
+    // like "what else can I do" is understood. Answers are not sent back.
+    const history = turns
+      .filter((turn) => !turn.failed)
+      .slice(-2)
+      .map((turn) => turn.question);
+
     setQuestion('');
     setError('');
     setLoading(true);
@@ -112,7 +119,7 @@ export default function AiAssistantPage({ user, onCreateTicket }) {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${localStorage.getItem('token')}`,
         },
-        body: JSON.stringify({ question: trimmed }),
+        body: JSON.stringify({ question: trimmed, history }),
       });
 
       const data = await response.json();
@@ -157,10 +164,9 @@ export default function AiAssistantPage({ user, onCreateTicket }) {
         <p className="chat__eyebrow">Otago Polytechnic &middot; IT Helpdesk</p>
         <h1 className="chat__title">Assistant</h1>
         <p className="chat__subtitle">
-          Answers are written from the approved IT documentation and cited
-          back to the section they came from. When the documentation
-          doesn&rsquo;t cover something, the assistant says so instead of
-          guessing.
+          Answers combine the approved IT documentation with live web search,
+          and show every source they used. When neither covers something,
+          the assistant says so instead of guessing.
         </p>
       </header>
 
@@ -175,8 +181,8 @@ export default function AiAssistantPage({ user, onCreateTicket }) {
             <span className="chat__scope-label">Answer cited</span>
           </div>
           <div className="chat__scope-item">
-            <span className="chat__scope-value">0</span>
-            <span className="chat__scope-label">Outside sources</span>
+            <span className="chat__scope-value">Live</span>
+            <span className="chat__scope-label">Web search</span>
           </div>
         </div>
       )}
@@ -276,8 +282,9 @@ export default function AiAssistantPage({ user, onCreateTicket }) {
         </div>
 
         <p className="chat__hint">
-          Each question is answered on its own, so include the details every
-          time. Enter sends, Shift + Enter adds a line.
+          Short follow-ups like &ldquo;what else can I do&rdquo; use your
+          previous question for context. For a new problem, include the
+          details. Enter sends, Shift + Enter adds a line.
         </p>
 
         {error && <p className="chat__error">{error}</p>}
@@ -316,6 +323,13 @@ function AnswerCard({ assistant, user, onCreateTicket }) {
           category: assistant.suggestedCategory || undefined,
         }),
       });
+
+      // 409 means this page is already in the knowledge base (saved earlier,
+      // by someone else, or by an earlier click) -- not a failure.
+      if (response.status === 409) {
+        setSaveStatus((previous) => ({ ...previous, [source.url]: 'duplicate' }));
+        return;
+      }
 
       if (!response.ok) {
         throw new Error();
@@ -368,13 +382,15 @@ function AnswerCard({ assistant, user, onCreateTicket }) {
           </p>
         )}
 
-        <button
-          type="button"
-          className={`chat__cta${grounded ? ' chat__cta--secondary' : ''}`}
-          onClick={() => onCreateTicket()}
-        >
-          {grounded ? 'Still stuck? Raise a ticket' : 'Raise a ticket'}
-        </button>
+        {onCreateTicket && (
+          <button
+            type="button"
+            className={`chat__cta${grounded ? ' chat__cta--secondary' : ''}`}
+            onClick={onCreateTicket}
+          >
+            {grounded ? 'Still stuck? Raise a ticket' : 'Raise a ticket'}
+          </button>
+        )}
 
         {grounded && kbSources.length > 0 && (
           <div className="chat__sources">
@@ -442,16 +458,20 @@ function AnswerCard({ assistant, user, onCreateTicket }) {
                   <button
                     type="button"
                     className="chat__save-to-kb"
-                    disabled={saveStatus[source.url] === 'saving'}
+                    disabled={['saving', 'saved', 'duplicate'].includes(
+                      saveStatus[source.url]
+                    )}
                     onClick={() => saveToKnowledgeBase(source)}
                   >
                     {saveStatus[source.url] === 'saved'
                       ? 'Saved to KB'
-                      : saveStatus[source.url] === 'saving'
-                        ? 'Saving…'
-                        : saveStatus[source.url] === 'error'
-                          ? 'Failed, retry?'
-                          : 'Save to knowledge base'}
+                      : saveStatus[source.url] === 'duplicate'
+                        ? 'Already in KB'
+                        : saveStatus[source.url] === 'saving'
+                          ? 'Saving…'
+                          : saveStatus[source.url] === 'error'
+                            ? 'Failed, retry?'
+                            : 'Save to knowledge base'}
                   </button>
                 )}
               </div>

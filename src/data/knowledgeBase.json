@@ -503,5 +503,71 @@
     "lastReviewed": "2026-08-24",
     "sourceDocument": "Installing Zotero on Windows.docx; Installing Zotero on Mac.docx",
     "content": "Zotero is a reference manager that adds a citation toolbar to Microsoft Word.\n\n## Install on Windows or Mac\n\n1. Download Zotero from https://www.zotero.org/download/\n2. Run the installer and follow the prompts.\n3. Open a new Microsoft Word document and check that the Zotero tab appears in the ribbon.\n\n## If the Zotero tab does not appear in Word\n\nOn a Mac, uninstall Zotero and install it again. This resolves the problem in most cases.\n\nOn a campus computer, or if reinstalling does not work on Windows, raise a ticket under the Software category. Connecting Zotero to Word on Windows sometimes needs a change to the Word template, which the IT Help Desk will do for you. Do not attempt this yourself, as editing the wrong template file will affect every Word document on the machine."
+  },
+  {
+    "id": 33,
+    "title": "Troubleshooting offline printer problems in Windows",
+    "category": "Hardware",
+    "audience": "All",
+    "tags": [],
+    "lastReviewed": "2026-11-02",
+    "content": "Find out how to change your printer's status from \"offline\" to \"online\" in Windows.\n\nSource: https://support.microsoft.com/en-us/windows/hardware/printer/troubleshooting-offline-printer-problems-in-windows",
+    "source": "web",
+    "sourceUrl": "https://support.microsoft.com/en-us/windows/hardware/printer/troubleshooting-offline-printer-problems-in-windows"
+  },
+  {
+    "id": 34,
+    "title": "Fix Windows 10/11 Printers Stuck Offline: Clear Queue, Reset",
+    "category": "Hardware",
+    "audience": "All",
+    "tags": [],
+    "lastReviewed": "2026-11-02",
+    "content": "This guide walks you through a reliable \"clean reset\" approach: verify the connection, clear the queue, reset the spooler, and reconnect the printer (USB or network). By the end, most offline printers will print normally again without reinstalling Windows.\n\nSource: https://windowsforum.com/tutorials/fix-windows-10-11-printers-stuck-offline-clear-queue-reset-spooler-reconnect.401452/",
+    "source": "web",
+    "sourceUrl": "https://windowsforum.com/tutorials/fix-windows-10-11-printers-stuck-offline-clear-queue-reset-spooler-reconnect.401452/"
+  },
+  {
+    "id": 35,
+    "title": "Printer Keeps Going Offline on Windows 11? Here's How to Fix It",
+    "category": "Hardware",
+    "audience": "All",
+    "tags": [],
+    "lastReviewed": "2026-11-02",
+    "content": "Cant print documents, Print job stuck printing or printer says offline on windows 11? Here simple steps to get your printer status back to online and fix printer problems as well.\n\nSource: https://windows101tricks.com/printer-offline/",
+    "source": "web",
+    "sourceUrl": "https://windows101tricks.com/printer-offline/"
+  },
+  {
+    "id": 36,
+    "title": "Fix printer connection and printing problems in Windows",
+    "category": "Hardware",
+    "audience": "All",
+    "tags": [],
+    "lastReviewed": "2026-11-02",
+    "content": "This article covers common printer problems in Windows, including printer not found, print jobs stuck in the queue, printer spooler crashes, and more, along with step-by-step troubleshooting solutions for each issue.\n\nSource: https://support.microsoft.com/en-us/windows/hardware/printer/fix-printer-connection-and-printing-problems-in-windows",
+    "source": "web",
+    "sourceUrl": "https://support.microsoft.com/en-us/windows/hardware/printer/fix-printer-connection-and-printing-problems-in-windows"
+  },
+  {
+    "id": 37,
+    "title": "HP printers - Cannot print | HP® Support",
+    "category": "Hardware",
+    "audience": "All",
+    "tags": [],
+    "lastReviewed": "2026-11-02",
+    "content": "Print failures happen for many reasons. The printer might lose power, have an error, or lose its connection.\n\nSource: https://support.hp.com/us-en/document/ish_14746154-14746200-16",
+    "source": "web",
+    "sourceUrl": "https://support.hp.com/us-en/document/ish_14746154-14746200-16"
+  },
+  {
+    "id": 38,
+    "title": "Why Is My Printer Not Printing? 6 Causes & Fixes",
+    "category": "Hardware",
+    "audience": "All",
+    "tags": [],
+    "lastReviewed": "2026-11-02",
+    "content": "Printer not printing? Check the queue, offline status, ink levels, and driver. 6 causes with step-by-step fixes for Windows, Mac, and wireless printers.\n\nSource: https://whyismy.org/articles/why-is-my-printer-not-printing",
+    "source": "web",
+    "sourceUrl": "https://whyismy.org/articles/why-is-my-printer-not-printing"
   }
 ]

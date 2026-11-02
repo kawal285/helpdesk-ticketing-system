@@ -88,6 +88,35 @@ describe('knowledgeBaseWriteService.saveWebResultToKnowledgeBase', () => {
     expect(article.category).toBe('Other');
   });
 
+  it('rejects a second save of the same URL with a 409 and changes nothing', async () => {
+    const filePath = writeFixture(SEED_ARTICLES);
+    const { saveWebResultToKnowledgeBase } = createKnowledgeBaseWriteService(filePath);
+
+    await saveWebResultToKnowledgeBase({
+      title: 'Fix a stuck print queue on Windows 11',
+      url: 'https://support.example.com/windows/print-queue',
+      snippet: 'Restart the Print Spooler service, then resend the job.',
+      category: 'Hardware',
+    });
+
+    embedDocuments.mockClear();
+
+    // Same page, written slightly differently: trailing slash, different case.
+    await expect(
+      saveWebResultToKnowledgeBase({
+        title: 'Fix a stuck print queue on Windows 11',
+        url: 'HTTPS://support.example.com/windows/print-queue/',
+        snippet: 'Restart the Print Spooler service, then resend the job.',
+        category: 'Hardware',
+      })
+    ).rejects.toMatchObject({ statusCode: 409 });
+
+    expect(embedDocuments).not.toHaveBeenCalled();
+
+    const onDisk = JSON.parse(fs.readFileSync(filePath, 'utf8'));
+    expect(onDisk).toHaveLength(3);
+  });
+
   it('chunks, embeds and stores the article so it is immediately searchable', async () => {
     const filePath = writeFixture(SEED_ARTICLES);
     const { saveWebResultToKnowledgeBase } = createKnowledgeBaseWriteService(filePath);
