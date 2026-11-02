@@ -1,8 +1,8 @@
 {
-  "generatedAt": "2026-11-02T22:58:20.741Z",
-  "categoryAccuracy": 90,
-  "priorityAccuracy": 55,
-  "total": 20,
+  "generatedAt": "2026-11-02T23:32:28.197Z",
+  "categoryAccuracy": 85.7,
+  "priorityAccuracy": 45.7,
+  "total": 35,
   "aiUnavailableCount": 0,
   "results": [
     {
@@ -15,7 +15,7 @@
       "categoryCorrect": true,
       "priorityCorrect": false,
       "aiUnavailable": false,
-      "ms": 4378
+      "ms": 6163
     },
     {
       "id": 2,
@@ -27,7 +27,7 @@
       "categoryCorrect": true,
       "priorityCorrect": true,
       "aiUnavailable": false,
-      "ms": 3977
+      "ms": 3432
     },
     {
       "id": 3,
@@ -39,7 +39,7 @@
       "categoryCorrect": true,
       "priorityCorrect": true,
       "aiUnavailable": false,
-      "ms": 2410
+      "ms": 2774
     },
     {
       "id": 4,
@@ -51,7 +51,7 @@
       "categoryCorrect": true,
       "priorityCorrect": false,
       "aiUnavailable": false,
-      "ms": 2483
+      "ms": 3161
     },
     {
       "id": 5,
@@ -63,7 +63,7 @@
       "categoryCorrect": true,
       "priorityCorrect": true,
       "aiUnavailable": false,
-      "ms": 2131
+      "ms": 2265
     },
     {
       "id": 6,
@@ -75,7 +75,7 @@
       "categoryCorrect": true,
       "priorityCorrect": true,
       "aiUnavailable": false,
-      "ms": 2847
+      "ms": 2421
     },
     {
       "id": 7,
@@ -87,7 +87,7 @@
       "categoryCorrect": true,
       "priorityCorrect": false,
       "aiUnavailable": false,
-      "ms": 2933
+      "ms": 2965
     },
     {
       "id": 8,
@@ -99,7 +99,7 @@
       "categoryCorrect": true,
       "priorityCorrect": true,
       "aiUnavailable": false,
-      "ms": 2421
+      "ms": 3545
     },
     {
       "id": 9,
@@ -111,7 +111,7 @@
       "categoryCorrect": false,
       "priorityCorrect": false,
       "aiUnavailable": false,
-      "ms": 1806
+      "ms": 2643
     },
     {
       "id": 10,
@@ -123,7 +123,7 @@
       "categoryCorrect": true,
       "priorityCorrect": true,
       "aiUnavailable": false,
-      "ms": 3085
+      "ms": 2878
     },
     {
       "id": 11,
@@ -135,7 +135,7 @@
       "categoryCorrect": true,
       "priorityCorrect": true,
       "aiUnavailable": false,
-      "ms": 2797
+      "ms": 2444
     },
     {
       "id": 12,
@@ -147,7 +147,7 @@
       "categoryCorrect": true,
       "priorityCorrect": false,
       "aiUnavailable": false,
-      "ms": 4501
+      "ms": 3100
     },
     {
       "id": 13,
@@ -159,7 +159,7 @@
       "categoryCorrect": true,
       "priorityCorrect": false,
       "aiUnavailable": false,
-      "ms": 3365
+      "ms": 3203
     },
     {
       "id": 14,
@@ -171,7 +171,7 @@
       "categoryCorrect": true,
       "priorityCorrect": true,
       "aiUnavailable": false,
-      "ms": 2596
+      "ms": 2788
     },
     {
       "id": 15,
@@ -183,7 +183,7 @@
       "categoryCorrect": true,
       "priorityCorrect": true,
       "aiUnavailable": false,
-      "ms": 3237
+      "ms": 2788
     },
     {
       "id": 16,
@@ -195,7 +195,7 @@
       "categoryCorrect": true,
       "priorityCorrect": false,
       "aiUnavailable": false,
-      "ms": 3518
+      "ms": 2775
     },
     {
       "id": 17,
@@ -207,7 +207,7 @@
       "categoryCorrect": true,
       "priorityCorrect": true,
       "aiUnavailable": false,
-      "ms": 2141
+      "ms": 4198
     },
     {
       "id": 18,
@@ -219,7 +219,7 @@
       "categoryCorrect": true,
       "priorityCorrect": false,
       "aiUnavailable": false,
-      "ms": 2883
+      "ms": 2867
     },
     {
       "id": 19,
@@ -231,7 +231,7 @@
       "categoryCorrect": true,
       "priorityCorrect": true,
       "aiUnavailable": false,
-      "ms": 4138
+      "ms": 3104
     },
     {
       "id": 20,
@@ -243,7 +243,187 @@
       "categoryCorrect": false,
       "priorityCorrect": false,
       "aiUnavailable": false,
-      "ms": 2747
+      "ms": 3264
+    },
+    {
+      "id": 21,
+      "description": "The office WiFi has completely vanished from the list of available networks on every device, not just mine.",
+      "expectedCategory": "Network",
+      "expectedPriority": "High",
+      "predictedCategory": "Network",
+      "predictedPriority": "Medium",
+      "categoryCorrect": true,
+      "priorityCorrect": false,
+      "aiUnavailable": false,
+      "ms": 3152
+    },
+    {
+      "id": 22,
+      "description": "Video calls keep freezing for everyone on our team during client meetings, happened twice this morning already.",
+      "expectedCategory": "Network",
+      "expectedPriority": "High",
+      "predictedCategory": "Network",
+      "predictedPriority": "High",
+      "categoryCorrect": true,
+      "priorityCorrect": true,
+      "aiUnavailable": false,
+      "ms": 3097
+    },
+    {
+      "id": 23,
+      "description": "I can't print over the network from my desk, but I can save the file to a USB stick and print from another computer down the hall.",
+      "expectedCategory": "Network",
+      "expectedPriority": "Low",
+      "predictedCategory": "Network",
+      "predictedPriority": "Medium",
+      "categoryCorrect": true,
+      "priorityCorrect": false,
+      "aiUnavailable": false,
+      "ms": 2642
+    },
+    {
+      "id": 24,
+      "description": "Quick question -- what's the policy on using a personal phone for two-factor authentication?",
+      "expectedCategory": "Other",
+      "expectedPriority": "Trivial",
+      "predictedCategory": "Account",
+      "predictedPriority": "Low",
+      "categoryCorrect": false,
+      "priorityCorrect": false,
+      "aiUnavailable": false,
+      "ms": 3633
+    },
+    {
+      "id": 25,
+      "description": "Could someone point me to the IT training videos for new starters? No rush, just getting settled in.",
+      "expectedCategory": "Other",
+      "expectedPriority": "Trivial",
+      "predictedCategory": "Other",
+      "predictedPriority": "Low",
+      "categoryCorrect": true,
+      "priorityCorrect": false,
+      "aiUnavailable": false,
+      "ms": 3457
+    },
+    {
+      "id": 26,
+      "description": "None of the laptops in the training room will turn on and a certification exam starts in 20 minutes.",
+      "expectedCategory": "Hardware",
+      "expectedPriority": "High",
+      "predictedCategory": "Hardware",
+      "predictedPriority": "Critical",
+      "categoryCorrect": true,
+      "priorityCorrect": false,
+      "aiUnavailable": false,
+      "ms": 3085
+    },
+    {
+      "id": 27,
+      "description": "The license for our design software expired overnight and nobody on the team can open their project files until it's renewed.",
+      "expectedCategory": "Software",
+      "expectedPriority": "High",
+      "predictedCategory": "Software",
+      "predictedPriority": "High",
+      "categoryCorrect": true,
+      "priorityCorrect": true,
+      "aiUnavailable": false,
+      "ms": 3103
+    },
+    {
+      "id": 28,
+      "description": "My work email is completely locked and I can't reach anyone for help -- I have a client proposal due today.",
+      "expectedCategory": "Account",
+      "expectedPriority": "High",
+      "predictedCategory": "Account",
+      "predictedPriority": "Critical",
+      "categoryCorrect": true,
+      "priorityCorrect": false,
+      "aiUnavailable": false,
+      "ms": 2570
+    },
+    {
+      "id": 29,
+      "description": "The clock on the breakroom microwave is showing the wrong time. Not a big deal, just noticed it.",
+      "expectedCategory": "Hardware",
+      "expectedPriority": "Trivial",
+      "predictedCategory": "Other",
+      "predictedPriority": "Low",
+      "categoryCorrect": false,
+      "priorityCorrect": false,
+      "aiUnavailable": false,
+      "ms": 2377
+    },
+    {
+      "id": 30,
+      "description": "My desktop wallpaper keeps resetting to the default company image every time I log back in.",
+      "expectedCategory": "Software",
+      "expectedPriority": "Trivial",
+      "predictedCategory": "Software",
+      "predictedPriority": "Medium",
+      "categoryCorrect": true,
+      "priorityCorrect": false,
+      "aiUnavailable": false,
+      "ms": 2429
+    },
+    {
+      "id": 31,
+      "description": "Could I get the newer version of Slack installed sometime? Whenever's convenient, no particular hurry.",
+      "expectedCategory": "Software",
+      "expectedPriority": "Trivial",
+      "predictedCategory": "Software",
+      "predictedPriority": "Low",
+      "categoryCorrect": true,
+      "priorityCorrect": false,
+      "aiUnavailable": false,
+      "ms": 2309
+    },
+    {
+      "id": 32,
+      "description": "The payroll system is completely down for the entire finance team, and the pay run deadline is this afternoon.",
+      "expectedCategory": "Software",
+      "expectedPriority": "Critical",
+      "predictedCategory": "Software",
+      "predictedPriority": "Critical",
+      "categoryCorrect": true,
+      "priorityCorrect": true,
+      "aiUnavailable": false,
+      "ms": 2931
+    },
+    {
+      "id": 33,
+      "description": "I'm getting sign-in alerts for my account from a country I've never been to -- I think someone's trying to get in.",
+      "expectedCategory": "Account",
+      "expectedPriority": "Critical",
+      "predictedCategory": "Account",
+      "predictedPriority": "High",
+      "categoryCorrect": true,
+      "priorityCorrect": false,
+      "aiUnavailable": false,
+      "ms": 3027
+    },
+    {
+      "id": 34,
+      "description": "The badge reader at the staff entrance has stopped recognising any cards and people are stuck outside in the rain.",
+      "expectedCategory": "Hardware",
+      "expectedPriority": "Critical",
+      "predictedCategory": "Network",
+      "predictedPriority": "Critical",
+      "categoryCorrect": false,
+      "priorityCorrect": true,
+      "aiUnavailable": false,
+      "ms": 2801
+    },
+    {
+      "id": 35,
+      "description": "The shared printer on my floor isn't working, but I can email the file to a colleague nearby and have them print it for me.",
+      "expectedCategory": "Hardware",
+      "expectedPriority": "Low",
+      "predictedCategory": "Hardware",
+      "predictedPriority": "Low",
+      "categoryCorrect": true,
+      "priorityCorrect": true,
+      "aiUnavailable": false,
+      "ms": 2977
     }
   ]
 }
