@@ -24,7 +24,7 @@ function suggestCategory(sources) {
   return sources.length ? sources[0].category : null;
 }
 
-async function assistUser(question) {
+async function assistUser(question, options = {}) {
   if (typeof question !== 'string' || !question.trim()) {
     const error = new Error('A non-empty IT question is required.');
     error.statusCode = 400;
@@ -33,7 +33,9 @@ async function assistUser(question) {
 
   const cleanQuestion = question.trim();
 
-  const result = await ask(cleanQuestion);
+  // history is the user's recent questions in this chat (already cleaned by
+  // the controller). ask() decides whether this question is a follow-up.
+  const result = await ask(cleanQuestion, { history: options.history });
 
   const best = result.sources.length ? result.sources[0] : null;
 

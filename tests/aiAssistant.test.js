@@ -150,6 +150,32 @@ describe('AI self-service assistant API', () => {
     );
   });
 
+  test('passes the last two questions through as history', async () => {
+    ask.mockResolvedValue(GROUNDED);
+
+    await request(app)
+      .post('/ai/assist')
+      .send({
+        question: 'its not working what else can i do',
+        history: ['first question', 'my printer is offline', 'its still stuck'],
+      });
+
+    expect(ask).toHaveBeenCalledWith('its not working what else can i do', {
+      history: ['my printer is offline', 'its still stuck'],
+    });
+  });
+
+  test('ignores a malformed history instead of failing', async () => {
+    ask.mockResolvedValue(GROUNDED);
+
+    const response = await request(app)
+      .post('/ai/assist')
+      .send({ question: 'my printer is not printing', history: 'not an array' });
+
+    expect(response.statusCode).toBe(200);
+    expect(ask).toHaveBeenCalledWith('my printer is not printing', { history: [] });
+  });
+
   test('rejects an empty request body', async () => {
     const response = await request(app).post('/ai/assist').send({});
 

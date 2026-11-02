@@ -86,17 +86,17 @@ function App() {
         "newTicket",
         "ticketDetail",
         "account",
-      ]
-      agent: ["dashboard", "tickets", "ticketDetail", "account"],
+      ],
+      agent: ["dashboard", "tickets", "aiAssistant", "ticketDetail", "account"],
       admin: [
         "dashboard",
         "tickets",
+        "aiAssistant",
         "ticketDetail",
         "manageUsers",
         "report",
         "settings",
         "account",
- main
       ],
     };
 
@@ -144,9 +144,10 @@ function App() {
       content = <AccountPage user={loggedInUser} />;
     } else if (view === "aiAssistant") {
       content = (
-
-        <AiAssistantPage onCreateTicket={() => handleNavigate("newTicket")} 
-    main
+        <AiAssistantPage
+          user={loggedInUser}
+          onCreateTicket={() => handleNavigate("newTicket")}
+        />
       );
     } else if (view === "newTicket") {
       content = (
@@ -189,22 +190,15 @@ function App() {
   /* Agent pages */
   if (isAgent) {
     if (view === "account") {
-      content = <AccountPage user={loggedInUser} />; backend-harpreet
-    } else if (view === 'aiAssistant') {
+      content = <AccountPage user={loggedInUser} />;
+    } else if (view === "aiAssistant") {
       content = (
-        <AiAssistantPage
-          user={loggedInUser}
-          onCreateTicket={() =>
-            handleNavigate('newTicket')
-          }
-        />
+        <AiAssistantPage user={loggedInUser} />
       );
     } else if (
-      view === 'ticketDetail' &&
+      view === "ticketDetail" &&
       selectedTicketId
     ) {
-
- main
       content = (
         <TicketDetailPage
           ticketId={selectedTicketId}
@@ -234,21 +228,14 @@ function App() {
   if (isAdmin) {
     if (view === "account") {
       content = <AccountPage user={loggedInUser} />;
-
-    } else if (view === 'aiAssistant') {
+    } else if (view === "aiAssistant") {
       content = (
-        <AiAssistantPage
-          user={loggedInUser}
-          onCreateTicket={() =>
-            handleNavigate('newTicket')
-          }
-        />
+        <AiAssistantPage user={loggedInUser} />
       );
     } else if (
-      view === 'ticketDetail' &&
+      view === "ticketDetail" &&
       selectedTicketId
     ) {
- main
       content = (
         <TicketDetailPage
           ticketId={selectedTicketId}

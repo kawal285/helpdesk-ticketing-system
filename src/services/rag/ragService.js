@@ -14,6 +14,59 @@ const webSearchService = require('./webSearchService');
 const { buildMessages, refusalMessage } = require('./prompt');
 
 /*
+ * Each question is normally answered on its own. A short follow-up such as
+ * "its not working what else can i do" means nothing without the question
+ * before it, so for those -- and only those -- the previous question(s) are
+ * added to what is searched. A new, self-contained question is left alone,
+ * otherwise an old topic would leak into unrelated answers.
+ */
+const MAX_FOLLOW_UP_WORDS = 8;
+const FOLLOW_UP_CUES =
+  /\b(it|its|it's|that|this|them|still|else|again|same|another|more)\b/i;
+
+function buildSearchContext(question, history) {
+  const previous = Array.isArray(history)
+    ? history
+        .filter((item) => typeof item === 'string' && item.trim())
+        .map((item) => item.trim())
+        .slice(-2)
+    : [];
+
+  const wordCount = question.trim().split(/\s+/).length;
+  const isFollowUp =
+    previous.length > 0 &&
+    wordCount <= MAX_FOLLOW_UP_WORDS &&
+    FOLLOW_UP_CUES.test(question);
+
+  if (!isFollowUp) {
+    return { searchText: question, previousQuestion: null };
+  }
+
+  const context = previous.join('. ');
+
+  return {
+    searchText: `${context}. ${question}`,
+    previousQuestion: context,
+  };
+}
+
+/*
+ * Small models sometimes echo the SOURCES numbering ("as mentioned in [1]")
+ * even when told not to. The reader cannot see those numbers, so they are
+ * removed after the fact rather than trusted to the prompt alone.
+ */
+function stripCitationMarkers(text) {
+  if (typeof text !== 'string') {
+    return text;
+  }
+
+  return text
+    .replace(/\s*\(\s*\[\d+\](?:\s*,\s*\[\d+\])*\s*\)/g, '')
+    .replace(/\s*\[\d+\]/g, '')
+    .trim();
+}
+
+/*
  * One source entry per article, not per chunk. Three chunks from the same
  * article is one citation to the reader, and the highest-scoring chunk
  * decides the ordering.
@@ -64,12 +117,17 @@ function summariseWebSources(results) {
 async function ask(question, options = {}) {
   const started = Date.now();
 
+  const { searchText, previousQuestion } = buildSearchContext(
+    question,
+    options.history
+  );
+
   const [retrieval, web] =
     options.webSearch === false
-      ? [await retrieve(question, options), { results: [], provider: 'none' }]
+      ? [await retrieve(searchText, options), { results: [], provider: 'none' }]
       : await Promise.all([
-          retrieve(question, options),
-          webSearchService.search(question),
+          retrieve(searchText, options),
+          webSearchService.search(searchText),
         ]);
 
   const hasKb = retrieval.hasRelevantContext;
@@ -91,8 +149,13 @@ async function ask(question, options = {}) {
     };
   }
 
-  const messages = buildMessages(question, retrieval.relevant, web.results);
-  const answer = await generate(messages);
+  const messages = buildMessages(
+    question,
+    retrieval.relevant,
+    web.results,
+    previousQuestion
+  );
+  const answer = stripCitationMarkers(await generate(messages));
 
   return {
     answer,
@@ -109,4 +172,4 @@ async function ask(question, options = {}) {
   };
 }
 
-module.exports = { ask };
+module.exports = { ask, buildSearchContext, stripCitationMarkers };
