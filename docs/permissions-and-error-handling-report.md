@@ -1,13 +1,13 @@
 # Access permissions and error handling: test results and defects
 
-Issue #86. Run against the full backend test suite on 2026-11-02 via
-`npm test`. Real output, not a summary written from memory — every
-number below is from the run itself.
+Issue #86. Run against the full backend test suite, most recently on
+2026-11-03 via `npm test`. Real output, not a summary written from
+memory — every number below is from the run itself.
 
 ```
 Test Suites: 28 passed, 28 total
-Tests:       1 skipped, 259 passed, 260 total
-Time:        22.3s
+Tests:       1 skipped, 270 passed, 271 total
+Time:        28.2s
 ```
 
 ## Acceptance criteria, against what actually exists
@@ -88,18 +88,24 @@ This document.
 
 ## Known remaining defects
 
-- **`GEMINI_API_KEY` is invalid in this environment** (confirmed still
-  broken on 2026-11-02, same as when first found on 2026-10-27): every
-  real call to Gemini returns `401 Unauthorized` /
-  `ACCESS_TOKEN_TYPE_UNSUPPORTED`, not expired/over-quota. Because
-  `aiService.js` correctly never blocks ticket creation on an AI
-  failure, this has been silently degrading every ticket to
-  `Trivial`/`Other` defaults with no visible error — functioning exactly
-  as designed, but it means nobody has seen a real AI suggestion in this
-  environment for as long as the key has been invalid. See
+- ~~`GEMINI_API_KEY` is invalid in this environment~~ — **resolved
+  2026-11-03.** A teammate (Ramandeep) rewrote `aiAnalysisService.js` to
+  go through the same local Ollama generation provider the RAG assistant
+  already uses, removing the Gemini/API-key dependency for ticket
+  classification entirely (`aiService.js`'s own comment now credits the
+  original finding from this report). Re-ran the classification
+  evaluation against the fix: 90% category / 55% priority accuracy, a
+  real measurement for the first time. See
   [ai-classification-evaluation-report.md](./ai-classification-evaluation-report.md)
-  for the full trace. Needs a valid key from whoever owns the Gemini
-  integration; no code change required.
+  for the current numbers and what they show. Testing this fix also
+  surfaced a new, separate reliability issue — see below.
+- **Ticket creation was awaiting two independent AI calls sequentially**
+  (`getAiSuggestions()` and the newly-merged `detectEmotion()`), found
+  while testing the fix above: 12+ seconds per ticket creation measured
+  live, worst case 68s (8s + 60s timeouts stacked). **Fixed 2026-11-03**
+  — both now run with `Promise.all`, confirmed live at 2.1s for the same
+  request, with a regression test asserting emotion detection starts
+  before a slow AI call finishes (commit `41607e3`).
 - **RAG retrieval doesn't filter by audience/role yet.** The `audience`
   column exists on `kb_chunks` (default `'All'`) and
   `aiAssistant.test.js` has a `test.skip` describing the intended
