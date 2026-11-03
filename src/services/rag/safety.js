@@ -59,7 +59,7 @@ const DANGEROUS_ADVICE_PATTERNS = [
   /remove\s+(the\s+)?(psu|power\s+supply\s+unit)/i,
   /discharge\s+(the\s+)?capacitor/i,
   /open(ing)?\s+(the\s+)?(monitor|crt)(\s+casing|\s+housing)?/i,
-  /open(ing)?\s+(up\s+)?(the\s+)?(computer|pc|case|chassis)(\s+case)?\s+(and|to)\s+(remove|take\s+out|replace|access)/i,
+  /open(ing)?\s+(up\s+)?(the\s+)?(computer|pc|case|chassis)(\s+case)?\b.{0,25}(remove|take\s+out|replace|access)/i,
 ];
 
 function containsDangerousAdvice(text) {

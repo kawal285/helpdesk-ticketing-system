@@ -220,3 +220,58 @@ describe('ragService follow-up handling', () => {
     expect(stripCitationMarkers(undefined)).toBeUndefined();
   });
 });
+
+describe('ragService safety guardrails', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    getModelInfo.mockReturnValue({ name: 'ollama:llama3.2' });
+  });
+
+  it('returns a fixed safety response for a described hazard without touching retrieval, web search or the model', async () => {
+    const result = await ask('my computer is smoking and I can smell it burning');
+
+    expect(result.grounded).toBe(false);
+    expect(result.escalated).toBe(true);
+    expect(result.answer).toMatch(/unplug/i);
+    expect(result.sources).toEqual([]);
+    expect(retrieve).not.toHaveBeenCalled();
+    expect(webSearchService.search).not.toHaveBeenCalled();
+    expect(generate).not.toHaveBeenCalled();
+  });
+
+  it('does not flag an ordinary question as a hazard', async () => {
+    retrieve.mockResolvedValue(grounded([KB_MATCH]));
+    webSearchService.search.mockResolvedValue({ results: [], provider: 'duckduckgo' });
+    generate.mockResolvedValue('Clear the print queue.');
+
+    const result = await ask('my printer is not printing');
+
+    expect(result.escalated).toBe(false);
+  });
+
+  it('overrides the answer, and empties sources, when the model gives dangerous disassembly advice', async () => {
+    retrieve.mockResolvedValue(grounded([KB_MATCH]));
+    webSearchService.search.mockResolvedValue({ results: [], provider: 'duckduckgo' });
+    generate.mockResolvedValue('First, open the power supply and discharge the capacitor.');
+
+    const result = await ask('my pc wont turn on');
+
+    expect(result.grounded).toBe(true);
+    expect(result.escalated).toBe(true);
+    expect(result.answer).not.toMatch(/open the power supply/i);
+    expect(result.answer).toMatch(/qualified technician/i);
+    expect(result.sources).toEqual([]);
+  });
+
+  it('redacts a credential-shaped string the model includes in an otherwise normal answer', async () => {
+    retrieve.mockResolvedValue(grounded([KB_MATCH]));
+    webSearchService.search.mockResolvedValue({ results: [], provider: 'duckduckgo' });
+    generate.mockResolvedValue('Use the key AIzaSyD4GhK9mXyZ1234567890abcdefGHIJKL to sign in.');
+
+    const result = await ask('how do I sign in');
+
+    expect(result.escalated).toBe(false);
+    expect(result.answer).not.toContain('AIzaSyD4GhK9mXyZ1234567890abcdefGHIJKL');
+    expect(result.answer).toContain('[redacted]');
+  });
+});

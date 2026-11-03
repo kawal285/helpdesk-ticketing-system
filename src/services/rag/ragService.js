@@ -12,6 +12,7 @@ const { retrieve } = require('./retrievalService');
 const { generate, getModelInfo } = require('./generationService');
 const webSearchService = require('./webSearchService');
 const { buildMessages, refusalMessage } = require('./prompt');
+const safety = require('./safety');
 
 /*
  * Each question is normally answered on its own. A short follow-up such as
@@ -117,6 +118,24 @@ function summariseWebSources(results) {
 async function ask(question, options = {}) {
   const started = Date.now();
 
+  // Checked first, before anything else, against the user's raw message.
+  // A described hazard is time-sensitive and needs a fixed safety
+  // response immediately -- it never reaches retrieval or the model, so
+  // no phrasing of the question can talk it past this check.
+  if (safety.detectHazard(question)) {
+    return {
+      answer: safety.hazardEscalationMessage(),
+      grounded: false,
+      escalated: true,
+      sources: [],
+      topScore: 0,
+      threshold: null,
+      model: null,
+      webSearchProvider: 'none',
+      ms: Date.now() - started,
+    };
+  }
+
   const { searchText, previousQuestion } = buildSearchContext(
     question,
     options.history
@@ -140,6 +159,7 @@ async function ask(question, options = {}) {
     return {
       answer: refusalMessage(),
       grounded: false,
+      escalated: false,
       sources: [],
       topScore: Number(retrieval.topScore.toFixed(4)),
       threshold: retrieval.threshold,
@@ -155,12 +175,23 @@ async function ask(question, options = {}) {
     web.results,
     previousQuestion
   );
-  const answer = stripCitationMarkers(await generate(messages));
+  const rawAnswer = stripCitationMarkers(await generate(messages));
+
+  // Output-side guard: whatever the model actually said, check it for
+  // unsafe disassembly instructions before it ever reaches the reader --
+  // this holds even if a source document (or the model itself) suggested
+  // them. Secret redaction runs on the real answer either way, since a
+  // credential-shaped string is a risk regardless of what else is wrong.
+  const dangerousAdvice = safety.containsDangerousAdvice(rawAnswer);
+  const answer = dangerousAdvice
+    ? safety.safeFallbackForDangerousAdvice()
+    : safety.redactSecrets(rawAnswer);
 
   return {
     answer,
     grounded: true,
-    sources: [
+    escalated: dangerousAdvice,
+    sources: dangerousAdvice ? [] : [
       ...summariseKbSources(retrieval.relevant),
       ...summariseWebSources(web.results),
     ],
