@@ -61,4 +61,15 @@ describe('parseAnalysis', () => {
 
     expect(parseAnalysis(text).suggestedResponse).toBe('Category: Hardware\nPriority: Low');
   });
+
+  it('redacts a credential-shaped string from the suggested response', () => {
+    const text =
+      'Category: Account\nPriority: High\nSuggested Response: ' +
+      'Use the key AIzaSyD4GhK9mXyZ1234567890abcdefGHIJKL to sign in.';
+
+    const { suggestedResponse } = parseAnalysis(text);
+
+    expect(suggestedResponse).not.toContain('AIzaSyD4GhK9mXyZ1234567890abcdefGHIJKL');
+    expect(suggestedResponse).toBe('Use the key [redacted] to sign in.');
+  });
 });

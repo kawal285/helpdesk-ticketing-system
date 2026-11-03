@@ -55,11 +55,26 @@ const REFUSED = {
     "I couldn't find anything in the IT knowledge base that covers this, so "
     + "I don't want to guess.",
   grounded: false,
+  escalated: false,
   sources: [],
   topScore: 0.4959,
   threshold: 0.59,
   model: 'ollama:llama3.2',
   ms: 310,
+};
+
+const ESCALATED = {
+  answer:
+    'This sounds like it could be a physical safety risk, not a normal IT '
+    + "problem. If it's safe to do so, unplug the device from the wall "
+    + 'and step away.',
+  grounded: false,
+  escalated: true,
+  sources: [],
+  topScore: 0,
+  threshold: null,
+  model: null,
+  ms: 12,
 };
 
 describe('AI self-service assistant API', () => {
@@ -121,6 +136,41 @@ describe('AI self-service assistant API', () => {
 
     expect(response.body.assistant.topScore).toBe(0.4959);
     expect(response.body.assistant.threshold).toBe(0.59);
+  });
+
+  test('flags a safety escalation distinctly from an ordinary refusal', async () => {
+    ask.mockResolvedValue(ESCALATED);
+
+    const response = await request(app)
+      .post('/ai/assist')
+      .send({ question: 'my computer is smoking' });
+
+    const { assistant } = response.body;
+
+    expect(assistant.safetyEscalation).toBe(true);
+    expect(assistant.shouldCreateTicket).toBe(true);
+    expect(assistant.suggestedPriority).toBe('Critical');
+    expect(assistant.knowledgeBaseMatch).toBe(false);
+  });
+
+  test('does not flag an ordinary grounded or refused answer as a safety escalation', async () => {
+    ask.mockResolvedValue(GROUNDED);
+
+    const groundedResponse = await request(app)
+      .post('/ai/assist')
+      .send({ question: 'my printer is not printing' });
+
+    expect(groundedResponse.body.assistant.safetyEscalation).toBe(false);
+    expect(groundedResponse.body.assistant.suggestedPriority).toBeNull();
+
+    ask.mockResolvedValue(REFUSED);
+
+    const refusedResponse = await request(app)
+      .post('/ai/assist')
+      .send({ question: 'who won the football last night' });
+
+    expect(refusedResponse.body.assistant.safetyEscalation).toBe(false);
+    expect(refusedResponse.body.assistant.suggestedPriority).toBeNull();
   });
 
   /*

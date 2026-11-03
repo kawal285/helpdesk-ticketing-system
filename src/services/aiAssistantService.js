@@ -56,9 +56,19 @@ async function assistUser(question, options = {}) {
     sources: result.sources,
 
     suggestedCategory: suggestCategory(result.sources),
-    suggestedPriority: null,
 
-    shouldCreateTicket: !result.grounded,
+    // Only ever set by a safety escalation (rag/safety.js) -- a normal
+    // grounded or refused answer doesn't guess a priority, that's ticket
+    // creation's job, not the assistant's.
+    suggestedPriority: result.escalated ? 'Critical' : null,
+
+    // True whenever this needs a human either way: nothing was found to
+    // answer from, or a safety guardrail stepped in.
+    shouldCreateTicket: !result.grounded || Boolean(result.escalated),
+
+    // Lets the frontend show a distinct, more urgent treatment than the
+    // ordinary "couldn't find anything" refusal.
+    safetyEscalation: Boolean(result.escalated),
 
     // Retrieval diagnostics. Useful in the UI during the demo and when
     // explaining why a question was refused.

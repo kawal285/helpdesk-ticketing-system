@@ -14,6 +14,7 @@
 const { generate } = require('./rag/generationService');
 const ticketPrompt = require('../prompts/ticketPrompt');
 const { CATEGORIES, PRIORITIES } = require('../utils/ticketFields');
+const { redactSecrets } = require('./rag/safety');
 
 /*
  * The reply is three short lines, so the token budget is small. This is
@@ -50,10 +51,17 @@ function parseAnalysis(text) {
   const category = categoryMatch ? categoryMatch[1].trim() : null;
   const priority = priorityMatch ? priorityMatch[1].trim() : null;
 
+  const suggestedResponse = responseMatch ? responseMatch[1].trim() : text.trim();
+
   return {
     category: CATEGORIES.includes(category) ? category : 'Other',
     priority: PRIORITIES.includes(priority) ? priority : 'Medium',
-    suggestedResponse: responseMatch ? responseMatch[1].trim() : text.trim(),
+    // Prompt wording (ticketPrompt.js) already tells the model not to
+    // include credentials, but that's guidance, not a guarantee -- this
+    // is the same code-level backstop the RAG assistant applies to its
+    // own answers (rag/safety.js), run here too since this response can
+    // end up shown directly to an agent.
+    suggestedResponse: redactSecrets(suggestedResponse),
   };
 }
 
