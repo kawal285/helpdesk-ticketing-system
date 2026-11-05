@@ -18,6 +18,7 @@ const request = require('supertest');
 const app = require('../src/app');
 const { sequelize, Ticket } = require('../src/models');
 const { getAiSuggestions } = require('../src/services/aiService');
+const { detectEmotion } = require('../src/services/emotionDetectionService');
 const { createUserWithToken } = require('./helpers/testHelpers');
 const { createTicketAs, assignTicket } = require('./helpers/ticketHelpers');
 
@@ -82,6 +83,34 @@ describe('POST /tickets', () => {
     const dueAt = new Date(ticket.dueAt).getTime();
     const createdAt = new Date(ticket.createdAt).getTime();
     expect(dueAt - createdAt).toBeCloseTo(8 * 60 * 60 * 1000, -3);
+  });
+
+  it('runs AI classification and emotion detection concurrently, not one after the other', async () => {
+    // These are two independent calls to two different services (Gemini,
+    // local Ollama). Measured sequentially in this environment, ticket
+    // creation took 12s+ -- the sum of both calls -- with a worst case
+    // of 8s + 60s. This proves they are dispatched together: if emotion
+    // detection only started once the (slow) AI call fully resolved, it
+    // would run after 'ai-end' instead of before it.
+    const callOrder = [];
+
+    getAiSuggestions.mockImplementationOnce(async () => {
+      callOrder.push('ai-start');
+      await new Promise((resolve) => setTimeout(resolve, 50));
+      callOrder.push('ai-end');
+      return { category: null, priority: null, suggestedResponse: null };
+    });
+
+    detectEmotion.mockImplementationOnce(async () => {
+      callOrder.push('emotion-start');
+      return { emotion: 'neutral', reason: 'Test emotion result.', isSuggestion: true };
+    });
+
+    const { token } = await createUserWithToken({ role: 'customer' });
+    const res = await createTicketAs(token);
+
+    expect(res.status).toBe(201);
+    expect(callOrder.indexOf('emotion-start')).toBeLessThan(callOrder.indexOf('ai-end'));
   });
 
   it('computes a 120-hour due date for Trivial priority', async () => {
@@ -636,5 +665,91 @@ describe('PATCH /tickets/:id/review', () => {
       .send({ action: 'delete-everything' });
 
     expect(res.status).toBe(400);
+  });
+});
+
+describe('POST /tickets/:id/ai-analyze', () => {
+  it('rejects an unauthenticated request with 401', async () => {
+    const { token: ownerToken } = await createUserWithToken({ role: 'customer' });
+    const created = await createTicketAs(ownerToken);
+
+    const res = await request(app).post(`/tickets/${created.body.ticket.id}/ai-analyze`);
+
+    expect(res.status).toBe(401);
+  });
+
+  it('rejects a customer with 403, even on their own ticket', async () => {
+    const { token: ownerToken } = await createUserWithToken({ role: 'customer' });
+    const created = await createTicketAs(ownerToken);
+
+    const res = await request(app)
+      .post(`/tickets/${created.body.ticket.id}/ai-analyze`)
+      .set('Authorization', `Bearer ${ownerToken}`);
+
+    expect(res.status).toBe(403);
+  });
+
+  it('returns 404 for a ticket an agent cannot access, same as GET /tickets/:id', async () => {
+    const { token: ownerToken } = await createUserWithToken({ role: 'customer' });
+    const { token: adminToken } = await createUserWithToken({ role: 'admin' });
+    const { user: assignedAgent } = await createUserWithToken({ role: 'agent' });
+    const { token: otherAgentToken } = await createUserWithToken({ role: 'agent' });
+
+    const created = await createTicketAs(ownerToken);
+    const ticketId = created.body.ticket.id;
+    await assignTicket(adminToken, ticketId, assignedAgent.id);
+
+    const res = await request(app)
+      .post(`/tickets/${ticketId}/ai-analyze`)
+      .set('Authorization', `Bearer ${otherAgentToken}`);
+
+    expect(res.status).toBe(404);
+  });
+
+  it('returns a clear 503, and leaves the ticket unchanged, when the AI has nothing to offer', async () => {
+    const { token: ownerToken } = await createUserWithToken({ role: 'customer' });
+    const { token: adminToken } = await createUserWithToken({ role: 'admin' });
+    const { user: agent, token: agentToken } = await createUserWithToken({ role: 'agent' });
+    const created = await createTicketAs(ownerToken, { category: 'Hardware', priority: 'Low' });
+    const ticketId = created.body.ticket.id;
+    await assignTicket(adminToken, ticketId, agent.id);
+
+    getAiSuggestions.mockResolvedValueOnce({ category: null, priority: null, suggestedResponse: null });
+
+    const res = await request(app)
+      .post(`/tickets/${ticketId}/ai-analyze`)
+      .set('Authorization', `Bearer ${agentToken}`);
+
+    expect(res.status).toBe(503);
+    expect(res.body.message).toBe('AI analysis is currently unavailable. Please try again later.');
+
+    const after = await request(app).get(`/tickets/${ticketId}`).set('Authorization', `Bearer ${agentToken}`);
+    expect(after.body.ticket.aiAnalyzedAt).toBeNull();
+    expect(after.body.ticket.category).toBe('Hardware');
+  });
+
+  it('updates the AI fields and returns 200 when the AI succeeds', async () => {
+    const { token: ownerToken } = await createUserWithToken({ role: 'customer' });
+    const { token: adminToken } = await createUserWithToken({ role: 'admin' });
+    const { user: agent, token: agentToken } = await createUserWithToken({ role: 'agent' });
+    const created = await createTicketAs(ownerToken);
+    const ticketId = created.body.ticket.id;
+    await assignTicket(adminToken, ticketId, agent.id);
+
+    getAiSuggestions.mockResolvedValueOnce({
+      category: 'Network',
+      priority: 'High',
+      suggestedResponse: 'Check the VPN gateway logs.',
+    });
+
+    const res = await request(app)
+      .post(`/tickets/${ticketId}/ai-analyze`)
+      .set('Authorization', `Bearer ${agentToken}`);
+
+    expect(res.status).toBe(200);
+    expect(res.body.ticket.aiCategory).toBe('Network');
+    expect(res.body.ticket.aiPriority).toBe('High');
+    expect(res.body.ticket.aiSuggestedResponse).toBe('Check the VPN gateway logs.');
+    expect(res.body.ticket.aiAnalyzedAt).not.toBeNull();
   });
 });

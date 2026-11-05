@@ -24,7 +24,10 @@ Choose exactly one priority:
 - Medium: A normal technical issue affecting an individual or
   a limited group, where work can continue partially.
 - Low: A minor issue with limited impact and an available workaround.
-- Trivial: A simple request, cosmetic issue or minor inconvenience.
+- Trivial: A simple request, cosmetic issue or minor inconvenience with
+  no real impact on anyone's work. If the reporter's own wording signals
+  no urgency (e.g. "not a big deal," "no rush," "whenever you get a
+  chance"), prefer Trivial over Low.
 
 3. PRIORITY DECISION RULES
 - Consider business impact, urgency, number of affected users,

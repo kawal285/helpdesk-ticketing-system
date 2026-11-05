@@ -129,32 +129,39 @@ const createTicket = catchAsync(
      * AI analyses every ticket for staff recommendations.
      * Customer-selected values always take priority.
      * AI failure must never prevent ticket creation.
+     *
+     * Run alongside emotion detection, not after it -- these are two
+     * independent calls to two different services (Gemini, local Ollama)
+     * with their own timeouts (8s / 60s). Awaited one after the other,
+     * every ticket creation pays the sum of both -- measured at 12s+ in
+     * this environment, with a worst case of 68s. Run together, ticket
+     * creation only ever waits as long as the slower of the two.
      */
-    const ai = await getAiSuggestions(description);
+    const [ai, emotionResult] = await Promise.all([
+      getAiSuggestions(description),
+      detectEmotion(description).catch((error) => {
+        // Emotion detection is advisory only and must not block ticket
+        // creation -- keep it working if Ollama is unavailable.
+        console.error(
+          'Emotion detection unavailable:',
+          error.message
+        );
 
-    // Emotion detection is advisory only and must not block ticket creation.
-    let emotionAnalysis = {
-      emotion: null,
-      reason: null,
-      analyzedAt: null,
-    };
+        return null;
+      }),
+    ]);
 
-    try {
-      const result = await detectEmotion(description);
-
-      emotionAnalysis = {
-        emotion: result.emotion,
-        reason: result.reason,
-        analyzedAt: new Date(),
-      };
-    } catch (error) {
-      // Keep ticket creation working if Ollama is unavailable.
-      console.error(
-        'Emotion detection unavailable:',
-        error.message
-      );
-    }
-
+    const emotionAnalysis = emotionResult
+      ? {
+          emotion: emotionResult.emotion,
+          reason: emotionResult.reason,
+          analyzedAt: new Date(),
+        }
+      : {
+          emotion: null,
+          reason: null,
+          analyzedAt: null,
+        };
 
     const aiSucceeded = ai.category !== null;
 
