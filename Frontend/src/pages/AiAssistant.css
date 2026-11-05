@@ -197,6 +197,17 @@
   background: var(--error-text);
 }
 
+/* Deliberately the same alarm colour as an error, not the softer refusal
+   orange -- a safety escalation is a different kind of thing to notice
+   at a glance, not just "couldn't find an answer." */
+.chat__answer--escalated .chat__cap {
+  background: var(--error-text);
+}
+
+.chat__answer--escalated {
+  border-color: var(--error-text);
+}
+
 .chat__inner {
   padding: 18px 22px 20px;
 }
@@ -238,6 +249,11 @@
   background: transparent;
   color: var(--fs-dark-orange);
   border: 1px solid var(--fs-orange);
+}
+
+.chat__tag--escalated {
+  background: var(--error-text);
+  color: #ffffff;
 }
 
 .chat__timing {
@@ -429,6 +445,14 @@
   background: var(--op-light-blue);
   border-color: var(--op-blue);
   color: var(--op-blue);
+}
+
+.chat__cta--escalated {
+  background: var(--error-text);
+}
+
+.chat__cta--escalated:hover {
+  background: #a8362c;
 }
 
 /* ---------- thinking ---------- */

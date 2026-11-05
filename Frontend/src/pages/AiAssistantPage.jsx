@@ -295,6 +295,7 @@ export default function AiAssistantPage({ user, onCreateTicket }) {
 
 function AnswerCard({ assistant, user, onCreateTicket }) {
   const grounded = assistant.knowledgeBaseMatch;
+  const escalated = Boolean(assistant.safetyEscalation);
   const sources = assistant.sources || [];
   const kbSources = sources.filter((source) => source.type !== 'web');
   const webSources = sources.filter((source) => source.type === 'web');
@@ -343,13 +344,19 @@ function AnswerCard({ assistant, user, onCreateTicket }) {
 
   return (
     <div
-      className={`chat__answer${grounded ? '' : ' chat__answer--refused'}`}
+      className={`chat__answer${
+        escalated ? ' chat__answer--escalated' : grounded ? '' : ' chat__answer--refused'
+      }`}
     >
       <div className="chat__cap" />
 
       <div className="chat__inner">
         <div className="chat__meta">
-          {grounded ? (
+          {escalated ? (
+            <span className="chat__tag chat__tag--escalated">
+              ⚠ Possible safety risk
+            </span>
+          ) : grounded ? (
             assistant.suggestedCategory && (
               <span
                 className="chat__tag"
@@ -375,7 +382,7 @@ function AnswerCard({ assistant, user, onCreateTicket }) {
           <AnswerText text={assistant.answer} />
         </div>
 
-        {!grounded && (
+        {!grounded && !escalated && (
           <p className="chat__refusal-detail">
             Closest match {assistant.topScore} &middot; needs{' '}
             {assistant.threshold} to answer
@@ -385,10 +392,16 @@ function AnswerCard({ assistant, user, onCreateTicket }) {
         {onCreateTicket && (
           <button
             type="button"
-            className={`chat__cta${grounded ? ' chat__cta--secondary' : ''}`}
+            className={`chat__cta${
+              escalated ? ' chat__cta--escalated' : grounded ? ' chat__cta--secondary' : ''
+            }`}
             onClick={onCreateTicket}
           >
-            {grounded ? 'Still stuck? Raise a ticket' : 'Raise a ticket'}
+            {escalated
+              ? 'Raise a ticket now'
+              : grounded
+                ? 'Still stuck? Raise a ticket'
+                : 'Raise a ticket'}
           </button>
         )}
 
