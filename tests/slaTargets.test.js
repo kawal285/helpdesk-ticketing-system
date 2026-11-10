@@ -173,3 +173,74 @@ describe('ticket responses include the SLA status', () => {
     expect(res.body.ticket.sla.resolution.status).toBe('breached');
   });
 });
+
+describe('GET /sla-targets', () => {
+  it('rejects an unauthenticated request with 401', async () => {
+    const res = await request(app).get('/sla-targets');
+    expect(res.status).toBe(401);
+  });
+
+  it('lists every priority for any signed-in user, flagging defaults', async () => {
+    await SlaTarget.create({ priority: 'High', responseMinutes: 45, resolutionMinutes: 300 });
+    const { token } = await createUserWithToken({ role: 'customer' });
+
+    const res = await request(app).get('/sla-targets').set('Authorization', `Bearer ${token}`);
+
+    expect(res.status).toBe(200);
+    expect(res.body.targets.map((t) => t.priority)).toEqual(['Trivial', 'Low', 'Medium', 'High', 'Critical']);
+    expect(res.body.targets.find((t) => t.priority === 'High')).toEqual({
+      priority: 'High', responseMinutes: 45, resolutionMinutes: 300, isDefault: false,
+    });
+    expect(res.body.targets.find((t) => t.priority === 'Critical').isDefault).toBe(true);
+  });
+});
+
+describe('PUT /sla-targets/:priority -- only an admin can change targets', () => {
+  const newTarget = { responseMinutes: 20, resolutionMinutes: 180 };
+
+  it.each(['customer', 'agent'])('rejects a %s with 403 and changes nothing', async (role) => {
+    const { token } = await createUserWithToken({ role });
+
+    const res = await request(app)
+      .put('/sla-targets/Critical')
+      .set('Authorization', `Bearer ${token}`)
+      .send(newTarget);
+
+    expect(res.status).toBe(403);
+    expect(await SlaTarget.count()).toBe(0);
+  });
+
+  it('rejects an unauthenticated request with 401', async () => {
+    const res = await request(app).put('/sla-targets/Critical').send(newTarget);
+    expect(res.status).toBe(401);
+  });
+
+  it('lets an admin change a target, and new tickets use it', async () => {
+    const { token: adminToken } = await createUserWithToken({ role: 'admin' });
+
+    const res = await request(app)
+      .put('/sla-targets/Critical')
+      .set('Authorization', `Bearer ${adminToken}`)
+      .send(newTarget);
+
+    expect(res.status).toBe(200);
+    expect(res.body.target).toEqual({ priority: 'Critical', ...newTarget, isDefault: false });
+
+    const { token } = await createUserWithToken({ role: 'customer' });
+    const created = await createTicketAs(token, { priority: 'Critical' });
+    expect(minutesAfterCreation(created.body.ticket, 'responseDueAt')).toBe(20);
+    expect(minutesAfterCreation(created.body.ticket, 'dueAt')).toBe(180);
+  });
+
+  it('rejects an unknown priority, non-positive minutes, and resolution not longer than response', async () => {
+    const { token } = await createUserWithToken({ role: 'admin' });
+    const put = (priority, body) =>
+      request(app).put(`/sla-targets/${priority}`).set('Authorization', `Bearer ${token}`).send(body);
+
+    expect((await put('P9', newTarget)).status).toBe(400);
+    expect((await put('High', { responseMinutes: 0, resolutionMinutes: 60 })).status).toBe(400);
+    expect((await put('High', { responseMinutes: 60, resolutionMinutes: 60 })).status).toBe(400);
+    expect((await put('High', { responseMinutes: 'soon', resolutionMinutes: 60 })).status).toBe(400);
+    expect(await SlaTarget.count()).toBe(0);
+  });
+});

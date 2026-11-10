@@ -33,4 +33,13 @@ async function computeTicketDueDates(priority, anchor) {
   return computeDueDates(target, anchor);
 }
 
-module.exports = { getTargets, getTargetFor, computeTicketDueDates };
+async function updateTarget(priority, { responseMinutes, resolutionMinutes }) {
+  const [row] = await SlaTarget.findOrCreate({
+    where: { priority },
+    defaults: { responseMinutes, resolutionMinutes },
+  });
+  await row.update({ responseMinutes, resolutionMinutes });
+  return toTarget(priority, row);
+}
+
+module.exports = { getTargets, getTargetFor, computeTicketDueDates, updateTarget };

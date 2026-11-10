@@ -1,14 +1,14 @@
 const catchAsync = require('../utils/catchAsync');
 const { emailIsConfigured, verifyEmailConnection } = require('../services/emailService');
-const { SLA_HOURS } = require('../utils/sla');
+const { getTargets } = require('../services/slaTargetService');
 const { ORGANIZATIONS } = require('../utils/organizations');
 const { CATEGORIES, PRIORITIES, DEFAULT_PRIORITY } = require('../utils/ticketFields');
 const { STATUSES, STATUS_LABELS } = require('../utils/ticketStatus');
 
 // Admin-only read of the system's actual current configuration -- most of
 // this is env-driven and otherwise invisible without reading server logs
-// or .env directly. Nothing here is editable yet (these are fixed business
-// rules baked into the code, not a persisted settings table); this is a
+// or .env directly. Mostly read-only (fixed business
+// rules baked into the code); SLA targets are edited via /sla-targets. This is a
 // visibility page, not a config-editing one.
 const getSettings = catchAsync(async (req, res) => {
   res.status(200).json({
@@ -18,7 +18,10 @@ const getSettings = catchAsync(async (req, res) => {
     knowledgeBase: {
       provider: process.env.KNOWLEDGE_BASE_PROVIDER || 'local-json',
     },
-    sla: SLA_HOURS,
+    // Resolution hours per priority, from the sla_targets table.
+    sla: Object.fromEntries(
+      (await getTargets()).map((t) => [t.priority, t.resolutionMinutes / 60])
+    ),
     tickets: {
       statuses: STATUSES,
       statusLabels: STATUS_LABELS,
