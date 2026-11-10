@@ -714,6 +714,52 @@ textarea {
   font-weight: 700;
 }
 
+.sla-targets {
+  display: grid;
+  gap: 6px;
+}
+
+.sla-target-line {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.sla-target-name {
+  min-width: 105px;
+  color: var(--text-muted);
+  font-size: 13px;
+}
+
+.sla-badge {
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.sla-badge--on_track {
+  background: #e3f4e8;
+  color: #1e6b34;
+}
+
+.sla-badge--at_risk {
+  background: #fff1dc;
+  color: #8a4b00;
+}
+
+.sla-badge--breached {
+  background: #fde4e2;
+  color: #a12a20;
+}
+
+.sla-targets-note {
+  margin: 2px 0 0;
+  color: var(--text-muted);
+  font-size: 12px;
+}
+
 .ticket-description {
   margin-top: 20px;
   padding: 16px;

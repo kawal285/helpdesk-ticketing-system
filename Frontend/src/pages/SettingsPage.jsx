@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import SlaTargetsEditor from '../components/SlaTargetsEditor';
 
 const API_URL = 'http://localhost:4000';
 
@@ -151,30 +152,8 @@ export default function SettingsPage() {
             </section>
 
             <section style={cardStyle}>
-              <h2 style={{ color: '#005a9c', marginTop: 0 }}>SLA response times</h2>
-              <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-                <thead>
-                  <tr style={{ textAlign: 'left', borderBottom: '2px solid #d8dde3' }}>
-                    <th style={{ padding: 8 }}>Priority</th>
-                    <th style={{ padding: 8 }}>Target response</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {settings.tickets.priorities.map((priority) => (
-                    <tr key={priority} style={{ borderBottom: '1px solid #e2e6ea' }}>
-                      <td style={{ padding: 8 }}>
-                        {priority}
-                        {priority === settings.tickets.defaultPriority && (
-                          <span style={{ marginLeft: 8, fontSize: 12, color: '#5f6878' }}>
-                            (default)
-                          </span>
-                        )}
-                      </td>
-                      <td style={{ padding: 8 }}>{settings.sla[priority]} hours</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+              <h2 style={{ color: '#005a9c', marginTop: 0 }}>Response and resolution targets</h2>
+              <SlaTargetsEditor defaultPriority={settings.tickets.defaultPriority} />
             </section>
 
             <section style={cardStyle}>

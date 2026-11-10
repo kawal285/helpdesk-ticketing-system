@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
+import SlaTargets from '../components/SlaTargets';
 
 const STATUSES = [
   'Open',
@@ -36,14 +37,6 @@ const PRIORITIES = [
   'High',
   'Critical',
 ];
-
-const PRIORITY_DAYS = {
-  Trivial: 20,
-  Low: 10,
-  Medium: 5,
-  High: 2,
-  Critical: 1,
-};
 
 function formatDate(value) {
   if (!value) return 'Not available';
@@ -480,15 +473,6 @@ export default function TicketDetailPage({
     );
   }
 
-  const dueDate = ticket.dueAt
-    ? new Date(ticket.dueAt)
-    : null;
-
-  const overdue =
-    dueDate &&
-    dueDate < new Date() &&
-    !['Resolved', 'Closed'].includes(ticket.status);
-
   const availableStatuses = isAdmin
     ? STATUSES
     : [
@@ -586,13 +570,9 @@ export default function TicketDetailPage({
                 </div>
 
                 <div>
-                  <dt>Target</dt>
+                  <dt>Target (estimate)</dt>
                   <dd>
-                    {PRIORITY_DAYS[ticket.priority] || '—'} business
-                    day
-                    {PRIORITY_DAYS[ticket.priority] === 1
-                      ? ''
-                      : 's'}
+                    <SlaTargets sla={ticket.sla} />
                   </dd>
                 </div>
 
@@ -604,14 +584,6 @@ export default function TicketDetailPage({
                 <div>
                   <dt>Room</dt>
                   <dd>{ticket.room || 'Not provided'}</dd>
-                </div>
-
-                <div>
-                  <dt>Due date</dt>
-                  <dd className={overdue ? 'ticket-overdue' : ''}>
-                    {formatDate(ticket.dueAt)}
-                    {overdue && ' – Overdue'}
-                  </dd>
                 </div>
 
                 <div>
