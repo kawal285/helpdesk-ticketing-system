@@ -49,7 +49,7 @@ describe('POST /tickets/:ticketId/comments', () => {
     expect(res.status).toBe(201);
   });
 
-  it("rejects a customer who isn't the requester with 403", async () => {
+  it("returns 404 to a customer who isn't the requester, as if the ticket didn't exist", async () => {
     const { token: ownerToken } = await createUserWithToken({ role: 'customer' });
     const { token: otherToken } = await createUserWithToken({ role: 'customer' });
     const created = await createTicketAs(ownerToken);
@@ -59,7 +59,7 @@ describe('POST /tickets/:ticketId/comments', () => {
       .set('Authorization', `Bearer ${otherToken}`)
       .send({ text: 'Trying to butt in' });
 
-    expect(res.status).toBe(403);
+    expect(res.status).toBe(404);
   });
 
   it('rejects an empty comment body with 400', async () => {
@@ -107,7 +107,7 @@ describe('GET /tickets/:ticketId/comments', () => {
     expect(res.body.comments.map((c) => c.text)).toEqual(['First', 'Second']);
   });
 
-  it("rejects a third-party customer with 403, not leaking the ticket's existence via 404", async () => {
+  it("returns 404 to a third-party customer, so the ticket's existence isn't revealed", async () => {
     const { token: ownerToken } = await createUserWithToken({ role: 'customer' });
     const { token: otherToken } = await createUserWithToken({ role: 'customer' });
     const created = await createTicketAs(ownerToken);
@@ -116,6 +116,6 @@ describe('GET /tickets/:ticketId/comments', () => {
       .get(`/tickets/${created.body.ticket.id}/comments`)
       .set('Authorization', `Bearer ${otherToken}`);
 
-    expect(res.status).toBe(403);
+    expect(res.status).toBe(404);
   });
 });

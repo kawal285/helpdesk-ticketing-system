@@ -9,9 +9,8 @@ const {
   editPermissionError,
 } = require('../utils/ticketStatus');
 
-const {
-  canAccessTicket,
-} = require('../utils/ticketAccess');
+const { ticketScopeForUser } = require('../utils/ticketAccess');
+const { findAccessibleTicket } = require('../services/ticketAccessService');
 
 const {
   getAiSuggestions,
@@ -34,48 +33,12 @@ const { User } = require('../models');
 const { getProvider } = require('../services/ticketProviders');
 
 /*
- * Customer: only their own tickets.
- * Agent: assigned tickets and unassigned tickets.
- * Admin: every ticket.
- *
- * This is the CRM-agnostic filter shape every ticket provider accepts --
- * see src/services/ticketProviders/index.js for the full contract.
+ * Loads the ticket in :id through the shared ownership check
+ * (src/utils/ticketAccess.js). Throws a 404 -- handled by catchAsync --
+ * when it doesn't exist or the user may not see it.
  */
-function scopeForUser(user) {
-  if (user.role === 'admin') {
-    return {};
-  }
-
-  if (user.role === 'customer') {
-    return {
-      requesterId: user.id,
-    };
-  }
-
-  return {
-    assigneeIn: [user.id, null],
-  };
-}
-
-/*
- * Loads a ticket together with requester and assigned-agent
- * information and applies the same access rules to every endpoint.
- */
-async function loadAccessibleTicket(req, next) {
-  const ticket = await getProvider().getTicketById(req.params.id);
-
-  if (
-    !ticket ||
-    !canAccessTicket(req.user, ticket)
-  ) {
-    next(
-      new AppError('Ticket not found.', 404)
-    );
-
-    return null;
-  }
-
-  return ticket;
+async function loadAccessibleTicket(req) {
+  return findAccessibleTicket(req.user, req.params.id);
 }
 
 // assigneeId validation is a User/auth concern (is this id an active
@@ -252,8 +215,22 @@ const createTicket = catchAsync(
 
 const listTickets = catchAsync(
   async (req, res) => {
+    const scope = ticketScopeForUser(req.user);
+    const page =
+      parseInt(req.query.page, 10) || 1;
+
+    const limit = Math.min(
+      parseInt(req.query.limit, 10) || 20,
+      100
+    );
+
+    // A role with no ticket access sees an empty list, never another scope.
+    if (!scope) {
+      return res.status(200).json({ tickets: [], total: 0, page, limit });
+    }
+
     const filter = {
-      ...scopeForUser(req.user),
+      ...scope,
     };
 
     if (req.query.status) {
@@ -278,14 +255,6 @@ const listTickets = catchAsync(
         req.query.assigneeId;
     }
 
-    const page =
-      parseInt(req.query.page, 10) || 1;
-
-    const limit = Math.min(
-      parseInt(req.query.limit, 10) || 20,
-      100
-    );
-
     const { rows, count } =
       await getProvider().listTickets(filter, {
         limit,
@@ -303,8 +272,13 @@ const listTickets = catchAsync(
 
 const getOverdueTickets = catchAsync(
   async (req, res) => {
+    const scope = ticketScopeForUser(req.user);
+    if (!scope) {
+      return res.status(200).json({ tickets: [] });
+    }
+
     const filter = {
-      ...scopeForUser(req.user),
+      ...scope,
       dueBefore: new Date(),
       statusNotIn: [
         'Resolved',

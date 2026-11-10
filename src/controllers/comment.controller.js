@@ -1,9 +1,5 @@
 const catchAsync = require('../utils/catchAsync');
-const AppError = require('../utils/appError');
-
-const {
-  canAccessTicket,
-} = require('../utils/ticketAccess');
+const { findAccessibleTicket } = require('../services/ticketAccessService');
 
 const {
   notifyCommentAdded,
@@ -16,39 +12,13 @@ const {
   User,
 } = require('../models');
 
-// Goes through the ticket provider (not a direct Ticket.findByPk) so
-// comments still resolve their ticket correctly when TICKET_PROVIDER
-// points at a real CRM instead of this app's own tables -- see
-// docs/PROVIDERS.md. Comments themselves stay in this app's own table
-// either way; only the ticket they're attached to may live elsewhere.
-async function loadAccessibleTicket(req, next) {
-  const ticket = await getProvider().getTicketById(req.params.ticketId);
-
-  if (!ticket) {
-    next(
-      new AppError(
-        'Ticket not found.',
-        404
-      )
-    );
-
-    return null;
-  }
-
-  if (
-    !canAccessTicket(req.user, ticket)
-  ) {
-    next(
-      new AppError(
-        'You do not have permission to access this ticket.',
-        403
-      )
-    );
-
-    return null;
-  }
-
-  return ticket;
+// Same ownership check, and the same 404, as the ticket routes -- see
+// src/services/ticketAccessService.js. It goes through the ticket provider
+// (not a direct Ticket.findByPk), so comments still resolve their ticket
+// when TICKET_PROVIDER points at a real CRM -- see docs/PROVIDERS.md.
+// Throws a 404, handled by catchAsync.
+async function loadAccessibleTicket(req) {
+  return findAccessibleTicket(req.user, req.params.ticketId);
 }
 
 const createComment = catchAsync(
