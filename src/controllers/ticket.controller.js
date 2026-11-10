@@ -124,7 +124,6 @@ const createTicket = catchAsync(
       parentCaseId,
     } = req.body;
 
-      const createdAt = new Date();
 
     /*
      * AI analyses every ticket for staff recommendations.
@@ -172,6 +171,9 @@ const createTicket = catchAsync(
     const finalPriority =
       priority || ai.priority || DEFAULT_PRIORITY;
 
+    // Start the clock after the AI calls, as close to the insert as possible,
+    // so the deadlines line up with the stored createdAt.
+    const createdAt = new Date();
     const { responseDueAt, resolutionDueAt } =
       await computeTicketDueDates(finalPriority, createdAt);
 
