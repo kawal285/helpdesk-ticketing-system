@@ -91,6 +91,22 @@ const createComment = catchAsync(
         }
       );
 
+    // The first agent/admin comment is the ticket's first response, which
+    // stops the response-target clock.
+    const isStaff =
+      req.user.role === 'agent' ||
+      req.user.role === 'admin';
+
+    if (
+      isStaff &&
+      !ticket.firstRespondedAt &&
+      Number(ticket.requesterId) !== Number(req.user.id)
+    ) {
+      await getProvider().updateTicket(ticket.id, {
+        firstRespondedAt: comment.createdAt,
+      });
+    }
+
     const author =
       comment.author || req.user;
 

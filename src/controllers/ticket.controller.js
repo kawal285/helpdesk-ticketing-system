@@ -1,6 +1,6 @@
 const catchAsync = require('../utils/catchAsync');
 const AppError = require('../utils/appError');
-const { computeDueAt } = require('../utils/sla');
+const { computeTicketDueDates } = require('../services/slaTargetService');
 const { DEFAULT_PRIORITY } = require('../utils/ticketFields');
 
 const {
@@ -171,6 +171,9 @@ const createTicket = catchAsync(
     const finalPriority =
       priority || ai.priority || DEFAULT_PRIORITY;
 
+    const { responseDueAt, resolutionDueAt } =
+      await computeTicketDueDates(finalPriority, createdAt);
+
     const ticket = await getProvider().createTicket({
       title,
       description,
@@ -179,10 +182,8 @@ const createTicket = catchAsync(
       status: 'Open',
       requesterId: req.user.id,
       organization: req.user.organization,
-      dueAt: computeDueAt(
-        finalPriority,
-        createdAt
-      ),
+      responseDueAt,
+      dueAt: resolutionDueAt,
       aiCategory: ai.category,
       aiPriority: ai.priority,
       aiSuggestedResponse:
@@ -407,10 +408,15 @@ const updateTicket = catchAsync(
 
     if (priority !== undefined) {
       changes.priority = priority;
-      changes.dueAt = computeDueAt(
-        priority,
-        ticket.createdAt
-      );
+
+      // Only an actual change moves the deadlines -- re-saving the same
+      // priority must not silently apply targets an admin edited later.
+      if (priority !== ticket.priority) {
+        const { responseDueAt, resolutionDueAt } =
+          await computeTicketDueDates(priority, ticket.createdAt);
+        changes.responseDueAt = responseDueAt;
+        changes.dueAt = resolutionDueAt;
+      }
     }
 
     if (room !== undefined) {
@@ -451,6 +457,10 @@ const updateTicket = catchAsync(
       }
 
       changes.status = status;
+
+      if (status !== ticket.status && !ticket.firstRespondedAt) {
+        changes.firstRespondedAt = new Date();
+      }
     }
 
     if (assigneeId !== undefined) {
@@ -548,6 +558,11 @@ const updateTicketStatus = catchAsync(
         new Date();
     } else {
       changes.resolvedAt = null;
+    }
+
+    // Route is agent/admin-only, so any real status change is a response.
+    if (status !== ticket.status && !ticket.firstRespondedAt) {
+      changes.firstRespondedAt = new Date();
     }
 
     const updatedTicket = await getProvider().updateTicket(ticket.id, changes);

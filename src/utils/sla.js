@@ -24,9 +24,16 @@ const SLA_HOURS = Object.fromEntries(
   ])
 );
 
-function computeDueAt(priority, createdAt) {
-  const hours = SLA_HOURS[priority] || 24;
-  return new Date(createdAt.getTime() + hours * 60 * 60 * 1000);
+const MINUTE_MS = 60 * 1000;
+
+// Pure: given a target ({ responseMinutes, resolutionMinutes }) and the
+// moment the clock starts, returns both deadlines.
+function computeDueDates(target, anchor) {
+  const start = new Date(anchor).getTime();
+  return {
+    responseDueAt: new Date(start + target.responseMinutes * MINUTE_MS),
+    resolutionDueAt: new Date(start + target.resolutionMinutes * MINUTE_MS),
+  };
 }
 
-module.exports = { DEFAULT_SLA_TARGETS, SLA_HOURS, computeDueAt };
+module.exports = { DEFAULT_SLA_TARGETS, SLA_HOURS, computeDueDates };

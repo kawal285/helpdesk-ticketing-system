@@ -47,9 +47,21 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.INTEGER,
         allowNull: true,
       },
+      // Resolution target. Computed from the sla_targets table on creation
+      // and whenever the priority changes.
       dueAt: {
         type: DataTypes.DATE,
         allowNull: false,
+      },
+      // First-response target, from the same table.
+      responseDueAt: {
+        type: DataTypes.DATE,
+        allowNull: true,
+      },
+      // First comment or status change by an agent/admin. Null until then.
+      firstRespondedAt: {
+        type: DataTypes.DATE,
+        allowNull: true,
       },
       resolvedAt: {
         type: DataTypes.DATE,
