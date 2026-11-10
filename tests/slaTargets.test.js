@@ -139,3 +139,37 @@ describe('first response', () => {
     expect(res.body.ticket.firstRespondedAt).not.toBeNull();
   });
 });
+
+describe('ticket responses include the SLA status', () => {
+  it('returns sla.response and sla.resolution on GET /tickets/:id', async () => {
+    const { token } = await createUserWithToken({ role: 'customer' });
+    const { body } = await createTicketAs(token, { priority: 'Low' });
+
+    const res = await request(app)
+      .get(`/tickets/${body.ticket.id}`)
+      .set('Authorization', `Bearer ${token}`);
+
+    expect(res.status).toBe(200);
+    expect(res.body.ticket.sla).toEqual({
+      response: { dueAt: expect.any(String), completedAt: null, status: 'on_track' },
+      resolution: { dueAt: expect.any(String), completedAt: null, status: 'on_track' },
+    });
+  });
+
+  it('reports breached for a ticket whose deadlines have passed', async () => {
+    const { token } = await createUserWithToken({ role: 'customer' });
+    const { body } = await createTicketAs(token, { priority: 'Critical' });
+    const past = new Date(Date.now() - 60 * MINUTE);
+    await Ticket.update(
+      { responseDueAt: past, dueAt: past },
+      { where: { id: body.ticket.id } }
+    );
+
+    const res = await request(app)
+      .get(`/tickets/${body.ticket.id}`)
+      .set('Authorization', `Bearer ${token}`);
+
+    expect(res.body.ticket.sla.response.status).toBe('breached');
+    expect(res.body.ticket.sla.resolution.status).toBe('breached');
+  });
+});

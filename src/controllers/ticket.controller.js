@@ -1,6 +1,7 @@
 const catchAsync = require('../utils/catchAsync');
 const AppError = require('../utils/appError');
 const { computeTicketDueDates } = require('../services/slaTargetService');
+const { withSla } = require('../utils/sla');
 const { DEFAULT_PRIORITY } = require('../utils/ticketFields');
 
 const {
@@ -242,7 +243,7 @@ const createTicket = catchAsync(
     }
 
     res.status(201).json({
-      ticket,
+      ticket: withSla(ticket),
     });
   }
 );
@@ -290,7 +291,7 @@ const listTickets = catchAsync(
       });
 
     res.status(200).json({
-      tickets: rows,
+      tickets: rows.map((row) => withSla(row)),
       total: count,
       page,
       limit,
@@ -312,7 +313,7 @@ const getOverdueTickets = catchAsync(
     const tickets = await getProvider().getOverdueTickets(filter);
 
     res.status(200).json({
-      tickets,
+      tickets: tickets.map((row) => withSla(row)),
     });
   }
 );
@@ -328,7 +329,7 @@ const getTicket = catchAsync(
     if (!ticket) return;
 
     res.status(200).json({
-      ticket,
+      ticket: withSla(ticket),
     });
   }
 );
@@ -513,7 +514,7 @@ const updateTicket = catchAsync(
     }
 
     res.status(200).json({
-      ticket: updatedTicket,
+      ticket: withSla(updatedTicket),
     });
   }
 );
@@ -568,12 +569,12 @@ const updateTicketStatus = catchAsync(
     const updatedTicket = await getProvider().updateTicket(ticket.id, changes);
 
     await notifyStatusChanged({
-      ticket: updatedTicket,
+      ticket: withSla(updatedTicket),
       requester: updatedTicket.requester,
     });
 
     res.status(200).json({
-      ticket: updatedTicket,
+      ticket: withSla(updatedTicket),
     });
   }
 );
@@ -605,7 +606,7 @@ const assignTicket = catchAsync(
     await notifyIfAssigned(updatedTicket);
 
     res.status(200).json({
-      ticket: updatedTicket,
+      ticket: withSla(updatedTicket),
     });
   }
 );
@@ -641,7 +642,7 @@ const aiAnalyzeTicket = catchAsync(
     });
 
     res.status(200).json({
-      ticket: updatedTicket,
+      ticket: withSla(updatedTicket),
     });
   }
 );
@@ -710,7 +711,7 @@ const reviewTicketResolution = catchAsync(
     const updatedTicket = await getProvider().updateTicket(ticket.id, changes);
 
     await notifyResolutionReviewed({
-      ticket: updatedTicket,
+      ticket: withSla(updatedTicket),
       assignee: updatedTicket.assignee,
       action,
     });
@@ -720,7 +721,7 @@ const reviewTicketResolution = catchAsync(
         action === 'accept'
           ? 'Resolution accepted and ticket closed.'
           : 'Ticket reopened for further investigation.',
-      ticket: updatedTicket,
+      ticket: withSla(updatedTicket),
     });
   }
 );

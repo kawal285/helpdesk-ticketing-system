@@ -36,4 +36,64 @@ function computeDueDates(target, anchor) {
   };
 }
 
-module.exports = { DEFAULT_SLA_TARGETS, SLA_HOURS, computeDueDates };
+// A target is "at risk" once this fraction of its time window has passed.
+const AT_RISK_FRACTION = 0.75;
+
+const SLA_STATUSES = ['on_track', 'at_risk', 'breached'];
+
+// Status of a single target (response or resolution):
+//  - completed (completedAt set): on_track if done by dueAt, else breached
+//  - still open: breached past dueAt, at_risk once 75% of the window from
+//    startAt to dueAt has passed, otherwise on_track.
+// Returns null when the ticket has no due date for this target.
+function getTargetStatus({ startAt, dueAt, completedAt, now = new Date() }) {
+  if (!dueAt) return null;
+
+  const due = new Date(dueAt).getTime();
+
+  if (completedAt) {
+    return new Date(completedAt).getTime() <= due ? 'on_track' : 'breached';
+  }
+
+  const current = new Date(now).getTime();
+  if (current > due) return 'breached';
+
+  const start = new Date(startAt).getTime();
+  const window = due - start;
+  if (window <= 0 || (current - start) / window >= AT_RISK_FRACTION) {
+    return 'at_risk';
+  }
+
+  return 'on_track';
+}
+
+// Both targets for a ticket. `dueAt` is the resolution target.
+function getSlaStatus(ticket, now = new Date()) {
+  const target = (dueAt, completedAt) => ({
+    dueAt: dueAt || null,
+    completedAt: completedAt || null,
+    status: getTargetStatus({ startAt: ticket.createdAt, dueAt, completedAt, now }),
+  });
+
+  return {
+    response: target(ticket.responseDueAt, ticket.firstRespondedAt),
+    resolution: target(ticket.dueAt, ticket.resolvedAt),
+  };
+}
+
+// Returns a copy of a (plain) ticket with its `sla` status attached.
+function withSla(ticket, now = new Date()) {
+  if (!ticket) return ticket;
+  return { ...ticket, sla: getSlaStatus(ticket, now) };
+}
+
+module.exports = {
+  DEFAULT_SLA_TARGETS,
+  SLA_HOURS,
+  AT_RISK_FRACTION,
+  SLA_STATUSES,
+  computeDueDates,
+  getTargetStatus,
+  getSlaStatus,
+  withSla,
+};
