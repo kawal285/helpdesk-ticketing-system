@@ -33,6 +33,9 @@ const askAssistant = catchAsync(async (req, res, next) => {
 
   const result = await assistUser(question, {
     history: cleanHistory(req.body.history),
+    // Strictly the boolean true -- a string or number from the request body
+    // must not be able to switch agents.
+    thinkDeeper: req.body.thinkDeeper === true,
   });
 
   return res.status(200).json({

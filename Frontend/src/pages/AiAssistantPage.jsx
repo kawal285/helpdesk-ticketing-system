@@ -30,6 +30,22 @@ const STAGES = [
   'Writing the answer…',
 ];
 
+// Shown while "Think deeper" is running, which takes longer than a normal
+// answer because it uses the larger reasoning model.
+const DEEP_STAGES = [
+  'Thinking it through carefully…',
+  'Checking the closest sections…',
+  'Writing the answer…',
+];
+
+// What the badge on each answer says. The key is the agent name the server
+// sends back as assistant.agent.
+const AGENT_LABELS = {
+  fast: 'Quick reply',
+  main: 'Standard answer',
+  think: 'Deep reasoning',
+};
+
 /*
  * Confidence ticks. Scores from this embedding model sit in a narrow band
  * -- roughly 0.50 for unrelated text up to 0.90 for a direct match -- so
@@ -47,6 +63,7 @@ export default function AiAssistantPage({ user, onCreateTicket }) {
   const [turns, setTurns] = useState([]);
   const [loading, setLoading] = useState(false);
   const [stage, setStage] = useState(0);
+  const [deep, setDeep] = useState(false);
   const [error, setError] = useState('');
 
   const [guideCount, setGuideCount] = useState(null);
@@ -94,22 +111,34 @@ export default function AiAssistantPage({ user, onCreateTicket }) {
     return () => timers.forEach(clearTimeout);
   }, [loading]);
 
-  async function askQuestion(text) {
+  /*
+   * thinkDeeper asks the server to use the reasoning agent for this one
+   * question. beforeIndex is set when an earlier answer is being re-asked:
+   * the history then stops just before that turn, so the question is not
+   * sent as its own context.
+   */
+  async function askQuestion(
+    text,
+    { thinkDeeper = false, beforeIndex = null } = {}
+  ) {
     const trimmed = text.trim();
 
     if (!trimmed || loading) {
       return;
     }
 
+    const priorTurns = beforeIndex === null ? turns : turns.slice(0, beforeIndex);
+
     // The last couple of questions that got an answer, so a short follow-up
     // like "what else can I do" is understood. Answers are not sent back.
-    const history = turns
+    const history = priorTurns
       .filter((turn) => !turn.failed)
       .slice(-2)
       .map((turn) => turn.question);
 
     setQuestion('');
     setError('');
+    setDeep(thinkDeeper);
     setLoading(true);
 
     try {
@@ -119,7 +148,7 @@ export default function AiAssistantPage({ user, onCreateTicket }) {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${localStorage.getItem('token')}`,
         },
-        body: JSON.stringify({ question: trimmed, history }),
+        body: JSON.stringify({ question: trimmed, history, thinkDeeper }),
       });
 
       const data = await response.json();
@@ -132,7 +161,7 @@ export default function AiAssistantPage({ user, onCreateTicket }) {
 
       setTurns((previous) => [
         ...previous,
-        { question: trimmed, assistant: data.assistant },
+        { question: trimmed, assistant: data.assistant, deeper: thinkDeeper },
       ]);
     } catch (requestError) {
       setError(requestError.message);
@@ -243,6 +272,13 @@ export default function AiAssistantPage({ user, onCreateTicket }) {
                 assistant={turn.assistant}
                 user={user}
                 onCreateTicket={onCreateTicket}
+                busy={loading}
+                onThinkDeeper={() =>
+                  askQuestion(turn.question, {
+                    thinkDeeper: true,
+                    beforeIndex: index,
+                  })
+                }
               />
             )}
           </article>
@@ -251,7 +287,7 @@ export default function AiAssistantPage({ user, onCreateTicket }) {
         {loading && (
           <div className="chat__thinking">
             <span className="chat__scanner" />
-            {STAGES[stage]}
+            {(deep ? DEEP_STAGES : STAGES)[stage]}
           </div>
         )}
 
@@ -283,8 +319,8 @@ export default function AiAssistantPage({ user, onCreateTicket }) {
 
         <p className="chat__hint">
           Short follow-ups like &ldquo;what else can I do&rdquo; use your
-          previous question for context. For a new problem, include the
-          details. Enter sends, Shift + Enter adds a line.
+          previous question for context. Use &ldquo;Think deeper&rdquo; on an
+          answer for harder problems. Enter sends, Shift + Enter adds a line.
         </p>
 
         {error && <p className="chat__error">{error}</p>}
@@ -293,8 +329,22 @@ export default function AiAssistantPage({ user, onCreateTicket }) {
   );
 }
 
-function AnswerCard({ assistant, user, onCreateTicket }) {
+function AnswerCard({ assistant, user, onCreateTicket, onThinkDeeper, busy }) {
   const grounded = assistant.knowledgeBaseMatch;
+
+  // A greeting is answered without the knowledge base, so it is neither
+  // "grounded" nor a refusal -- it gets no category tag, no ticket button
+  // and no "closest match" line.
+  const smallTalk = assistant.smallTalk === true;
+  const agentLabel = AGENT_LABELS[assistant.agent];
+
+  // Deep reasoning only makes sense for a real, grounded answer that has not
+  // already come from the reasoning agent.
+  const canThinkDeeper =
+    grounded &&
+    !smallTalk &&
+    assistant.agent !== 'think' &&
+    typeof onThinkDeeper === 'function';
   const sources = assistant.sources || [];
   const kbSources = sources.filter((source) => source.type !== 'web');
   const webSources = sources.filter((source) => source.type === 'web');
@@ -343,13 +393,13 @@ function AnswerCard({ assistant, user, onCreateTicket }) {
 
   return (
     <div
-      className={`chat__answer${grounded ? '' : ' chat__answer--refused'}`}
+      className={`chat__answer${grounded || smallTalk ? '' : ' chat__answer--refused'}`}
     >
       <div className="chat__cap" />
 
       <div className="chat__inner">
         <div className="chat__meta">
-          {grounded ? (
+          {smallTalk ? null : grounded ? (
             assistant.suggestedCategory && (
               <span
                 className="chat__tag"
@@ -364,6 +414,25 @@ function AnswerCard({ assistant, user, onCreateTicket }) {
             </span>
           )}
 
+          {agentLabel && (
+            <span
+              className="chat__agent"
+              data-agent={assistant.agent}
+              title={assistant.model ? `Answered by ${assistant.model}` : undefined}
+            >
+              {agentLabel}
+            </span>
+          )}
+
+          {assistant.fellBack && (
+            <span
+              className="chat__agent chat__agent--backup"
+              title="The cloud model was unavailable, so a local model answered."
+            >
+              Local backup
+            </span>
+          )}
+
           {typeof assistant.ms === 'number' && (
             <span className="chat__timing">
               {(assistant.ms / 1000).toFixed(1)}s
@@ -375,21 +444,36 @@ function AnswerCard({ assistant, user, onCreateTicket }) {
           <AnswerText text={assistant.answer} />
         </div>
 
-        {!grounded && (
+        {!grounded && !smallTalk && (
           <p className="chat__refusal-detail">
             Closest match {assistant.topScore} &middot; needs{' '}
             {assistant.threshold} to answer
           </p>
         )}
 
-        {onCreateTicket && (
-          <button
-            type="button"
-            className={`chat__cta${grounded ? ' chat__cta--secondary' : ''}`}
-            onClick={onCreateTicket}
-          >
-            {grounded ? 'Still stuck? Raise a ticket' : 'Raise a ticket'}
-          </button>
+        {((onCreateTicket && !smallTalk) || canThinkDeeper) && (
+          <div className="chat__actions">
+            {onCreateTicket && !smallTalk && (
+              <button
+                type="button"
+                className={`chat__cta${grounded ? ' chat__cta--secondary' : ''}`}
+                onClick={onCreateTicket}
+              >
+                {grounded ? 'Still stuck? Raise a ticket' : 'Raise a ticket'}
+              </button>
+            )}
+
+            {canThinkDeeper && (
+              <button
+                type="button"
+                className="chat__cta chat__cta--secondary"
+                onClick={onThinkDeeper}
+                disabled={busy}
+              >
+                Think deeper
+              </button>
+            )}
+          </div>
         )}
 
         {grounded && kbSources.length > 0 && (

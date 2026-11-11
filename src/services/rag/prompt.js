@@ -74,6 +74,7 @@ Write like a helpful colleague explaining something, not like documentation.
 - Get to the point in the first sentence.
 - Use numbered steps only when the SOURCES describe a sequence.
 - Keep it under ${MAX_WORDS} words unless steps genuinely need more.
+- Plain text only: no tables, headings, bold or other markdown symbols.
 - No greetings, no sign-offs, no "I hope this helps".
 - Never write source numbers such as [1] or [5] in your answer.
 - Never say the reader has already tried something unless their question
@@ -84,6 +85,42 @@ Write like a helpful colleague explaining something, not like documentation.
   question about which device or service is affected, and give no steps.
 - Do not mention "the sources", "the knowledge base", "the context" or
   "the documents". The reader cannot see them. Just answer.`;
+
+/*
+ * Added to the system prompt for the think agent only. A reasoning model
+ * is better at untangling a multi-step problem, but a more capable model is
+ * also better at sounding convincing when it adds something that is not in
+ * the SOURCES -- so the rule is repeated rather than relaxed.
+ */
+const THINK_NOTE = `
+
+EXTRA CARE
+
+Work through the SOURCES one at a time before you answer, and only combine
+details that belong to the same topic. Thinking harder does not allow you to
+add facts: every fact must still come from the SOURCES. If the SOURCES do not
+solve the problem, say what they do cover, then say what you cannot help with.`;
+
+/*
+ * The fast agent never sees SOURCES, so it must not be able to give IT
+ * advice. This prompt only lets it greet and thank; ragService also checks
+ * its reply, because a prompt alone is not a guarantee.
+ */
+const SMALL_TALK_PROMPT = `You are the friendly front desk of an IT Help Desk assistant.
+The user has sent only a greeting, thanks or a goodbye.
+
+Reply in ONE short sentence.
+- If they greeted you, ask what IT problem you can help with.
+- If they thanked you, say you're welcome and that they can ask anything else.
+- Never give IT advice, steps, links, numbers or instructions.
+- Plain text only.`;
+
+function smallTalkMessages(question) {
+  return [
+    { role: 'system', content: SMALL_TALK_PROMPT },
+    { role: 'user', content: question },
+  ];
+}
 
 /*
  * Sources are numbered so the model has a stable way to refer to them, and
@@ -109,7 +146,13 @@ function formatSources(matches) {
  * mode) that only ever dealt with knowledge-base matches keep working
  * unchanged.
  */
-function buildMessages(question, kbMatches, webResults = [], previousQuestion = null) {
+function buildMessages(
+  question,
+  kbMatches,
+  webResults = [],
+  previousQuestion = null,
+  agentName = 'main'
+) {
   const sources = [
     ...kbMatches.map((match) => ({ ...match, origin: 'kb' })),
     ...webResults.map((result) => ({ ...result, origin: 'web' })),
@@ -128,7 +171,10 @@ ${earlier}QUESTION
 ${question}`;
 
   return [
-    { role: 'system', content: SYSTEM_PROMPT },
+    {
+      role: 'system',
+      content: agentName === 'think' ? SYSTEM_PROMPT + THINK_NOTE : SYSTEM_PROMPT,
+    },
     { role: 'user', content: userContent },
   ];
 }
@@ -148,4 +194,11 @@ function refusalMessage() {
   );
 }
 
-module.exports = { SYSTEM_PROMPT, buildMessages, formatSources, refusalMessage };
+module.exports = {
+  SYSTEM_PROMPT,
+  THINK_NOTE,
+  buildMessages,
+  smallTalkMessages,
+  formatSources,
+  refusalMessage,
+};
