@@ -162,6 +162,7 @@ describe('AI self-service assistant API', () => {
 
     expect(ask).toHaveBeenCalledWith('its not working what else can i do', {
       history: ['my printer is offline', 'its still stuck'],
+      thinkDeeper: false,
     });
   });
 
@@ -173,7 +174,72 @@ describe('AI self-service assistant API', () => {
       .send({ question: 'my printer is not printing', history: 'not an array' });
 
     expect(response.statusCode).toBe(200);
-    expect(ask).toHaveBeenCalledWith('my printer is not printing', { history: [] });
+    expect(ask).toHaveBeenCalledWith('my printer is not printing', {
+      history: [],
+      thinkDeeper: false,
+    });
+  });
+
+  test('passes thinkDeeper through only when it is exactly true', async () => {
+    ask.mockResolvedValue(GROUNDED);
+
+    await request(app)
+      .post('/ai/assist')
+      .send({ question: 'my printer is not printing', thinkDeeper: true });
+    await request(app)
+      .post('/ai/assist')
+      .send({ question: 'my printer is not printing', thinkDeeper: 'true' });
+
+    expect(ask.mock.calls[0][1].thinkDeeper).toBe(true);
+    expect(ask.mock.calls[1][1].thinkDeeper).toBe(false);
+  });
+
+  test('reports which agent answered and whether it fell back', async () => {
+    ask.mockResolvedValue({ ...GROUNDED, agent: 'think', fellBack: true });
+
+    const response = await request(app)
+      .post('/ai/assist')
+      .send({ question: 'why does my printer keep going offline' });
+
+    expect(response.body.assistant).toMatchObject({ agent: 'think', fellBack: true, smallTalk: false });
+  });
+
+  test('does not suggest a ticket after small talk', async () => {
+    ask.mockResolvedValue({
+      answer: 'Hi! What IT problem can I help you with?',
+      grounded: false,
+      smallTalk: true,
+      sources: [],
+      topScore: null,
+      threshold: null,
+      model: 'groq:openai/gpt-oss-20b',
+      agent: 'fast',
+      fellBack: false,
+      ms: 300,
+    });
+
+    const response = await request(app).post('/ai/assist').send({ question: 'hi' });
+
+    expect(response.statusCode).toBe(200);
+    expect(response.body.assistant.shouldCreateTicket).toBe(false);
+    expect(response.body.assistant.smallTalk).toBe(true);
+    expect(response.body.assistant.agent).toBe('fast');
+  });
+
+  test('copes with an answer built only from web sources', async () => {
+    ask.mockResolvedValue({
+      ...GROUNDED,
+      sources: [{ type: 'web', title: 'Fix it', url: 'https://example.com', snippet: 'Try this.' }],
+    });
+
+    const response = await request(app)
+      .post('/ai/assist')
+      .send({ question: 'my printer is not printing' });
+
+    expect(response.statusCode).toBe(200);
+    expect(response.body.assistant.source).toBeNull();
+    expect(response.body.assistant.suggestedCategory).toBeNull();
+    expect(response.body.assistant.sources).toHaveLength(1);
   });
 
   test('rejects an empty request body', async () => {

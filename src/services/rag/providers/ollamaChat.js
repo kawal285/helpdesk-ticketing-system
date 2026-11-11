@@ -9,6 +9,13 @@
  * for a shorter or more deterministic reply than the defaults below.
  * Ticket classification uses this; the RAG assistant passes nothing and
  * gets the defaults.
+ *
+ * Four override keys are NOT Ollama options and are handled here instead,
+ * so the multi-agent code can use one call shape for every provider:
+ *   model            use this model for this call instead of GENERATION_MODEL
+ *   maxTokens        same as num_predict
+ *   think            ignored (a cloud-model setting)
+ *   reasoningEffort  ignored (a cloud-model setting)
  */
 
 const DEFAULT_HOST = 'http://127.0.0.1:11434';
@@ -40,7 +47,19 @@ const MAX_TOKENS = Number(process.env.GENERATION_MAX_TOKENS) || 300;
  */
 const KEEP_ALIVE = process.env.OLLAMA_KEEP_ALIVE || '30m';
 
+/*
+ * Context window. On a low-memory laptop a smaller window is faster, but if
+ * the prompt (rules + sources + question) plus the reply do not fit, Ollama
+ * quietly cuts text off -- and the rules are at the start. Leave this unset
+ * unless you have measured it; 4096 is a safe floor for this prompt.
+ */
+const NUM_CTX = Number(process.env.OLLAMA_NUM_CTX) || null;
+
 async function generate(messages, overrides = {}) {
+  // eslint-disable-next-line no-unused-vars
+  const { model, maxTokens, think, reasoningEffort, ...ollamaOptions } = overrides;
+  const useModel = model || modelName;
+
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), TIMEOUT_MS);
 
@@ -51,14 +70,15 @@ async function generate(messages, overrides = {}) {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        model: modelName,
+        model: useModel,
         messages,
         stream: false,
         keep_alive: KEEP_ALIVE,
         options: {
           temperature,
-          num_predict: MAX_TOKENS,
-          ...overrides,
+          num_predict: maxTokens || MAX_TOKENS,
+          ...(NUM_CTX ? { num_ctx: NUM_CTX } : {}),
+          ...ollamaOptions,
         },
       }),
       signal: controller.signal,
@@ -73,7 +93,7 @@ async function generate(messages, overrides = {}) {
 
     throw new Error(
       `Could not reach Ollama at ${host} (${error.message}). ` +
-        `Check it is running and that "ollama pull ${modelName}" has completed.`
+        `Check it is running and that "ollama pull ${useModel}" has completed.`
     );
   } finally {
     clearTimeout(timer);

@@ -9,9 +9,10 @@
  */
 
 const { retrieve } = require('./retrievalService');
-const { generate, getModelInfo } = require('./generationService');
+const { generateWithAgent, getModelInfo } = require('./generationService');
 const webSearchService = require('./webSearchService');
-const { buildMessages, refusalMessage } = require('./prompt');
+const { buildMessages, smallTalkMessages, refusalMessage } = require('./prompt');
+const { pickAgent, getAgent } = require('./agentRouter');
 
 /*
  * Each question is normally answered on its own. A short follow-up such as
@@ -67,6 +68,83 @@ function stripCitationMarkers(text) {
 }
 
 /*
+ * Some reasoning models write their thinking inside <think> tags. The reader
+ * should only ever see the answer.
+ */
+function stripThinkTags(text) {
+  if (typeof text !== 'string') {
+    return text;
+  }
+
+  return text
+    .replace(/<think>[\s\S]*?<\/think>/gi, '')
+    .replace(/<think>[\s\S]*$/i, '')
+    .trim();
+}
+
+/*
+ * Small talk is answered by the fast agent with no knowledge base and no web
+ * search. Because it has no sources, anything that looks like advice is
+ * thrown away and replaced with a fixed reply -- it can greet, it cannot
+ * troubleshoot.
+ */
+const SMALL_TALK_MAX_WORDS = 30;
+const LOOKS_LIKE_ADVICE = /\d|https?:|www\.|\bstep\b|\bclick\b|\brestart\b|\binstall\b/i;
+
+function cannedSmallTalk(question) {
+  return /\b(thanks?|thx|ty|cheers)\b/i.test(question)
+    ? "You're welcome. Ask me anything else IT-related."
+    : 'Hi! What IT problem can I help you with?';
+}
+
+function sanitizeSmallTalk(text, question) {
+  const clean = stripThinkTags(text) || '';
+  const words = clean.split(/\s+/).filter(Boolean).length;
+
+  if (!clean || words > SMALL_TALK_MAX_WORDS || LOOKS_LIKE_ADVICE.test(clean)) {
+    return cannedSmallTalk(question);
+  }
+
+  return clean;
+}
+
+async function answerSmallTalk(question, started) {
+  let answer;
+  let model = 'none';
+  let fellBack = false;
+
+  try {
+    const generated = await generateWithAgent(
+      getAgent('fast'),
+      smallTalkMessages(question)
+    );
+
+    answer = sanitizeSmallTalk(generated.content, question);
+    model = `${generated.provider}:${generated.model}`;
+    fellBack = generated.fellBack === true;
+  } catch (error) {
+    // A greeting must never produce an error. Both the cloud model and the
+    // local fallback are down, so use the fixed reply.
+    console.warn('[agents] small talk failed, using a fixed reply:', error.message);
+    answer = cannedSmallTalk(question);
+  }
+
+  return {
+    answer,
+    grounded: false,
+    smallTalk: true,
+    sources: [],
+    topScore: null,
+    threshold: null,
+    model,
+    agent: 'fast',
+    fellBack,
+    webSearchProvider: 'none',
+    ms: Date.now() - started,
+  };
+}
+
+/*
  * One source entry per article, not per chunk. Three chunks from the same
  * article is one citation to the reader, and the highest-scoring chunk
  * decides the ordering.
@@ -117,6 +195,19 @@ function summariseWebSources(results) {
 async function ask(question, options = {}) {
   const started = Date.now();
 
+  // options.agent forces an agent. webSearch:false is the deterministic,
+  // offline mode used by the evaluation scripts, so it always uses main.
+  // thinkDeeper only counts when it is exactly true.
+  const agentName =
+    options.agent ||
+    (options.webSearch === false
+      ? 'main'
+      : pickAgent(question, { forceThink: options.thinkDeeper === true }));
+
+  if (agentName === 'fast') {
+    return answerSmallTalk(question, started);
+  }
+
   const { searchText, previousQuestion } = buildSearchContext(
     question,
     options.history
@@ -144,6 +235,8 @@ async function ask(question, options = {}) {
       topScore: Number(retrieval.topScore.toFixed(4)),
       threshold: retrieval.threshold,
       model: getModelInfo().name,
+      agent: agentName,
+      fellBack: false,
       webSearchProvider: web.provider,
       ms: Date.now() - started,
     };
@@ -153,9 +246,11 @@ async function ask(question, options = {}) {
     question,
     retrieval.relevant,
     web.results,
-    previousQuestion
+    previousQuestion,
+    agentName
   );
-  const answer = stripCitationMarkers(await generate(messages));
+  const generated = await generateWithAgent(getAgent(agentName), messages);
+  const answer = stripCitationMarkers(stripThinkTags(generated.content));
 
   return {
     answer,
@@ -166,10 +261,19 @@ async function ask(question, options = {}) {
     ],
     topScore: Number(retrieval.topScore.toFixed(4)),
     threshold: retrieval.threshold,
-    model: getModelInfo().name,
+    // The model that ACTUALLY answered. After a fallback this is the local one.
+    model: `${generated.provider}:${generated.model}`,
+    agent: agentName,
+    fellBack: generated.fellBack === true,
     webSearchProvider: web.provider,
     ms: Date.now() - started,
   };
 }
 
-module.exports = { ask, buildSearchContext, stripCitationMarkers };
+module.exports = {
+  ask,
+  buildSearchContext,
+  stripCitationMarkers,
+  stripThinkTags,
+  sanitizeSmallTalk,
+};

@@ -1,0 +1,153 @@
+/*
+ * generateWithAgent routing and fallback, with every provider mocked.
+ * No network, no Ollama, no database.
+ */
+
+jest.mock('../src/services/rag/providers/ollamaChat', () => ({
+  name: 'ollama:test',
+  generate: jest.fn(),
+}));
+jest.mock('../src/services/rag/providers/collegeChat', () => ({
+  name: 'college:test',
+  generate: jest.fn(),
+}));
+jest.mock('../src/services/rag/providers/groqChat', () => ({
+  name: 'groq',
+  generate: jest.fn(),
+}));
+
+const ollama = require('../src/services/rag/providers/ollamaChat');
+const groq = require('../src/services/rag/providers/groqChat');
+const { generate, generateWithAgent } = require('../src/services/rag/generationService');
+
+const MESSAGES = [{ role: 'user', content: 'hi' }];
+
+const FAST = {
+  name: 'fast',
+  provider: 'groq',
+  model: 'openai/gpt-oss-20b',
+  temperature: 0.4,
+  think: false,
+  reasoningEffort: 'low',
+};
+
+const MAIN = {
+  name: 'main',
+  provider: 'ollama',
+  model: 'llama3.2:1b',
+  temperature: 0.2,
+  think: false,
+  reasoningEffort: null,
+};
+
+describe('generationService.generateWithAgent', () => {
+  const saved = { ...process.env };
+
+  beforeEach(() => {
+    jest.clearAllMocks();
+    process.env.AGENT_FALLBACK_PROVIDER = 'ollama';
+    process.env.AGENT_FALLBACK_MODEL = 'llama3.2:1b';
+    jest.spyOn(console, 'warn').mockImplementation(() => {});
+  });
+
+  afterEach(() => {
+    process.env = { ...saved };
+    console.warn.mockRestore();
+  });
+
+  it('calls the agent\'s own provider with its model and settings', async () => {
+    groq.generate.mockResolvedValue('hello there');
+
+    const result = await generateWithAgent(FAST, MESSAGES);
+
+    expect(groq.generate).toHaveBeenCalledWith(
+      MESSAGES,
+      expect.objectContaining({
+        model: 'openai/gpt-oss-20b',
+        temperature: 0.4,
+        reasoningEffort: 'low',
+      })
+    );
+    expect(result).toMatchObject({
+      content: 'hello there',
+      agent: 'fast',
+      provider: 'groq',
+      model: 'openai/gpt-oss-20b',
+      fellBack: false,
+    });
+    expect(ollama.generate).not.toHaveBeenCalled();
+  });
+
+  it('falls back to the local model when the cloud provider fails, and says so', async () => {
+    const error = new Error('Groq rate limit reached.');
+    error.code = 'RATE_LIMIT';
+    groq.generate.mockRejectedValue(error);
+    ollama.generate.mockResolvedValue('local answer');
+
+    const result = await generateWithAgent(FAST, MESSAGES);
+
+    expect(ollama.generate).toHaveBeenCalledWith(
+      MESSAGES,
+      expect.objectContaining({ model: 'llama3.2:1b' })
+    );
+    // no cloud-only reasoning flags are sent to the local model
+    expect(ollama.generate.mock.calls[0][1]).not.toHaveProperty('reasoningEffort');
+    expect(result).toMatchObject({
+      content: 'local answer',
+      provider: 'ollama',
+      model: 'llama3.2:1b',
+      fellBack: true,
+    });
+    expect(result.fallbackReason).toContain('RATE_LIMIT');
+    expect(console.warn).toHaveBeenCalled();
+  });
+
+  it('does not retry an agent that is already on the fallback model', async () => {
+    ollama.generate.mockRejectedValue(new Error('Could not reach Ollama'));
+
+    await expect(generateWithAgent(MAIN, MESSAGES)).rejects.toThrow('Could not reach Ollama');
+    expect(ollama.generate).toHaveBeenCalledTimes(1);
+  });
+
+  it('passes the agent token budget to its provider, but not to the fallback', async () => {
+    groq.generate.mockResolvedValue('ok');
+    await generateWithAgent({ ...FAST, maxTokens: 1500 }, MESSAGES);
+    expect(groq.generate.mock.calls[0][1]).toMatchObject({ maxTokens: 1500 });
+
+    const error = new Error('down');
+    error.code = 'NETWORK';
+    groq.generate.mockRejectedValue(error);
+    ollama.generate.mockResolvedValue('local');
+    await generateWithAgent({ ...FAST, maxTokens: 1500 }, MESSAGES);
+    expect(ollama.generate.mock.calls[0][1]).not.toHaveProperty('maxTokens');
+  });
+
+  it('lets a caller option override the agent default', async () => {
+    groq.generate.mockResolvedValue('ok');
+
+    await generateWithAgent(FAST, MESSAGES, { maxTokens: 50 });
+
+    expect(groq.generate.mock.calls[0][1]).toMatchObject({ maxTokens: 50 });
+  });
+
+  it('rejects an unknown provider with a clear message', async () => {
+    await expect(
+      generateWithAgent({ ...FAST, provider: 'nope' }, MESSAGES)
+    ).rejects.toThrow(/Unknown provider "nope"/);
+  });
+
+  it('rejects a missing agent or empty messages', async () => {
+    await expect(generateWithAgent(null, MESSAGES)).rejects.toThrow(/requires an agent/);
+    await expect(generateWithAgent(FAST, [])).rejects.toThrow(/non-empty/);
+  });
+});
+
+describe('generationService.generate (unchanged single-provider path)', () => {
+  it('still sends options straight to the default provider', async () => {
+    ollama.generate.mockResolvedValue('Category: Hardware');
+
+    await generate(MESSAGES, { num_predict: 60, temperature: 0.1 });
+
+    expect(ollama.generate).toHaveBeenCalledWith(MESSAGES, { num_predict: 60, temperature: 0.1 });
+  });
+});
