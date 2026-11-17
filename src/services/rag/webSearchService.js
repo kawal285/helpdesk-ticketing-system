@@ -9,6 +9,8 @@
  * nothing came back in time.
  */
 
+const { redact } = require('../../utils/privacy');
+
 const providers = {
   duckduckgo: require('./providers/duckduckgoSearch'),
   none: require('./providers/disabledSearch'),
@@ -59,7 +61,8 @@ async function search(query, options = {}) {
 
   try {
     const results = await Promise.race([
-      provider.search(query.trim(), { maxResults }),
+      // A query goes to a public search engine: never send personal details.
+      provider.search(redact(query.trim()), { maxResults }),
       timeoutPromise,
     ]);
 

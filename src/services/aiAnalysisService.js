@@ -15,6 +15,7 @@ const { generate } = require('./rag/generationService');
 const ticketPrompt = require('../prompts/ticketPrompt');
 const { CATEGORIES, PRIORITIES } = require('../utils/ticketFields');
 const { redactSecrets } = require('./rag/safety');
+const { redact } = require('../utils/privacy');
 
 /*
  * The reply is three short lines, so the token budget is small. This is
@@ -30,7 +31,8 @@ const TEMPERATURE = 0.1;
 async function generateAnalysis(description) {
   const messages = [
     { role: 'system', content: ticketPrompt },
-    { role: 'user', content: description },
+    // Sensitive details are removed before the description reaches the model.
+    { role: 'user', content: redact(description) },
   ];
 
   return generate(messages, {

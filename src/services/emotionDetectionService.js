@@ -1,4 +1,6 @@
 
+const { redact } = require('../utils/privacy');
+
 const ALLOWED_EMOTIONS = [
   'angry',
   'frustrated',
@@ -41,7 +43,7 @@ Return only JSON with these keys: emotion and reason.
 Example: {"emotion":"neutral","reason":"The message is factual."}
 
 Customer message:
-${JSON.stringify(message.trim())}
+${JSON.stringify(redact(message.trim()))}
 `;
 
   let response;

@@ -14,6 +14,7 @@ const webSearchService = require('./webSearchService');
 const { buildMessages, smallTalkMessages, refusalMessage } = require('./prompt');
 const { pickAgent, getAgent } = require('./agentRouter');
 const safety = require('./safety');
+const { redact } = require('../../utils/privacy');
 
 /*
  * Each question is normally answered on its own. A short follow-up such as
@@ -193,7 +194,7 @@ function summariseWebSources(results) {
  * retrieval rather than after it, so a slow web search doesn't add to a
  * fast KB answer's latency on top of its own.
  */
-async function ask(question, options = {}) {
+async function ask(rawQuestion, options = {}) {
   const started = Date.now();
 
   // Checked first, before anything else -- including agent routing, so
@@ -201,7 +202,7 @@ async function ask(question, options = {}) {
   // user's raw message. A described hazard is time-sensitive and needs a
   // fixed safety response immediately -- it never reaches retrieval or
   // the model, so no phrasing of the question can talk it past this check.
-  if (safety.detectHazard(question)) {
+  if (safety.detectHazard(rawQuestion)) {
     return {
       answer: safety.hazardEscalationMessage(),
       grounded: false,
@@ -216,6 +217,15 @@ async function ask(question, options = {}) {
       ms: Date.now() - started,
     };
   }
+
+  // From here on the question can reach an external model, the embedding
+  // provider or the web search, so passwords, keys, emails, phone and card
+  // numbers are replaced with placeholders first -- in the earlier
+  // questions used as follow-up context too.
+  const question = redact(rawQuestion);
+  const history = Array.isArray(options.history)
+    ? options.history.map((item) => (typeof item === 'string' ? redact(item) : item))
+    : options.history;
 
   // options.agent forces an agent. webSearch:false is the deterministic,
   // offline mode used by the evaluation scripts, so it always uses main.
@@ -232,7 +242,7 @@ async function ask(question, options = {}) {
 
   const { searchText, previousQuestion } = buildSearchContext(
     question,
-    options.history
+    history
   );
 
   const [retrieval, web] =

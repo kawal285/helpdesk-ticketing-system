@@ -7,6 +7,8 @@
  * assistant service.
  */
 
+const { redact } = require('../../utils/privacy');
+
 const providers = {
   gemini: require('./providers/gemini'),
   college: require('./providers/college'),
@@ -42,7 +44,8 @@ function embedQuery(text) {
     throw new Error('Cannot embed empty text.');
   }
 
-  return provider.embedQuery(text.trim());
+  // Queries are user-written and may go to an external embedding API.
+  return provider.embedQuery(redact(text.trim()));
 }
 
 function embedDocuments(texts, onProgress) {
