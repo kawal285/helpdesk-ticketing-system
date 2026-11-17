@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { ArrowRight, Bot, Flag, Search, SlidersHorizontal } from "lucide-react";
+import SlaSummaryBadge from "../components/SlaSummaryBadge";
 
 const STATUS_LABELS = {
   Open: "Open",
@@ -511,7 +512,7 @@ export default function TicketsPage({
             <table
               style={{
                 width: "100%",
-                minWidth: isStaff ? 930 : 760,
+                minWidth: isStaff ? 1030 : 860,
                 borderCollapse: "collapse",
               }}
             >
@@ -528,6 +529,7 @@ export default function TicketsPage({
                   <th style={{ padding: 12 }}>Title</th>
                   <th style={{ padding: 12 }}>Status</th>
                   <th style={{ padding: 12 }}>Priority</th>
+                  <th style={{ padding: 12 }}>Target (estimate)</th>
                   <th style={{ padding: 12 }}>Category</th>
                   {isStaff && <th style={{ padding: 12 }}>Organization</th>}
                   {isStaff && <th style={{ padding: 12 }}>Assignee</th>}
@@ -604,6 +606,9 @@ export default function TicketsPage({
                         />
                         {ticket.priority}
                       </span>
+                    </td>
+                    <td style={{ padding: 12 }}>
+                      <SlaSummaryBadge sla={ticket.sla} />
                     </td>
                     <td style={{ padding: 12 }}>{ticket.category}</td>
                     {isStaff && (

@@ -9,6 +9,7 @@ import {
   Clock3,
   Flag,
 } from 'lucide-react';
+import SlaSummaryBadge from '../components/SlaSummaryBadge';
 
 
 // Shared status labels keep customer and staff views consistent.
@@ -879,7 +880,7 @@ export default function DashboardPage({
             <table
               style={{
                 width: '100%',
-                minWidth: 720,
+                minWidth: 820,
                 borderCollapse: 'collapse',
               }}
             >
@@ -895,6 +896,7 @@ export default function DashboardPage({
                   <th style={{ padding: 11 }}>Title</th>
                   <th style={{ padding: 11 }}>Status</th>
                   <th style={{ padding: 11 }}>Priority</th>
+                  <th style={{ padding: 11 }}>Target (estimate)</th>
                   <th style={{ padding: 11 }}>Category</th>
 
                   {isStaff && (
@@ -999,6 +1001,10 @@ export default function DashboardPage({
 
                         {ticket.priority}
                       </span>
+                    </td>
+
+                    <td style={{ padding: 11 }}>
+                      <SlaSummaryBadge sla={ticket.sla} />
                     </td>
 
                     <td style={{ padding: 11 }}>
