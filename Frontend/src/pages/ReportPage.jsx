@@ -19,7 +19,9 @@ import {
   Hourglass,
   RefreshCw,
   Ticket as TicketIcon,
+  Timer,
 } from 'lucide-react';
+import { slaSummary } from '../utils/sla';
 
 const API_URL = 'http://localhost:4000';
 
@@ -95,7 +97,6 @@ export default function ReportPage() {
   }, []);
 
   const report = useMemo(() => {
-    const now = new Date();
 
     const countByStatus = (status) =>
       tickets.filter((ticket) => ticket.status === status)
@@ -116,15 +117,11 @@ export default function ReportPage() {
         (ticket) => ticket.organization === organization
       ).length;
 
-    const overdue = tickets.filter((ticket) => {
-      if (!ticket.dueAt) return false;
-
-      const completed =
-        ticket.status === 'Resolved' ||
-        ticket.status === 'Closed';
-
-      return !completed && new Date(ticket.dueAt) < now;
-    }).length;
+    // From the server-computed SLA status on each ticket, not recomputed here.
+    const overdue = tickets.filter(isTicketOverdue).length;
+    const atRisk = tickets.filter(
+      (ticket) => slaSummary(ticket.sla)?.label === 'At risk'
+    ).length;
 
     return {
       total: tickets.length,
@@ -133,6 +130,8 @@ export default function ReportPage() {
       resolved: countByStatus('Resolved'),
       closed: countByStatus('Closed'),
       overdue,
+      atRisk,
+      targets: summariseTargets(tickets),
       assigned: tickets.filter(
         (ticket) => Boolean(ticket.assigneeId)
       ).length,
@@ -254,6 +253,12 @@ export default function ReportPage() {
       value: report.overdue,
       colour: '#c62828',
       Icon: AlertTriangle,
+    },
+    {
+      label: 'At risk',
+      value: report.atRisk,
+      colour: '#b26a00',
+      Icon: Timer,
     },
   ];
 
@@ -509,6 +514,52 @@ export default function ReportPage() {
               </div>
             </section>
 
+            <section style={{ ...cardStyle, marginBottom: 24 }}>
+              <h2 style={{ color: '#005a9c', marginTop: 0 }}>
+                Response and resolution targets
+              </h2>
+              <p style={{ margin: '0 0 12px', color: '#5f6878' }}>
+                Targets are estimates set per priority. Figures cover the tickets
+                loaded on this page (up to the 100 most recent).
+              </p>
+
+              <div style={{ overflowX: 'auto' }}>
+                <table style={{ width: '100%', minWidth: 620, borderCollapse: 'collapse' }}>
+                  <thead>
+                    <tr style={{ textAlign: 'left', borderBottom: '2px solid #d8dde3' }}>
+                      <th style={{ padding: 10 }}>Target</th>
+                      <th style={{ padding: 10 }}>Met</th>
+                      <th style={{ padding: 10 }}>Missed</th>
+                      <th style={{ padding: 10 }}>Met rate</th>
+                      <th style={{ padding: 10 }}>Open: on track</th>
+                      <th style={{ padding: 10 }}>Open: at risk</th>
+                      <th style={{ padding: 10 }}>Open: overdue</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {[
+                      ['First response', report.targets.response],
+                      ['Resolution', report.targets.resolution],
+                    ].map(([name, row]) => (
+                      <tr key={name} style={{ borderBottom: '1px solid #e2e6ea' }}>
+                        <td style={{ padding: 10, fontWeight: 700 }}>{name}</td>
+                        <td style={{ padding: 10 }}>{row.met}</td>
+                        <td style={{ padding: 10 }}>{row.missed}</td>
+                        <td style={{ padding: 10, fontWeight: 700 }}>{metRate(row)}</td>
+                        <td style={{ padding: 10 }}>{row.onTrack}</td>
+                        <td style={{ padding: 10, color: row.atRisk ? '#b26a00' : undefined }}>
+                          {row.atRisk}
+                        </td>
+                        <td style={{ padding: 10, color: row.overdue ? '#c62828' : undefined }}>
+                          {row.overdue}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </section>
+
             <section style={cardStyle}>
               <h2
                 style={{
@@ -625,11 +676,43 @@ function ChartFrame({ visible, children }) {
   );
 }
 
+// Open ticket past its resolution target, per the server's SLA status.
 function isTicketOverdue(ticket) {
-  if (!ticket.dueAt) return false;
+  const resolution = ticket.sla?.resolution;
+  return Boolean(
+    resolution && resolution.status === 'breached' && !resolution.completedAt
+  );
+}
 
-  const completed =
-    ticket.status === 'Resolved' || ticket.status === 'Closed';
+// Met / missed for finished targets, and on track / at risk / overdue for
+// open ones, for both the first-response and the resolution target.
+function summariseTargets(tickets) {
+  const blank = () => ({ met: 0, missed: 0, onTrack: 0, atRisk: 0, overdue: 0 });
+  const result = { response: blank(), resolution: blank() };
 
-  return !completed && new Date(ticket.dueAt) < new Date();
+  tickets.forEach((ticket) => {
+    ['response', 'resolution'].forEach((key) => {
+      const target = ticket.sla?.[key];
+      if (!target || !target.status) return;
+      const row = result[key];
+
+      if (target.completedAt) {
+        if (target.status === 'breached') row.missed += 1;
+        else row.met += 1;
+      } else if (target.status === 'breached') {
+        row.overdue += 1;
+      } else if (target.status === 'at_risk') {
+        row.atRisk += 1;
+      } else {
+        row.onTrack += 1;
+      }
+    });
+  });
+
+  return result;
+}
+
+function metRate(row) {
+  const finished = row.met + row.missed;
+  return finished ? `${Math.round((row.met / finished) * 100)}%` : '—';
 }
