@@ -213,6 +213,18 @@ const createTicket = catchAsync(
   }
 );
 
+// Optional ?priority / ?category / ?organization / ?assigneeId filters
+// (plus any `extra` keys, e.g. status), shared by the list and overdue
+// routes. These only narrow the user's ownership scope -- they are always
+// combined with ticketScopeForUser, never used in place of it.
+function queryFilters(query, extra = []) {
+  const filter = {};
+  ['priority', 'category', 'organization', 'assigneeId', ...extra].forEach((key) => {
+    if (query[key]) filter[key] = query[key];
+  });
+  return filter;
+}
+
 const listTickets = catchAsync(
   async (req, res) => {
     const scope = ticketScopeForUser(req.user);
@@ -231,29 +243,8 @@ const listTickets = catchAsync(
 
     const filter = {
       ...scope,
+      ...queryFilters(req.query, ['status']),
     };
-
-    if (req.query.status) {
-      filter.status = req.query.status;
-    }
-
-    if (req.query.priority) {
-      filter.priority = req.query.priority;
-    }
-
-    if (req.query.category) {
-      filter.category = req.query.category;
-    }
-
-    if (req.query.organization) {
-      filter.organization =
-        req.query.organization;
-    }
-
-    if (req.query.assigneeId) {
-      filter.assigneeId =
-        req.query.assigneeId;
-    }
 
     const { rows, count } =
       await getProvider().listTickets(filter, {
@@ -279,6 +270,7 @@ const getOverdueTickets = catchAsync(
 
     const filter = {
       ...scope,
+      ...queryFilters(req.query),
       dueBefore: new Date(),
       statusNotIn: [
         'Resolved',

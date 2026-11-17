@@ -114,12 +114,12 @@ export default function DashboardPage({
 
     const queryString = params.toString();
 
-    const url =
+    // Both endpoints apply the agent/organization filters on the server.
+    const base =
       overdueOnly && isStaff
         ? 'http://localhost:4000/tickets/overdue'
-        : `http://localhost:4000/tickets${
-            queryString ? `?${queryString}` : ''
-          }`;
+        : 'http://localhost:4000/tickets';
+    const url = `${base}${queryString ? `?${queryString}` : ''}`;
 
     setLoading(true);
     setError('');
@@ -139,27 +139,7 @@ export default function DashboardPage({
         );
       }
 
-      let rows = data.tickets || [];
-
-      // The overdue endpoint currently does not apply the admin
-      // agent/organization filters, so apply them safely in the
-      // frontend.
-      if (overdueOnly && agentFilter && isAdmin) {
-        rows = rows.filter(
-          (ticket) =>
-            String(ticket.assigneeId) ===
-            String(agentFilter)
-        );
-      }
-
-      if (overdueOnly && organizationFilter && isStaff) {
-        rows = rows.filter(
-          (ticket) =>
-            ticket.organization === organizationFilter
-        );
-      }
-
-      setTickets(rows);
+      setTickets(data.tickets || []);
     } catch (loadError) {
       setError(loadError.message);
     } finally {

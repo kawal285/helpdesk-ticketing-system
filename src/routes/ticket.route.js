@@ -29,7 +29,8 @@ router.use(protect);
 
 router.post('/', createTicketValidator, validate, createTicket);
 router.get('/', listTicketsValidator, validate, listTickets);
-router.get('/overdue', getOverdueTickets);
+// Same filter validation as the list (status, page and limit are ignored here).
+router.get('/overdue', listTicketsValidator, validate, getOverdueTickets);
 router.get('/:id', ticketIdValidator, validate, getTicket);
 router.patch('/:id', updateTicketValidator, validate, updateTicket);
 router.patch(

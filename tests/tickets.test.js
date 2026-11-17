@@ -565,6 +565,52 @@ describe('GET /tickets/overdue', () => {
     expect(res.status).toBe(200);
     expect(res.body.tickets.some((t) => t.id === ticketId)).toBe(true);
   });
+
+  it('applies the assigneeId and organization filters on the server', async () => {
+    const { token: customerToken } = await createUserWithToken({ role: 'customer', organization: 'OP' });
+    const { token: adminToken } = await createUserWithToken({ role: 'admin' });
+    const { user: agentA } = await createUserWithToken({ role: 'agent' });
+    const { user: agentB } = await createUserWithToken({ role: 'agent' });
+
+    const forA = (await createTicketAs(customerToken)).body.ticket.id;
+    const forB = (await createTicketAs(customerToken)).body.ticket.id;
+    const past = new Date(Date.now() - 60 * 60 * 1000);
+    await Ticket.update({ dueAt: past, assigneeId: agentA.id }, { where: { id: forA } });
+    await Ticket.update({ dueAt: past, assigneeId: agentB.id }, { where: { id: forB } });
+
+    const byAgent = await request(app)
+      .get(`/tickets/overdue?assigneeId=${agentA.id}`)
+      .set('Authorization', `Bearer ${adminToken}`);
+    expect(byAgent.status).toBe(200);
+    expect(byAgent.body.tickets.map((t) => t.id)).toEqual([forA]);
+
+    const otherOrg = await request(app)
+      .get(`/tickets/overdue?assigneeId=${agentA.id}&organization=Future%20Skills`)
+      .set('Authorization', `Bearer ${adminToken}`);
+    expect(otherOrg.body.tickets).toEqual([]);
+  });
+
+  it('rejects an invalid filter value with 400', async () => {
+    const { token } = await createUserWithToken({ role: 'admin' });
+    const res = await request(app).get('/tickets/overdue?organization=Nowhere').set('Authorization', `Bearer ${token}`);
+    expect(res.status).toBe(400);
+  });
+
+  it("never widens an agent's scope: filtering by another agent returns nothing", async () => {
+    const { token: customerToken } = await createUserWithToken({ role: 'customer' });
+    const { token: agentToken } = await createUserWithToken({ role: 'agent' });
+    const { user: otherAgent } = await createUserWithToken({ role: 'agent' });
+    const id = (await createTicketAs(customerToken)).body.ticket.id;
+    await Ticket.update(
+      { dueAt: new Date(Date.now() - 60 * 60 * 1000), assigneeId: otherAgent.id },
+      { where: { id } }
+    );
+
+    const res = await request(app)
+      .get(`/tickets/overdue?assigneeId=${otherAgent.id}`)
+      .set('Authorization', `Bearer ${agentToken}`);
+    expect(res.body.tickets).toEqual([]);
+  });
 });
 
 describe('PATCH /tickets/:id/review', () => {
