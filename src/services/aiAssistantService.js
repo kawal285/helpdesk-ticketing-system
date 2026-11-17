@@ -87,6 +87,8 @@ async function assistUser(question, options = {}) {
     agent: result.agent || 'main',
     fellBack: result.fellBack === true,
     smallTalk: result.smallTalk === true,
+    // 'prompt_injection' when the question was stopped before any model.
+    blocked: result.blocked || null,
 
     // Retrieval diagnostics. Useful in the UI during the demo and when
     // explaining why a question was refused.

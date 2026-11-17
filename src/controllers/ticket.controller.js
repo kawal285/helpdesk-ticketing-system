@@ -623,6 +623,15 @@ const aiAnalyzeTicket = catchAsync(
       ticket.description
     );
 
+    if (ai.injectionDetected) {
+      return next(
+        new AppError(
+          'This ticket contains instructions aimed at the AI, so it needs manual triage.',
+          422
+        )
+      );
+    }
+
     if (ai.category === null) {
       return next(
         new AppError(

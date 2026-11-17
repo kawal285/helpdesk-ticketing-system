@@ -10,6 +10,7 @@
  */
 
 const { redact } = require('../../utils/privacy');
+const { filterWebResults } = require('../../utils/promptInjection');
 
 const providers = {
   duckduckgo: require('./providers/duckduckgoSearch'),
@@ -66,8 +67,16 @@ async function search(query, options = {}) {
       timeoutPromise,
     ]);
 
+    // Web pages are untrusted: a result that carries instructions for the
+    // AI, or links anywhere but an http(s) page, is dropped before it can
+    // become a SOURCE.
+    const { results: safe, removed } = filterWebResults(results);
+    if (removed > 0) {
+      console.warn(`[web-search] dropped ${removed} unsafe result(s).`);
+    }
+
     return {
-      results: Array.isArray(results) ? results.slice(0, maxResults) : [],
+      results: safe.slice(0, maxResults),
       provider: provider.name,
     };
   } catch (error) {

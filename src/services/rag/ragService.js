@@ -15,6 +15,10 @@ const { buildMessages, smallTalkMessages, refusalMessage } = require('./prompt')
 const { pickAgent, getAgent } = require('./agentRouter');
 const safety = require('./safety');
 const { redact } = require('../../utils/privacy');
+const {
+  detectPromptInjection,
+  injectionRefusalMessage,
+} = require('../../utils/promptInjection');
 
 /*
  * Each question is normally answered on its own. A short follow-up such as
@@ -207,6 +211,28 @@ async function ask(rawQuestion, options = {}) {
       answer: safety.hazardEscalationMessage(),
       grounded: false,
       escalated: true,
+      sources: [],
+      topScore: 0,
+      threshold: null,
+      model: null,
+      agent: null,
+      fellBack: false,
+      webSearchProvider: 'none',
+      ms: Date.now() - started,
+    };
+  }
+
+  // A question (or an earlier one sent as follow-up context) that tries to
+  // re-instruct the assistant gets a fixed reply and never reaches a model.
+  const injected = [rawQuestion, ...(Array.isArray(options.history) ? options.history : [])]
+    .some((text) => detectPromptInjection(text).detected);
+
+  if (injected) {
+    return {
+      answer: injectionRefusalMessage(),
+      grounded: false,
+      escalated: false,
+      blocked: 'prompt_injection',
       sources: [],
       topScore: 0,
       threshold: null,
