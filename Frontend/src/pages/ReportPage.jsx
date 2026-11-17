@@ -21,7 +21,6 @@ import {
   Ticket as TicketIcon,
   Timer,
 } from 'lucide-react';
-import { slaSummary } from '../utils/sla';
 
 const API_URL = 'http://localhost:4000';
 
@@ -55,6 +54,7 @@ const ASSIGNMENT_COLOURS = {
 
 export default function ReportPage() {
   const [tickets, setTickets] = useState([]);
+  const [slaCounts, setSlaCounts] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
@@ -66,16 +66,24 @@ export default function ReportPage() {
 
         const token = localStorage.getItem('token');
 
-        const response = await fetch(
-          `${API_URL}/tickets?limit=100`,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
+        const headers = { Authorization: `Bearer ${token}` };
+
+        // Target counts come from the server across all tickets, not just
+        // the 100 loaded below for the charts and table.
+        const [response, summaryResponse] = await Promise.all([
+          fetch(`${API_URL}/tickets?limit=100`, { headers }),
+          fetch(`${API_URL}/tickets/sla-summary`, { headers }),
+        ]);
 
         const data = await response.json();
+        const summaryData = await summaryResponse.json();
+
+        if (!summaryResponse.ok) {
+          throw new Error(
+            summaryData.message || 'Could not load target figures.'
+          );
+        }
+        setSlaCounts(summaryData.summary);
 
         if (!response.ok) {
           throw new Error(
@@ -117,11 +125,10 @@ export default function ReportPage() {
         (ticket) => ticket.organization === organization
       ).length;
 
-    // From the server-computed SLA status on each ticket, not recomputed here.
-    const overdue = tickets.filter(isTicketOverdue).length;
-    const atRisk = tickets.filter(
-      (ticket) => slaSummary(ticket.sla)?.label === 'At risk'
-    ).length;
+    // Server-side counts across every ticket the user can see.
+    const targets = slaCounts || EMPTY_TARGETS;
+    const overdue = targets.resolution.overdue;
+    const atRisk = targets.resolution.atRisk;
 
     return {
       total: tickets.length,
@@ -131,7 +138,7 @@ export default function ReportPage() {
       closed: countByStatus('Closed'),
       overdue,
       atRisk,
-      targets: summariseTargets(tickets),
+      targets,
       assigned: tickets.filter(
         (ticket) => Boolean(ticket.assigneeId)
       ).length,
@@ -207,7 +214,7 @@ export default function ReportPage() {
         },
       ],
     };
-  }, [tickets]);
+  }, [tickets, slaCounts]);
 
   const cardStyle = {
     background: '#ffffff',
@@ -519,8 +526,8 @@ export default function ReportPage() {
                 Response and resolution targets
               </h2>
               <p style={{ margin: '0 0 12px', color: '#5f6878' }}>
-                Targets are estimates set per priority. Figures cover the tickets
-                loaded on this page (up to the 100 most recent).
+                Targets are estimates set per priority. Figures cover all{' '}
+                {report.targets.total} tickets you can see.
               </p>
 
               <div style={{ overflowX: 'auto' }}>
@@ -684,33 +691,8 @@ function isTicketOverdue(ticket) {
   );
 }
 
-// Met / missed for finished targets, and on track / at risk / overdue for
-// open ones, for both the first-response and the resolution target.
-function summariseTargets(tickets) {
-  const blank = () => ({ met: 0, missed: 0, onTrack: 0, atRisk: 0, overdue: 0 });
-  const result = { response: blank(), resolution: blank() };
-
-  tickets.forEach((ticket) => {
-    ['response', 'resolution'].forEach((key) => {
-      const target = ticket.sla?.[key];
-      if (!target || !target.status) return;
-      const row = result[key];
-
-      if (target.completedAt) {
-        if (target.status === 'breached') row.missed += 1;
-        else row.met += 1;
-      } else if (target.status === 'breached') {
-        row.overdue += 1;
-      } else if (target.status === 'at_risk') {
-        row.atRisk += 1;
-      } else {
-        row.onTrack += 1;
-      }
-    });
-  });
-
-  return result;
-}
+const blankRow = { met: 0, missed: 0, onTrack: 0, atRisk: 0, overdue: 0 };
+const EMPTY_TARGETS = { total: 0, response: blankRow, resolution: blankRow };
 
 function metRate(row) {
   const finished = row.met + row.missed;

@@ -81,6 +81,42 @@ function getSlaStatus(ticket, now = new Date()) {
   };
 }
 
+// Counts for a set of tickets: met / missed for finished targets and
+// on track / at risk / overdue for open ones, per target.
+function blankSummaryRow() {
+  return { met: 0, missed: 0, onTrack: 0, atRisk: 0, overdue: 0 };
+}
+
+function addToSlaSummary(summary, ticket, now = new Date()) {
+  const sla = getSlaStatus(ticket, now);
+  summary.total += 1;
+
+  ['response', 'resolution'].forEach((key) => {
+    const target = sla[key];
+    if (!target.status) return;
+    const row = summary[key];
+
+    if (target.completedAt) {
+      if (target.status === 'breached') row.missed += 1;
+      else row.met += 1;
+    } else if (target.status === 'breached') {
+      row.overdue += 1;
+    } else if (target.status === 'at_risk') {
+      row.atRisk += 1;
+    } else {
+      row.onTrack += 1;
+    }
+  });
+
+  return summary;
+}
+
+function summariseSla(tickets, now = new Date()) {
+  const summary = { total: 0, response: blankSummaryRow(), resolution: blankSummaryRow() };
+  tickets.forEach((ticket) => addToSlaSummary(summary, ticket, now));
+  return summary;
+}
+
 // Returns a copy of a (plain) ticket with its `sla` status attached.
 function withSla(ticket, now = new Date()) {
   if (!ticket) return ticket;
@@ -96,4 +132,6 @@ module.exports = {
   getTargetStatus,
   getSlaStatus,
   withSla,
+  summariseSla,
+  addToSlaSummary,
 };

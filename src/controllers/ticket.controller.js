@@ -1,7 +1,7 @@
 const catchAsync = require('../utils/catchAsync');
 const AppError = require('../utils/appError');
 const { computeTicketDueDates } = require('../services/slaTargetService');
-const { withSla } = require('../utils/sla');
+const { withSla, summariseSla, addToSlaSummary } = require('../utils/sla');
 const { DEFAULT_PRIORITY } = require('../utils/ticketFields');
 
 const {
@@ -283,6 +283,36 @@ const getOverdueTickets = catchAsync(
     res.status(200).json({
       tickets: tickets.map((row) => withSla(row)),
     });
+  }
+);
+
+// Response and resolution target counts across every ticket the user can
+// see (not just one page), for the report screen. Reads in batches so a
+// large desk doesn't load everything at once.
+const SLA_SUMMARY_BATCH = 500;
+
+const getSlaSummary = catchAsync(
+  async (req, res) => {
+    const summary = summariseSla([]);
+    const scope = ticketScopeForUser(req.user);
+
+    if (scope) {
+      const filter = { ...scope, ...queryFilters(req.query) };
+      const now = new Date();
+      let offset = 0;
+
+      for (;;) {
+        const { rows } = await getProvider().listTickets(filter, {
+          limit: SLA_SUMMARY_BATCH,
+          offset,
+        });
+        rows.forEach((row) => addToSlaSummary(summary, row, now));
+        if (rows.length < SLA_SUMMARY_BATCH) break;
+        offset += SLA_SUMMARY_BATCH;
+      }
+    }
+
+    res.status(200).json({ summary });
   }
 );
 
@@ -698,6 +728,7 @@ module.exports = {
   createTicket,
   listTickets,
   getOverdueTickets,
+  getSlaSummary,
   getTicket,
   updateTicket,
   updateTicketStatus,
