@@ -399,6 +399,49 @@
   text-align: right;
 }
 
+/* ---------- which agent answered ---------- */
+
+.chat__agent {
+  font-family: var(--mono);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 3px 8px;
+  border-radius: 3px;
+  color: var(--text-muted);
+  border: 1px solid var(--hairline);
+  background: var(--paper);
+  cursor: help;
+}
+
+.chat__agent[data-agent='fast'] {
+  color: var(--cat-network);
+  border-color: var(--cat-network);
+}
+
+.chat__agent[data-agent='think'] {
+  color: var(--cat-software);
+  border-color: var(--cat-software);
+}
+
+.chat__agent--backup {
+  color: var(--fs-dark-orange);
+  border-color: var(--fs-orange);
+}
+
+.chat__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.chat__cta:disabled {
+  opacity: 0.55;
+  cursor: default;
+  transform: none;
+}
+
 /* ---------- refusal ---------- */
 
 .chat__refusal-detail {
