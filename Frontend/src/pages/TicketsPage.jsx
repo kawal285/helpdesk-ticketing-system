@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { ArrowRight, Bot, Flag, Search, SlidersHorizontal } from "lucide-react";
 import SlaSummaryBadge from "../components/SlaSummaryBadge";
+import { priorityLabel } from '../utils/priority';
 
 const STATUS_LABELS = {
   Open: "Open",
@@ -373,7 +374,7 @@ export default function TicketsPage({
               <option value="">All priorities</option>
               {PRIORITIES.map((priority) => (
                 <option key={priority} value={priority}>
-                  {priority}
+                  {priorityLabel(priority)}
                 </option>
               ))}
             </select>
@@ -604,7 +605,7 @@ export default function TicketsPage({
                           fill={PRIORITY_COLORS[ticket.priority] || "#7b8794"}
                           aria-hidden="true"
                         />
-                        {ticket.priority}
+                        {priorityLabel(ticket.priority, ticket.priorityLevel)}
                       </span>
                     </td>
                     <td style={{ padding: 12 }}>

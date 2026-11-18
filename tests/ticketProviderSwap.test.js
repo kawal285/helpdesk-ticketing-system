@@ -70,7 +70,12 @@ describe('ticket provider swap reaches real HTTP requests', () => {
     expect(res.status).toBe(200);
     expect(res.body.total).toBe(1);
     // The API adds a computed `sla` block on top of whatever the provider returns.
-    expect(res.body.tickets).toEqual([{ ...fakeCrmTicket, sla: expect.any(Object) }]);
+    expect(res.body.tickets).toEqual([{
+      ...fakeCrmTicket,
+      priorityLevel: 'P4',
+      aiPriorityLevel: null,
+      sla: expect.any(Object),
+    }]);
   });
 
   // Comment.ticketId is a real MySQL foreign key into the local tickets

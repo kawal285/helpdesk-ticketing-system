@@ -1,7 +1,25 @@
 const { body, param, query } = require('express-validator');
-const { CATEGORIES, PRIORITIES, DEFAULT_PRIORITY } = require('../utils/ticketFields');
+const {
+  CATEGORIES,
+  PRIORITIES,
+  DEFAULT_PRIORITY,
+  LEVEL_PRIORITIES,
+} = require('../utils/ticketFields');
 const { STATUSES } = require('../utils/ticketStatus');
 const { ORGANIZATIONS } = require('../utils/organizations');
+
+// A priority can be sent as its name ("High") or its level ("P2"); a level
+// is stored as the matching name (P4 is stored as Low).
+const priorityBody = () =>
+  body('priority')
+    .optional()
+    .customSanitizer((value) =>
+      typeof value === 'string' && LEVEL_PRIORITIES[value.trim().toUpperCase()]
+        ? LEVEL_PRIORITIES[value.trim().toUpperCase()]
+        : value
+    )
+    .isIn(PRIORITIES)
+    .withMessage(`priority must be one of ${PRIORITIES.join(', ')} or P1-P4`);
 
 const createTicketValidator = [
   body('title')
@@ -12,7 +30,7 @@ const createTicketValidator = [
     .withMessage('title must be 255 characters or fewer'),
   body('description').trim().notEmpty().withMessage('description is required'),
   body('category').optional().isIn(CATEGORIES).withMessage(`category must be one of ${CATEGORIES.join(', ')}`),
-  body('priority').optional().isIn(PRIORITIES).withMessage(`priority must be one of ${PRIORITIES.join(', ')}`),
+  priorityBody(),
   body('room').optional().trim(),
   body('parentCaseId')
     .optional({ nullable: true })
@@ -46,7 +64,7 @@ const updateTicketValidator = [
     .withMessage('title must be 255 characters or fewer'),
   body('description').optional().trim().notEmpty().withMessage('description cannot be empty'),
   body('category').optional().isIn(CATEGORIES).withMessage(`category must be one of ${CATEGORIES.join(', ')}`),
-  body('priority').optional().isIn(PRIORITIES).withMessage(`priority must be one of ${PRIORITIES.join(', ')}`),
+  priorityBody(),
   body('status').optional().isIn(STATUSES).withMessage(`status must be one of ${STATUSES.join(', ')}`),
   body('assigneeId')
     .optional({ nullable: true })

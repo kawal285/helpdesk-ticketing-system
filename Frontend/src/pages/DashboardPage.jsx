@@ -10,6 +10,7 @@ import {
   Flag,
 } from 'lucide-react';
 import SlaSummaryBadge from '../components/SlaSummaryBadge';
+import { priorityLabel } from '../utils/priority';
 
 
 // Shared status labels keep customer and staff views consistent.
@@ -999,7 +1000,7 @@ export default function DashboardPage({
                           aria-hidden="true"
                         />
 
-                        {ticket.priority}
+                        {priorityLabel(ticket.priority, ticket.priorityLevel)}
                       </span>
                     </td>
 

@@ -68,6 +68,7 @@ async function assistUser(question, options = {}) {
     // grounded or refused answer doesn't guess a priority, that's ticket
     // creation's job, not the assistant's.
     suggestedPriority: result.escalated ? 'Critical' : null,
+    suggestedPriorityLevel: result.escalated ? 'P1' : null,
 
     // True whenever this needs a human: a safety guardrail stepped in, or
     // nothing was found to answer from. A greeting is not a failed

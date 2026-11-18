@@ -5,8 +5,11 @@
 // real P1-P4 times, an admin can change them in Settings (no code change
 // needed). See docs/sla-targets.md.
 //
-// Priority mapping: Critical = P1, High = P2, Medium = P3, Low = P4.
-// Trivial sits below P4.
+// Priority mapping (utils/ticketFields.js): Critical = P1, High = P2,
+// Medium = P3, Low = P4. Trivial is shown as P4 too but keeps its own,
+// longer targets.
+const { priorityLevel } = require('./ticketFields');
+
 const DEFAULT_SLA_TARGETS = {
   Critical: { responseMinutes: 15, resolutionMinutes: 4 * 60 },
   High: { responseMinutes: 60, resolutionMinutes: 8 * 60 },
@@ -117,10 +120,16 @@ function summariseSla(tickets, now = new Date()) {
   return summary;
 }
 
-// Returns a copy of a (plain) ticket with its `sla` status attached.
+// Returns a copy of a (plain) ticket with its `sla` status and P1-P4
+// levels attached.
 function withSla(ticket, now = new Date()) {
   if (!ticket) return ticket;
-  return { ...ticket, sla: getSlaStatus(ticket, now) };
+  return {
+    ...ticket,
+    priorityLevel: priorityLevel(ticket.priority),
+    aiPriorityLevel: priorityLevel(ticket.aiPriority),
+    sla: getSlaStatus(ticket, now),
+  };
 }
 
 module.exports = {

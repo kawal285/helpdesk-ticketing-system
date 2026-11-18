@@ -13,7 +13,7 @@
 
 const { generate } = require('./rag/generationService');
 const ticketPrompt = require('../prompts/ticketPrompt');
-const { CATEGORIES, PRIORITIES } = require('../utils/ticketFields');
+const { CATEGORIES, normalisePriority } = require('../utils/ticketFields');
 const { redactSecrets } = require('./rag/safety');
 const { redact } = require('../utils/privacy');
 const { detectPromptInjection } = require('../utils/promptInjection');
@@ -52,13 +52,14 @@ function parseAnalysis(text) {
   const responseMatch = text.match(/Suggested Response:\s*([\s\S]+)/i);
 
   const category = categoryMatch ? categoryMatch[1].trim() : null;
-  const priority = priorityMatch ? priorityMatch[1].trim() : null;
+  // The model may answer with a name ("High"), a level ("P2") or both.
+  const priority = priorityMatch ? normalisePriority(priorityMatch[1]) : null;
 
   const suggestedResponse = responseMatch ? responseMatch[1].trim() : text.trim();
 
   return {
     category: CATEGORIES.includes(category) ? category : 'Other',
-    priority: PRIORITIES.includes(priority) ? priority : 'Medium',
+    priority: priority || 'Medium',
     // Prompt wording (ticketPrompt.js) already tells the model not to
     // include credentials, but that's guidance, not a guarantee -- this
     // is the same code-level backstop the RAG assistant applies to its

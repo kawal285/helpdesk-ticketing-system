@@ -16,15 +16,15 @@ Choose exactly one category:
 - Other: issues that do not fit the categories above.
 
 2. PRIORITY
-Choose exactly one priority:
-- Critical: A major service outage, serious security incident,
+Choose exactly one priority. The help desk also calls these P1 to P4:
+- Critical (P1): A major service outage, serious security incident,
   or essential system unavailable to a large group or organisation.
-- High: A serious issue significantly affecting work, with no
+- High (P2): A serious issue significantly affecting work, with no
   reasonable workaround, or affecting an important service.
-- Medium: A normal technical issue affecting an individual or
+- Medium (P3): A normal technical issue affecting an individual or
   a limited group, where work can continue partially.
-- Low: A minor issue with limited impact and an available workaround.
-- Trivial: A simple request, cosmetic issue or minor inconvenience with
+- Low (P4): A minor issue with limited impact and an available workaround.
+- Trivial (P4, lowest): A simple request, cosmetic issue or minor inconvenience with
   no real impact on anyone's work. If the reporter's own wording signals
   no urgency (e.g. "not a big deal," "no rush," "whenever you get a
   chance"), prefer Trivial over Low.
