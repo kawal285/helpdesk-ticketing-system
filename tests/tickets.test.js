@@ -799,3 +799,92 @@ describe('POST /tickets/:id/ai-analyze', () => {
     expect(res.body.ticket.aiAnalyzedAt).not.toBeNull();
   });
 });
+
+describe('GET /tickets/overdue: what counts and who sees it', () => {
+  const HOUR = 60 * 60 * 1000;
+
+  async function overdueIds(token, query = '') {
+    const res = await request(app)
+      .get(`/tickets/overdue${query}`)
+      .set('Authorization', `Bearer ${token}`);
+    expect(res.status).toBe(200);
+    return res.body.tickets.map((t) => t.id);
+  }
+
+  it('leaves out resolved, closed and not-yet-due tickets', async () => {
+    const { token } = await createUserWithToken({ role: 'customer' });
+    const ids = [];
+    for (let i = 0; i < 4; i += 1) ids.push((await createTicketAs(token)).body.ticket.id);
+    const [late, resolved, closed, notDue] = ids;
+    const past = new Date(Date.now() - HOUR);
+
+    await Ticket.update({ dueAt: past }, { where: { id: late } });
+    await Ticket.update({ dueAt: past, status: 'Resolved' }, { where: { id: resolved } });
+    await Ticket.update({ dueAt: past, status: 'Closed' }, { where: { id: closed } });
+    await Ticket.update({ dueAt: new Date(Date.now() + HOUR) }, { where: { id: notDue } });
+
+    expect(await overdueIds(token)).toEqual([late]);
+  });
+
+  it('marks every overdue ticket as breached in its sla block', async () => {
+    const { token } = await createUserWithToken({ role: 'customer' });
+    const id = (await createTicketAs(token)).body.ticket.id;
+    await Ticket.update({ dueAt: new Date(Date.now() - HOUR) }, { where: { id } });
+
+    const res = await request(app).get('/tickets/overdue').set('Authorization', `Bearer ${token}`);
+
+    expect(res.body.tickets[0].sla.resolution.status).toBe('breached');
+  });
+
+  it('filters by priority and category on the server', async () => {
+    const { token: customer } = await createUserWithToken({ role: 'customer' });
+    const { token: admin } = await createUserWithToken({ role: 'admin' });
+    const high = (await createTicketAs(customer, { priority: 'High', category: 'Network' })).body.ticket.id;
+    const low = (await createTicketAs(customer, { priority: 'Low', category: 'Hardware' })).body.ticket.id;
+    await Ticket.update({ dueAt: new Date(Date.now() - HOUR) }, { where: { id: [high, low] } });
+
+    const byPriority = await overdueIds(admin, '?priority=High');
+    expect(byPriority).toContain(high);
+    expect(byPriority).not.toContain(low);
+
+    const byCategory = await overdueIds(admin, '?category=Hardware');
+    expect(byCategory).toContain(low);
+    expect(byCategory).not.toContain(high);
+  });
+
+  it("a customer only sees their own overdue tickets", async () => {
+    const { token: a } = await createUserWithToken({ role: 'customer' });
+    const { token: b } = await createUserWithToken({ role: 'customer' });
+    const mine = (await createTicketAs(a)).body.ticket.id;
+    const theirs = (await createTicketAs(b)).body.ticket.id;
+    await Ticket.update({ dueAt: new Date(Date.now() - HOUR) }, { where: { id: [mine, theirs] } });
+
+    const ids = await overdueIds(a);
+    expect(ids).toContain(mine);
+    expect(ids).not.toContain(theirs);
+  });
+
+  it('an agent sees their own and unassigned overdue tickets, not other agents\'', async () => {
+    const { token: customer } = await createUserWithToken({ role: 'customer' });
+    const { user: agent, token: agentToken } = await createUserWithToken({ role: 'agent' });
+    const { user: other } = await createUserWithToken({ role: 'agent' });
+    const ids = [];
+    for (let i = 0; i < 3; i += 1) ids.push((await createTicketAs(customer)).body.ticket.id);
+    const [assignedToMe, unassigned, assignedToOther] = ids;
+    const past = new Date(Date.now() - HOUR);
+
+    await Ticket.update({ dueAt: past, assigneeId: agent.id }, { where: { id: assignedToMe } });
+    await Ticket.update({ dueAt: past, assigneeId: null }, { where: { id: unassigned } });
+    await Ticket.update({ dueAt: past, assigneeId: other.id }, { where: { id: assignedToOther } });
+
+    const seen = await overdueIds(agentToken);
+    expect(seen).toEqual(expect.arrayContaining([assignedToMe, unassigned]));
+    expect(seen).not.toContain(assignedToOther);
+  });
+
+  it('rejects a bad priority filter with 400', async () => {
+    const { token } = await createUserWithToken({ role: 'admin' });
+    const res = await request(app).get('/tickets/overdue?priority=Urgent').set('Authorization', `Bearer ${token}`);
+    expect(res.status).toBe(400);
+  });
+});
