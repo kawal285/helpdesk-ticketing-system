@@ -9,7 +9,41 @@ state is in [ai-classification-evaluation-raw.json](./ai-classification-evaluati
 (overwritten by each run — every number below is also preserved
 verbatim in the git history of that file and in each run's own commit).
 
-## Current result (2026-11-03, after the lean prompt fix)
+## Latest result (2026-11-19): 40 tickets, full metrics
+
+Set grown from 35 to 40 tickets (five added to the smallest groups:
+Other, Low and Medium), the prompt now names the P1-P4 levels, and the
+harness reports a confusion matrix, precision, recall, F1 and Cohen's
+kappa. Full tables: [ai-classification-metrics.md](./ai-classification-metrics.md).
+Priority rules: [priority-criteria.md](./priority-criteria.md).
+
+| Measure | Accuracy | Macro F1 | Cohen's kappa |
+| --- | --- | --- | --- |
+| Category | 82.5% (33/40) | 0.759 | 0.777 (substantial) |
+| Priority, five levels | 65.0% (26/40) | 0.632 | 0.564 (moderate) |
+| Priority level, P1-P4 | 77.5% (31/40) | 0.755 | 0.696 (substantial) |
+
+What it shows:
+
+- **Software, Network and Account are always found** (recall 1.0).
+  **Hardware** is the weak category: 3 of 11 went to Other.
+  **Other** is weakest overall (F1 0.25), but it only has 4 tickets.
+- **Trivial is still mostly called Low** (5 of 8). Both are P4, so this
+  doesn't change the target times, which is why P1-P4 accuracy (77.5%)
+  is much higher than five-level accuracy (65.0%).
+- **The AI leans towards over-rating High as Critical** (4 of 11). That
+  is the safer mistake (faster target), but it would pull agents away
+  from real P1s, so agents should check P1 suggestions.
+- **Low is never missed** (recall 1.0), but its precision is 0.545
+  because Trivial tickets land there.
+
+Kappa here measures agreement between the AI and the hand labels. To
+check the labels themselves, a second person could label the same 40
+tickets on their own and the two sets could be compared the same way.
+
+The earlier results below are kept for the record.
+
+## Earlier result (2026-11-03, after the lean prompt fix)
 
 **Category accuracy: 82.9% (29/35). Priority accuracy: 60.0% (21/35).**
 

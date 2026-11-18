@@ -1,8 +1,286 @@
 {
-  "generatedAt": "2026-11-02T23:39:38.039Z",
-  "categoryAccuracy": 82.9,
-  "priorityAccuracy": 60,
-  "total": 35,
+  "generatedAt": "2026-11-18T23:29:53.927Z",
+  "model": "ollama:llama3.2",
+  "metrics": {
+    "category": {
+      "labels": [
+        "Hardware",
+        "Software",
+        "Network",
+        "Account",
+        "Other"
+      ],
+      "matrix": {
+        "Hardware": {
+          "Hardware": 7,
+          "Software": 0,
+          "Network": 1,
+          "Account": 0,
+          "Other": 3,
+          "(none)": 0
+        },
+        "Software": {
+          "Hardware": 0,
+          "Software": 11,
+          "Network": 0,
+          "Account": 0,
+          "Other": 0,
+          "(none)": 0
+        },
+        "Network": {
+          "Hardware": 0,
+          "Software": 0,
+          "Network": 7,
+          "Account": 0,
+          "Other": 0,
+          "(none)": 0
+        },
+        "Account": {
+          "Hardware": 0,
+          "Software": 0,
+          "Network": 0,
+          "Account": 7,
+          "Other": 0,
+          "(none)": 0
+        },
+        "Other": {
+          "Hardware": 0,
+          "Software": 1,
+          "Network": 1,
+          "Account": 1,
+          "Other": 1,
+          "(none)": 0
+        }
+      },
+      "perClass": {
+        "Hardware": {
+          "precision": 1,
+          "recall": 0.636,
+          "f1": 0.778,
+          "support": 11
+        },
+        "Software": {
+          "precision": 0.917,
+          "recall": 1,
+          "f1": 0.957,
+          "support": 11
+        },
+        "Network": {
+          "precision": 0.778,
+          "recall": 1,
+          "f1": 0.875,
+          "support": 7
+        },
+        "Account": {
+          "precision": 0.875,
+          "recall": 1,
+          "f1": 0.933,
+          "support": 7
+        },
+        "Other": {
+          "precision": 0.25,
+          "recall": 0.25,
+          "f1": 0.25,
+          "support": 4
+        }
+      },
+      "accuracy": 0.825,
+      "correct": 33,
+      "total": 40,
+      "macro": {
+        "precision": 0.764,
+        "recall": 0.777,
+        "f1": 0.759
+      },
+      "weighted": {
+        "precision": 0.841,
+        "recall": 0.825,
+        "f1": 0.819
+      },
+      "kappa": 0.777,
+      "kappaStrength": "substantial"
+    },
+    "priority": {
+      "labels": [
+        "Critical",
+        "High",
+        "Medium",
+        "Low",
+        "Trivial"
+      ],
+      "matrix": {
+        "Critical": {
+          "Critical": 6,
+          "High": 1,
+          "Medium": 0,
+          "Low": 0,
+          "Trivial": 0,
+          "(none)": 0
+        },
+        "High": {
+          "Critical": 4,
+          "High": 6,
+          "Medium": 1,
+          "Low": 0,
+          "Trivial": 0,
+          "(none)": 0
+        },
+        "Medium": {
+          "Critical": 0,
+          "High": 2,
+          "Medium": 6,
+          "Low": 0,
+          "Trivial": 0,
+          "(none)": 0
+        },
+        "Low": {
+          "Critical": 0,
+          "High": 0,
+          "Medium": 0,
+          "Low": 6,
+          "Trivial": 0,
+          "(none)": 0
+        },
+        "Trivial": {
+          "Critical": 0,
+          "High": 0,
+          "Medium": 1,
+          "Low": 5,
+          "Trivial": 2,
+          "(none)": 0
+        }
+      },
+      "perClass": {
+        "Critical": {
+          "precision": 0.6,
+          "recall": 0.857,
+          "f1": 0.706,
+          "support": 7
+        },
+        "High": {
+          "precision": 0.667,
+          "recall": 0.545,
+          "f1": 0.6,
+          "support": 11
+        },
+        "Medium": {
+          "precision": 0.75,
+          "recall": 0.75,
+          "f1": 0.75,
+          "support": 8
+        },
+        "Low": {
+          "precision": 0.545,
+          "recall": 1,
+          "f1": 0.706,
+          "support": 6
+        },
+        "Trivial": {
+          "precision": 1,
+          "recall": 0.25,
+          "f1": 0.4,
+          "support": 8
+        }
+      },
+      "accuracy": 0.65,
+      "correct": 26,
+      "total": 40,
+      "macro": {
+        "precision": 0.712,
+        "recall": 0.68,
+        "f1": 0.632
+      },
+      "weighted": {
+        "precision": 0.72,
+        "recall": 0.65,
+        "f1": 0.624
+      },
+      "kappa": 0.564,
+      "kappaStrength": "moderate"
+    },
+    "level": {
+      "labels": [
+        "P1",
+        "P2",
+        "P3",
+        "P4"
+      ],
+      "matrix": {
+        "P1": {
+          "P1": 6,
+          "P2": 1,
+          "P3": 0,
+          "P4": 0,
+          "(none)": 0
+        },
+        "P2": {
+          "P1": 4,
+          "P2": 6,
+          "P3": 1,
+          "P4": 0,
+          "(none)": 0
+        },
+        "P3": {
+          "P1": 0,
+          "P2": 2,
+          "P3": 6,
+          "P4": 0,
+          "(none)": 0
+        },
+        "P4": {
+          "P1": 0,
+          "P2": 0,
+          "P3": 1,
+          "P4": 13,
+          "(none)": 0
+        }
+      },
+      "perClass": {
+        "P1": {
+          "precision": 0.6,
+          "recall": 0.857,
+          "f1": 0.706,
+          "support": 7
+        },
+        "P2": {
+          "precision": 0.667,
+          "recall": 0.545,
+          "f1": 0.6,
+          "support": 11
+        },
+        "P3": {
+          "precision": 0.75,
+          "recall": 0.75,
+          "f1": 0.75,
+          "support": 8
+        },
+        "P4": {
+          "precision": 1,
+          "recall": 0.929,
+          "f1": 0.963,
+          "support": 14
+        }
+      },
+      "accuracy": 0.775,
+      "correct": 31,
+      "total": 40,
+      "macro": {
+        "precision": 0.754,
+        "recall": 0.77,
+        "f1": 0.755
+      },
+      "weighted": {
+        "precision": 0.788,
+        "recall": 0.775,
+        "f1": 0.776
+      },
+      "kappa": 0.696,
+      "kappaStrength": "substantial"
+    }
+  },
+  "categoryAccuracy": 82.5,
+  "priorityAccuracy": 65,
+  "total": 40,
   "aiUnavailableCount": 0,
   "results": [
     {
@@ -12,10 +290,13 @@
       "expectedPriority": "High",
       "predictedCategory": "Hardware",
       "predictedPriority": "Critical",
+      "expectedLevel": "P2",
+      "predictedLevel": "P1",
       "categoryCorrect": true,
       "priorityCorrect": false,
+      "levelCorrect": false,
       "aiUnavailable": false,
-      "ms": 3707
+      "ms": 15876
     },
     {
       "id": 2,
@@ -24,10 +305,13 @@
       "expectedPriority": "Medium",
       "predictedCategory": "Software",
       "predictedPriority": "Medium",
+      "expectedLevel": "P3",
+      "predictedLevel": "P3",
       "categoryCorrect": true,
       "priorityCorrect": true,
+      "levelCorrect": true,
       "aiUnavailable": false,
-      "ms": 2449
+      "ms": 3447
     },
     {
       "id": 3,
@@ -36,10 +320,13 @@
       "expectedPriority": "Medium",
       "predictedCategory": "Network",
       "predictedPriority": "Medium",
+      "expectedLevel": "P3",
+      "predictedLevel": "P3",
       "categoryCorrect": true,
       "priorityCorrect": true,
+      "levelCorrect": true,
       "aiUnavailable": false,
-      "ms": 2346
+      "ms": 3480
     },
     {
       "id": 4,
@@ -47,11 +334,14 @@
       "expectedCategory": "Account",
       "expectedPriority": "High",
       "predictedCategory": "Account",
-      "predictedPriority": "Low",
+      "predictedPriority": "High",
+      "expectedLevel": "P2",
+      "predictedLevel": "P2",
       "categoryCorrect": true,
-      "priorityCorrect": false,
+      "priorityCorrect": true,
+      "levelCorrect": true,
       "aiUnavailable": false,
-      "ms": 2779
+      "ms": 3663
     },
     {
       "id": 5,
@@ -60,10 +350,13 @@
       "expectedPriority": "Medium",
       "predictedCategory": "Hardware",
       "predictedPriority": "Medium",
+      "expectedLevel": "P3",
+      "predictedLevel": "P3",
       "categoryCorrect": true,
       "priorityCorrect": true,
+      "levelCorrect": true,
       "aiUnavailable": false,
-      "ms": 2880
+      "ms": 3469
     },
     {
       "id": 6,
@@ -72,10 +365,13 @@
       "expectedPriority": "Medium",
       "predictedCategory": "Software",
       "predictedPriority": "Medium",
+      "expectedLevel": "P3",
+      "predictedLevel": "P3",
       "categoryCorrect": true,
       "priorityCorrect": true,
+      "levelCorrect": true,
       "aiUnavailable": false,
-      "ms": 2498
+      "ms": 2667
     },
     {
       "id": 7,
@@ -84,10 +380,13 @@
       "expectedPriority": "High",
       "predictedCategory": "Network",
       "predictedPriority": "Medium",
+      "expectedLevel": "P2",
+      "predictedLevel": "P3",
       "categoryCorrect": true,
       "priorityCorrect": false,
+      "levelCorrect": false,
       "aiUnavailable": false,
-      "ms": 2980
+      "ms": 2482
     },
     {
       "id": 8,
@@ -96,10 +395,13 @@
       "expectedPriority": "Low",
       "predictedCategory": "Hardware",
       "predictedPriority": "Low",
+      "expectedLevel": "P4",
+      "predictedLevel": "P4",
       "categoryCorrect": true,
       "priorityCorrect": true,
+      "levelCorrect": true,
       "aiUnavailable": false,
-      "ms": 1776
+      "ms": 2124
     },
     {
       "id": 9,
@@ -108,10 +410,13 @@
       "expectedPriority": "Trivial",
       "predictedCategory": "Other",
       "predictedPriority": "Trivial",
+      "expectedLevel": "P4",
+      "predictedLevel": "P4",
       "categoryCorrect": false,
       "priorityCorrect": true,
+      "levelCorrect": true,
       "aiUnavailable": false,
-      "ms": 2985
+      "ms": 1916
     },
     {
       "id": 10,
@@ -120,10 +425,13 @@
       "expectedPriority": "High",
       "predictedCategory": "Account",
       "predictedPriority": "High",
+      "expectedLevel": "P2",
+      "predictedLevel": "P2",
       "categoryCorrect": true,
       "priorityCorrect": true,
+      "levelCorrect": true,
       "aiUnavailable": false,
-      "ms": 3373
+      "ms": 2567
     },
     {
       "id": 11,
@@ -132,10 +440,13 @@
       "expectedPriority": "Medium",
       "predictedCategory": "Software",
       "predictedPriority": "Medium",
+      "expectedLevel": "P3",
+      "predictedLevel": "P3",
       "categoryCorrect": true,
       "priorityCorrect": true,
+      "levelCorrect": true,
       "aiUnavailable": false,
-      "ms": 2490
+      "ms": 2628
     },
     {
       "id": 12,
@@ -143,11 +454,14 @@
       "expectedCategory": "Account",
       "expectedPriority": "Critical",
       "predictedCategory": "Account",
-      "predictedPriority": "Trivial",
+      "predictedPriority": "Critical",
+      "expectedLevel": "P1",
+      "predictedLevel": "P1",
       "categoryCorrect": true,
-      "priorityCorrect": false,
+      "priorityCorrect": true,
+      "levelCorrect": true,
       "aiUnavailable": false,
-      "ms": 2412
+      "ms": 3979
     },
     {
       "id": 13,
@@ -156,10 +470,13 @@
       "expectedPriority": "High",
       "predictedCategory": "Hardware",
       "predictedPriority": "Critical",
+      "expectedLevel": "P2",
+      "predictedLevel": "P1",
       "categoryCorrect": true,
       "priorityCorrect": false,
+      "levelCorrect": false,
       "aiUnavailable": false,
-      "ms": 2428
+      "ms": 3315
     },
     {
       "id": 14,
@@ -168,10 +485,13 @@
       "expectedPriority": "Critical",
       "predictedCategory": "Network",
       "predictedPriority": "Critical",
+      "expectedLevel": "P1",
+      "predictedLevel": "P1",
       "categoryCorrect": true,
       "priorityCorrect": true,
+      "levelCorrect": true,
       "aiUnavailable": false,
-      "ms": 2652
+      "ms": 2738
     },
     {
       "id": 15,
@@ -180,10 +500,13 @@
       "expectedPriority": "Medium",
       "predictedCategory": "Software",
       "predictedPriority": "High",
+      "expectedLevel": "P3",
+      "predictedLevel": "P2",
       "categoryCorrect": true,
       "priorityCorrect": false,
+      "levelCorrect": false,
       "aiUnavailable": false,
-      "ms": 2743
+      "ms": 3024
     },
     {
       "id": 16,
@@ -192,10 +515,13 @@
       "expectedPriority": "Trivial",
       "predictedCategory": "Account",
       "predictedPriority": "Low",
+      "expectedLevel": "P4",
+      "predictedLevel": "P4",
       "categoryCorrect": true,
       "priorityCorrect": false,
+      "levelCorrect": true,
       "aiUnavailable": false,
-      "ms": 2759
+      "ms": 2883
     },
     {
       "id": 17,
@@ -204,10 +530,13 @@
       "expectedPriority": "Critical",
       "predictedCategory": "Hardware",
       "predictedPriority": "Critical",
+      "expectedLevel": "P1",
+      "predictedLevel": "P1",
       "categoryCorrect": true,
       "priorityCorrect": true,
+      "levelCorrect": true,
       "aiUnavailable": false,
-      "ms": 1977
+      "ms": 2998
     },
     {
       "id": 18,
@@ -216,10 +545,13 @@
       "expectedPriority": "High",
       "predictedCategory": "Software",
       "predictedPriority": "High",
+      "expectedLevel": "P2",
+      "predictedLevel": "P2",
       "categoryCorrect": true,
       "priorityCorrect": true,
+      "levelCorrect": true,
       "aiUnavailable": false,
-      "ms": 2796
+      "ms": 2648
     },
     {
       "id": 19,
@@ -228,10 +560,13 @@
       "expectedPriority": "Low",
       "predictedCategory": "Hardware",
       "predictedPriority": "Low",
+      "expectedLevel": "P4",
+      "predictedLevel": "P4",
       "categoryCorrect": true,
       "priorityCorrect": true,
+      "levelCorrect": true,
       "aiUnavailable": false,
-      "ms": 2967
+      "ms": 4706
     },
     {
       "id": 20,
@@ -240,10 +575,13 @@
       "expectedPriority": "Trivial",
       "predictedCategory": "Software",
       "predictedPriority": "Low",
+      "expectedLevel": "P4",
+      "predictedLevel": "P4",
       "categoryCorrect": false,
       "priorityCorrect": false,
+      "levelCorrect": true,
       "aiUnavailable": false,
-      "ms": 3302
+      "ms": 3323
     },
     {
       "id": 21,
@@ -252,10 +590,13 @@
       "expectedPriority": "High",
       "predictedCategory": "Network",
       "predictedPriority": "High",
+      "expectedLevel": "P2",
+      "predictedLevel": "P2",
       "categoryCorrect": true,
       "priorityCorrect": true,
+      "levelCorrect": true,
       "aiUnavailable": false,
-      "ms": 2957
+      "ms": 3130
     },
     {
       "id": 22,
@@ -264,10 +605,13 @@
       "expectedPriority": "High",
       "predictedCategory": "Network",
       "predictedPriority": "High",
+      "expectedLevel": "P2",
+      "predictedLevel": "P2",
       "categoryCorrect": true,
       "priorityCorrect": true,
+      "levelCorrect": true,
       "aiUnavailable": false,
-      "ms": 2366
+      "ms": 2488
     },
     {
       "id": 23,
@@ -275,23 +619,29 @@
       "expectedCategory": "Network",
       "expectedPriority": "Low",
       "predictedCategory": "Network",
-      "predictedPriority": "Medium",
+      "predictedPriority": "Low",
+      "expectedLevel": "P4",
+      "predictedLevel": "P4",
       "categoryCorrect": true,
-      "priorityCorrect": false,
+      "priorityCorrect": true,
+      "levelCorrect": true,
       "aiUnavailable": false,
-      "ms": 2927
+      "ms": 1992
     },
     {
       "id": 24,
       "description": "Quick question -- what's the policy on using a personal phone for two-factor authentication?",
       "expectedCategory": "Other",
       "expectedPriority": "Trivial",
-      "predictedCategory": "Software",
-      "predictedPriority": "Medium",
+      "predictedCategory": "Account",
+      "predictedPriority": "Low",
+      "expectedLevel": "P4",
+      "predictedLevel": "P4",
       "categoryCorrect": false,
       "priorityCorrect": false,
+      "levelCorrect": true,
       "aiUnavailable": false,
-      "ms": 3372
+      "ms": 2427
     },
     {
       "id": 25,
@@ -299,11 +649,14 @@
       "expectedCategory": "Other",
       "expectedPriority": "Trivial",
       "predictedCategory": "Other",
-      "predictedPriority": "Trivial",
+      "predictedPriority": "Low",
+      "expectedLevel": "P4",
+      "predictedLevel": "P4",
       "categoryCorrect": true,
-      "priorityCorrect": true,
+      "priorityCorrect": false,
+      "levelCorrect": true,
       "aiUnavailable": false,
-      "ms": 3137
+      "ms": 3578
     },
     {
       "id": 26,
@@ -312,10 +665,13 @@
       "expectedPriority": "High",
       "predictedCategory": "Hardware",
       "predictedPriority": "Critical",
+      "expectedLevel": "P2",
+      "predictedLevel": "P1",
       "categoryCorrect": true,
       "priorityCorrect": false,
+      "levelCorrect": false,
       "aiUnavailable": false,
-      "ms": 3177
+      "ms": 2853
     },
     {
       "id": 27,
@@ -324,10 +680,13 @@
       "expectedPriority": "High",
       "predictedCategory": "Software",
       "predictedPriority": "High",
+      "expectedLevel": "P2",
+      "predictedLevel": "P2",
       "categoryCorrect": true,
       "priorityCorrect": true,
+      "levelCorrect": true,
       "aiUnavailable": false,
-      "ms": 3242
+      "ms": 2984
     },
     {
       "id": 28,
@@ -336,10 +695,13 @@
       "expectedPriority": "High",
       "predictedCategory": "Account",
       "predictedPriority": "Critical",
+      "expectedLevel": "P2",
+      "predictedLevel": "P1",
       "categoryCorrect": true,
       "priorityCorrect": false,
+      "levelCorrect": false,
       "aiUnavailable": false,
-      "ms": 2961
+      "ms": 2929
     },
     {
       "id": 29,
@@ -348,10 +710,13 @@
       "expectedPriority": "Trivial",
       "predictedCategory": "Other",
       "predictedPriority": "Trivial",
+      "expectedLevel": "P4",
+      "predictedLevel": "P4",
       "categoryCorrect": false,
       "priorityCorrect": true,
+      "levelCorrect": true,
       "aiUnavailable": false,
-      "ms": 2299
+      "ms": 2515
     },
     {
       "id": 30,
@@ -360,22 +725,28 @@
       "expectedPriority": "Trivial",
       "predictedCategory": "Software",
       "predictedPriority": "Medium",
+      "expectedLevel": "P4",
+      "predictedLevel": "P3",
       "categoryCorrect": true,
       "priorityCorrect": false,
+      "levelCorrect": false,
       "aiUnavailable": false,
-      "ms": 2547
+      "ms": 3531
     },
     {
       "id": 31,
       "description": "Could I get the newer version of Slack installed sometime? Whenever's convenient, no particular hurry.",
       "expectedCategory": "Software",
       "expectedPriority": "Trivial",
-      "predictedCategory": "Other",
-      "predictedPriority": "Trivial",
-      "categoryCorrect": false,
-      "priorityCorrect": true,
+      "predictedCategory": "Software",
+      "predictedPriority": "Low",
+      "expectedLevel": "P4",
+      "predictedLevel": "P4",
+      "categoryCorrect": true,
+      "priorityCorrect": false,
+      "levelCorrect": true,
       "aiUnavailable": false,
-      "ms": 3545
+      "ms": 3355
     },
     {
       "id": 32,
@@ -384,10 +755,13 @@
       "expectedPriority": "Critical",
       "predictedCategory": "Software",
       "predictedPriority": "Critical",
+      "expectedLevel": "P1",
+      "predictedLevel": "P1",
       "categoryCorrect": true,
       "priorityCorrect": true,
+      "levelCorrect": true,
       "aiUnavailable": false,
-      "ms": 2865
+      "ms": 5583
     },
     {
       "id": 33,
@@ -396,10 +770,13 @@
       "expectedPriority": "Critical",
       "predictedCategory": "Account",
       "predictedPriority": "High",
+      "expectedLevel": "P1",
+      "predictedLevel": "P2",
       "categoryCorrect": true,
       "priorityCorrect": false,
+      "levelCorrect": false,
       "aiUnavailable": false,
-      "ms": 2379
+      "ms": 2610
     },
     {
       "id": 34,
@@ -408,22 +785,103 @@
       "expectedPriority": "Critical",
       "predictedCategory": "Network",
       "predictedPriority": "Critical",
+      "expectedLevel": "P1",
+      "predictedLevel": "P1",
       "categoryCorrect": false,
       "priorityCorrect": true,
+      "levelCorrect": true,
       "aiUnavailable": false,
-      "ms": 2903
+      "ms": 2804
     },
     {
       "id": 35,
       "description": "The shared printer on my floor isn't working, but I can email the file to a colleague nearby and have them print it for me.",
       "expectedCategory": "Hardware",
       "expectedPriority": "Low",
-      "predictedCategory": "Hardware",
+      "predictedCategory": "Other",
       "predictedPriority": "Low",
+      "expectedLevel": "P4",
+      "predictedLevel": "P4",
+      "categoryCorrect": false,
+      "priorityCorrect": true,
+      "levelCorrect": true,
+      "aiUnavailable": false,
+      "ms": 3446
+    },
+    {
+      "id": 36,
+      "description": "The WiFi signal in meeting room 4B is weak and my calls drop in there, but it works fine at my desk so I have been taking calls from there instead.",
+      "expectedCategory": "Network",
+      "expectedPriority": "Low",
+      "predictedCategory": "Network",
+      "predictedPriority": "Low",
+      "expectedLevel": "P4",
+      "predictedLevel": "P4",
       "categoryCorrect": true,
       "priorityCorrect": true,
+      "levelCorrect": true,
       "aiUnavailable": false,
-      "ms": 2510
+      "ms": 3184
+    },
+    {
+      "id": 37,
+      "description": "Since yesterday's update Teams notifications no longer pop up on my laptop, so I keep missing messages unless I open the app and check it myself.",
+      "expectedCategory": "Software",
+      "expectedPriority": "Medium",
+      "predictedCategory": "Software",
+      "predictedPriority": "Medium",
+      "expectedLevel": "P3",
+      "predictedLevel": "P3",
+      "categoryCorrect": true,
+      "priorityCorrect": true,
+      "levelCorrect": true,
+      "aiUnavailable": false,
+      "ms": 2413
+    },
+    {
+      "id": 38,
+      "description": "I can log in to the staff portal but the timesheet page says I do not have permission, so I cannot submit my hours, which are due on Friday.",
+      "expectedCategory": "Account",
+      "expectedPriority": "Medium",
+      "predictedCategory": "Account",
+      "predictedPriority": "High",
+      "expectedLevel": "P3",
+      "predictedLevel": "P2",
+      "categoryCorrect": true,
+      "priorityCorrect": false,
+      "levelCorrect": false,
+      "aiUnavailable": false,
+      "ms": 2784
+    },
+    {
+      "id": 39,
+      "description": "The IT service desk phone line plays the office-closed message even during business hours. Emailing the desk still works.",
+      "expectedCategory": "Other",
+      "expectedPriority": "Low",
+      "predictedCategory": "Network",
+      "predictedPriority": "Low",
+      "expectedLevel": "P4",
+      "predictedLevel": "P4",
+      "categoryCorrect": false,
+      "priorityCorrect": true,
+      "levelCorrect": true,
+      "aiUnavailable": false,
+      "ms": 2541
+    },
+    {
+      "id": 40,
+      "description": "The student enrolment system is down for everyone and today is the last day students can enrol.",
+      "expectedCategory": "Software",
+      "expectedPriority": "Critical",
+      "predictedCategory": "Software",
+      "predictedPriority": "Critical",
+      "expectedLevel": "P1",
+      "predictedLevel": "P1",
+      "categoryCorrect": true,
+      "priorityCorrect": true,
+      "levelCorrect": true,
+      "aiUnavailable": false,
+      "ms": 5352
     }
   ]
 }

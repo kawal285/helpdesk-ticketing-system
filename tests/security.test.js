@@ -119,7 +119,7 @@ describe('SEC-1 prompt injection detector', () => {
     expect(detectPromptInjection(text).detected).toBe(false);
   });
 
-  it('has no false positives on the 35-ticket evaluation set', () => {
+  it('has no false positives on the 40-ticket evaluation set', () => {
     const flagged = evaluationSet.filter((t) => detectPromptInjection(t.description).detected);
     expect(flagged.map((t) => t.id)).toEqual([]);
   });

@@ -243,5 +243,40 @@
     "expectedCategory": "Hardware",
     "expectedPriority": "Low",
     "reasoning": "Minor impact with an available workaround already in use -- Low."
+  },
+  {
+    "id": 36,
+    "description": "The WiFi signal in meeting room 4B is weak and my calls drop in there, but it works fine at my desk so I have been taking calls from there instead.",
+    "expectedCategory": "Network",
+    "expectedPriority": "Low",
+    "reasoning": "One room, one person, and a working alternative (the desk) -- minor impact with a workaround, so Low."
+  },
+  {
+    "id": 37,
+    "description": "Since yesterday's update Teams notifications no longer pop up on my laptop, so I keep missing messages unless I open the app and check it myself.",
+    "expectedCategory": "Software",
+    "expectedPriority": "Medium",
+    "reasoning": "Affects one person and work continues only partly (messages are missed) -- a normal individual issue, Medium."
+  },
+  {
+    "id": 38,
+    "description": "I can log in to the staff portal but the timesheet page says I do not have permission, so I cannot submit my hours, which are due on Friday.",
+    "expectedCategory": "Account",
+    "expectedPriority": "Medium",
+    "reasoning": "A permission problem for one person with a deadline days away, not hours -- Medium, not High."
+  },
+  {
+    "id": 39,
+    "description": "The IT service desk phone line plays the office-closed message even during business hours. Emailing the desk still works.",
+    "expectedCategory": "Other",
+    "expectedPriority": "Low",
+    "reasoning": "Not a device, app, network or account fault, so Other. Email is a working alternative -- Low."
+  },
+  {
+    "id": 40,
+    "description": "The student enrolment system is down for everyone and today is the last day students can enrol.",
+    "expectedCategory": "Software",
+    "expectedPriority": "Critical",
+    "reasoning": "An essential system unavailable to a whole organisation on its deadline day -- Critical."
   }
 ]
