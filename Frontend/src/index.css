@@ -973,3 +973,15 @@ textarea {
   cursor: not-allowed;
   opacity: 0.65;
 }
+/* Marks a value the AI suggested */
+.ai-tag {
+  display: inline-block;
+  margin-left: 8px;
+  padding: 1px 8px;
+  border-radius: 999px;
+  background: #e8f1fb;
+  color: #005a9c;
+  font-size: 0.75rem;
+  font-weight: 600;
+  vertical-align: middle;
+}

@@ -370,7 +370,7 @@ export default function NewTicketPage({
                   updateField('category', event.target.value)
                 }
               >
-                <option value="">Let AI suggest</option>
+                <option value="">Let AI choose (recommended)</option>
 
                 {CATEGORIES.map((category) => (
                   <option key={category} value={category}>
@@ -380,7 +380,8 @@ export default function NewTicketPage({
               </select>
 
               <small style={styles.helper}>
-                AI can recommend a category after submission.
+                Leave this on "Let AI choose" and the AI picks Hardware,
+                Software, Network, Account or Other from your description.
               </small>
             </div>
 

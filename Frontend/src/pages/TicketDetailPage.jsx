@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import SlaTargets from '../components/SlaTargets';
+import { AI_CHOICE, priorityLabel } from '../utils/priority';
 
 const STATUSES = [
   'Open',
@@ -331,6 +332,63 @@ export default function TicketDetailPage({
     setEditError('');
     setEditSaving(true);
 
+    const aiCategory = editCategory === AI_CHOICE;
+    const aiPriority = editPriority === AI_CHOICE;
+
+    try {
+      const token = localStorage.getItem('token');
+
+      const send = async (url, method, body) => {
+        const response = await fetch(url, {
+          method,
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
+          },
+          ...(body && { body: JSON.stringify(body) }),
+        });
+        const data = await response.json();
+        if (!response.ok) {
+          throw new Error(data.message || 'Could not save changes.');
+        }
+        return data;
+      };
+
+      // Save the text first, so the AI reads the new description.
+      await send(`http://localhost:4000/tickets/${ticketId}`, 'PATCH', {
+        title: editTitle.trim(),
+        description: editDescription.trim(),
+        ...(!aiCategory && { category: editCategory }),
+        ...(!aiPriority && { priority: editPriority }),
+        room: editRoom.trim(),
+      });
+
+      // "Let AI choose": run the AI, then use what it picked.
+      if (aiCategory || aiPriority) {
+        const { ticket: analysed } = await send(
+          `http://localhost:4000/tickets/${ticketId}/ai-analyze`,
+          'POST'
+        );
+
+        await send(`http://localhost:4000/tickets/${ticketId}`, 'PATCH', {
+          ...(aiCategory && { category: analysed.aiCategory }),
+          ...(aiPriority && { priority: analysed.aiPriority }),
+        });
+      }
+
+      setEditing(false);
+      await loadEverything();
+    } catch (saveError) {
+      setEditError(saveError.message);
+    } finally {
+      setEditSaving(false);
+    }
+  }
+
+  async function handleUseAiSuggestion() {
+    setActionError('');
+    setAnalyzing(true);
+
     try {
       const token = localStorage.getItem('token');
 
@@ -343,11 +401,8 @@ export default function TicketDetailPage({
             Authorization: `Bearer ${token}`,
           },
           body: JSON.stringify({
-            title: editTitle.trim(),
-            description: editDescription.trim(),
-            category: editCategory,
-            priority: editPriority,
-            room: editRoom.trim(),
+            ...(ticket.aiCategory && { category: ticket.aiCategory }),
+            ...(ticket.aiPriority && { priority: ticket.aiPriority }),
           }),
         }
       );
@@ -355,17 +410,14 @@ export default function TicketDetailPage({
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(
-          data.message || 'Could not save changes.'
-        );
+        throw new Error(data.message || 'Could not apply the AI suggestion.');
       }
 
-      setEditing(false);
       await loadEverything();
-    } catch (saveError) {
-      setEditError(saveError.message);
+    } catch (applyError) {
+      setActionError(applyError.message);
     } finally {
-      setEditSaving(false);
+      setAnalyzing(false);
     }
   }
 
@@ -566,7 +618,12 @@ export default function TicketDetailPage({
               <dl className="ticket-information-list">
                 <div>
                   <dt>Priority</dt>
-                  <dd>{ticket.priority}</dd>
+                  <dd>
+                    {priorityLabel(ticket.priority, ticket.priorityLevel)}
+                    {ticket.aiPriority && ticket.priority === ticket.aiPriority && (
+                      <span className="ai-tag">AI suggested</span>
+                    )}
+                  </dd>
                 </div>
 
                 <div>
@@ -578,7 +635,12 @@ export default function TicketDetailPage({
 
                 <div>
                   <dt>Category</dt>
-                  <dd>{ticket.category}</dd>
+                  <dd>
+                    {ticket.category}
+                    {ticket.aiCategory && ticket.category === ticket.aiCategory && (
+                      <span className="ai-tag">AI suggested</span>
+                    )}
+                  </dd>
                 </div>
 
                 <div>
@@ -692,6 +754,9 @@ export default function TicketDetailPage({
                       setEditCategory(event.target.value)
                     }
                   >
+                    {isStaff && (
+                      <option value={AI_CHOICE}>Let AI choose</option>
+                    )}
                     {CATEGORIES.map((category) => (
                       <option key={category} value={category}>
                         {category}
@@ -711,9 +776,12 @@ export default function TicketDetailPage({
                       setEditPriority(event.target.value)
                     }
                   >
+                    {isStaff && (
+                      <option value={AI_CHOICE}>Let AI choose</option>
+                    )}
                     {PRIORITIES.map((priority) => (
                       <option key={priority} value={priority}>
-                        {priority}
+                        {priorityLabel(priority)}
                       </option>
                     ))}
                   </select>
@@ -882,8 +950,24 @@ export default function TicketDetailPage({
 
           <p>
             <strong>Suggested priority:</strong>{' '}
-            {ticket.aiPriority || 'Not available'}
+            {ticket.aiPriority
+              ? priorityLabel(ticket.aiPriority, ticket.aiPriorityLevel)
+              : 'Not available'}
           </p>
+
+          {isStaff &&
+            (ticket.aiCategory || ticket.aiPriority) &&
+            (ticket.category !== ticket.aiCategory ||
+              ticket.priority !== ticket.aiPriority) && (
+              <button
+                type="button"
+                className="ticket-secondary-button"
+                disabled={analyzing}
+                onClick={handleUseAiSuggestion}
+              >
+                Use AI suggestion
+              </button>
+            )}
 
           {ticket.aiSuggestedResponse && (
             <div className="ticket-ai-response">
