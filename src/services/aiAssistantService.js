@@ -23,8 +23,41 @@ const { ask } = require('./rag/ragService');
 function suggestCategory(sources) {
   return sources.length ? sources[0].category : null;
 }
+function validateConversationHistory(history) {
+  if (!Array.isArray(history)) {
+    const error = new Error('Conversation history must be an array.');
+    error.statusCode = 400;
+    throw error;
+  }
 
-async function assistUser(question) {
+  if (history.length > 10) {
+    const error = new Error('Conversation history cannot contain more than 10 messages.');
+    error.statusCode = 400;
+    throw error;
+  }
+
+  return history.map((message) => {
+    if (
+      !message ||
+      !['user', 'assistant'].includes(message.role) ||
+      typeof message.content !== 'string' ||
+      !message.content.trim() ||
+      message.content.length > 2000
+    ) {
+      const error = new Error('Invalid conversation history message.');
+      error.statusCode = 400;
+      throw error;
+    }
+
+    return {
+      role: message.role,
+      content: message.content.trim(),
+    };
+  });
+}
+async function assistUser(question, conversationHistory = []) {
+    const validatedHistory = validateConversationHistory(conversationHistory);
+
   if (typeof question !== 'string' || !question.trim()) {
     const error = new Error('A non-empty IT question is required.');
     error.statusCode = 400;
@@ -33,7 +66,9 @@ async function assistUser(question) {
 
   const cleanQuestion = question.trim();
 
-  const result = await ask(cleanQuestion);
+  const result = await ask(cleanQuestion, {
+  conversationHistory: validatedHistory,
+});
 
   const best = result.sources.length ? result.sources[0] : null;
 

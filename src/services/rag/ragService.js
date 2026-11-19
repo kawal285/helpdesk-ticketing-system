@@ -64,14 +64,27 @@ function summariseWebSources(results) {
 async function ask(question, options = {}) {
   const started = Date.now();
 
+    // Include recent user questions when searching for follow-up answers.
+  const previousUserQuestions = (options.conversationHistory || [])
+    .filter((message) => message.role === 'user')
+    .slice(-2)
+    .map((message) => message.content);
+
+  const searchQuestion = [
+    ...previousUserQuestions,
+    question,
+  ].join('\n');
+
   const [retrieval, web] =
     options.webSearch === false
-      ? [await retrieve(question, options), { results: [], provider: 'none' }]
+      ? [
+          await retrieve(searchQuestion, options),
+          { results: [], provider: 'none' },
+        ]
       : await Promise.all([
-          retrieve(question, options),
-          webSearchService.search(question),
+          retrieve(searchQuestion, options),
+          webSearchService.search(searchQuestion),
         ]);
-
   const hasKb = retrieval.hasRelevantContext;
   const hasWeb = web.results.length > 0;
 
@@ -91,7 +104,12 @@ async function ask(question, options = {}) {
     };
   }
 
-  const messages = buildMessages(question, retrieval.relevant, web.results);
+  const messages = buildMessages(
+  question,
+  retrieval.relevant,
+  web.results,
+  options.conversationHistory || []
+);
   const answer = await generate(messages);
 
   return {

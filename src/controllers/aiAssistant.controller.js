@@ -5,7 +5,7 @@ const {
 } = require('../services/aiAssistantService');
 
 const askAssistant = catchAsync(async (req, res, next) => {
-  const { question } = req.body;
+  const { question, conversationHistory = [] } = req.body;
 
   if (typeof question !== 'string' || !question.trim()) {
     return next(
@@ -13,7 +13,7 @@ const askAssistant = catchAsync(async (req, res, next) => {
     );
   }
 
-  const result = await assistUser(question);
+ const result = await assistUser(question, conversationHistory);
 
   return res.status(200).json({
     assistant: result,

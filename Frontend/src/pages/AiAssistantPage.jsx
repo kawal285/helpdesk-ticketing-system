@@ -112,7 +112,15 @@ export default function AiAssistantPage({ user, onCreateTicket }) {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${localStorage.getItem('token')}`,
         },
-        body: JSON.stringify({ question: trimmed }),
+       body: JSON.stringify({
+  question: trimmed,
+  conversationHistory: turns
+    .flatMap((turn) => [
+      { role: 'user', content: turn.question },
+      { role: 'assistant', content: turn.assistant.answer },
+    ])
+    .slice(-10),
+}),
       });
 
       const data = await response.json();
