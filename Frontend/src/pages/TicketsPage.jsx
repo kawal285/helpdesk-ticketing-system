@@ -56,6 +56,8 @@ export default function TicketsPage({
   const [priorityFilter, setPriorityFilter] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("");
   const [overdueOnly, setOverdueOnly] = useState(false);
+  // Staff work queue: most urgent first (P1 to P4), done on the server.
+  const [sortBy, setSortBy] = useState("priority");
   const [agentFilter, setAgentFilter] = useState("");
   const [organizationFilter, setOrganizationFilter] = useState("");
 
@@ -111,6 +113,10 @@ export default function TicketsPage({
       params.set("organization", organizationFilter);
     }
 
+    if (isStaff) {
+      params.set("sort", sortBy);
+    }
+
     // Both endpoints apply the agent/organization filters on the server.
     const base =
       overdueOnly && isStaff
@@ -137,7 +143,7 @@ export default function TicketsPage({
     } finally {
       setLoading(false);
     }
-  }, [overdueOnly, agentFilter, organizationFilter, isAdmin, isStaff]);
+  }, [overdueOnly, agentFilter, organizationFilter, isAdmin, isStaff, sortBy]);
 
   useEffect(() => {
     loadTickets();
@@ -419,6 +425,20 @@ export default function TicketsPage({
                 />
                 Show overdue only
               </label>
+
+              {isStaff && !overdueOnly && (
+                <label style={{ fontSize: 14 }}>
+                  Order:{" "}
+                  <select
+                    value={sortBy}
+                    onChange={(event) => setSortBy(event.target.value)}
+                    aria-label="Order tickets by"
+                  >
+                    <option value="priority">Most urgent first (P1 to P4)</option>
+                    <option value="newest">Newest first</option>
+                  </select>
+                </label>
+              )}
 
               {isAdmin && (
                 <label style={{ fontSize: 14 }}>

@@ -13,6 +13,40 @@
 const { Op, Transaction } = require('sequelize');
 const { Ticket, User, sequelize } = require('../../models');
 const { pickLeastBusyAgent } = require('../routingService');
+const { PRIORITIES } = require('../../utils/ticketFields');
+
+// Most urgent first: Critical (P1) ... Trivial. Built from the fixed
+// PRIORITIES list, never from request input, so the literal is safe.
+const PRIORITY_RANK = sequelize.literal(
+  `FIELD(\`Ticket\`.\`priority\`, ${[...PRIORITIES]
+    .reverse()
+    .map((p) => sequelize.escape(p))
+    .join(', ')})`
+);
+const FINISHED_LAST = sequelize.literal(
+  "CASE WHEN `Ticket`.`status` IN ('Resolved', 'Closed') THEN 1 ELSE 0 END"
+);
+
+// sort = 'priority' is the agent work queue: open tickets first, then
+// P1 to P4, then the closest resolution deadline, then the oldest.
+// sort = 'newest' (the default) is newest first.
+// createdAt only has second-level precision, so ties are common under
+// fast/concurrent creation; id as a final key keeps pagination stable
+// instead of leaving tied rows in an arbitrary order that can shift
+// between requests.
+const ORDERS = {
+  newest: [
+    ['createdAt', 'DESC'],
+    ['id', 'DESC'],
+  ],
+  priority: [
+    [FINISHED_LAST, 'ASC'],
+    [PRIORITY_RANK, 'ASC'],
+    ['dueAt', 'ASC'],
+    ['createdAt', 'ASC'],
+    ['id', 'ASC'],
+  ],
+};
 
 const personIncludes = [
   {
@@ -76,17 +110,10 @@ async function getTicketById(id) {
   return ticket ? ticket.get({ plain: true }) : null;
 }
 
-async function listTickets(filter, { limit, offset } = {}) {
+async function listTickets(filter, { limit, offset, sort } = {}) {
   const { rows, count } = await Ticket.findAndCountAll({
     where: buildWhere(filter),
-    // createdAt only has second-level precision, so ties are common under
-    // fast/concurrent creation; id as a secondary key keeps pagination
-    // stable instead of leaving tied rows in an arbitrary order that can
-    // shift between requests.
-    order: [
-      ['createdAt', 'DESC'],
-      ['id', 'DESC'],
-    ],
+    order: ORDERS[sort] || ORDERS.newest,
     limit,
     offset,
     include: summaryIncludes,

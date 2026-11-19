@@ -8,6 +8,8 @@ const {
 const { STATUSES } = require('../utils/ticketStatus');
 const { ORGANIZATIONS } = require('../utils/organizations');
 
+const SORTS = ['priority', 'newest'];
+
 // A priority can be sent as its name ("High") or its level ("P2"); a level
 // is stored as the matching name (P4 is stored as Low).
 const priorityBody = () =>
@@ -41,6 +43,7 @@ const createTicketValidator = [
 const listTicketsValidator = [
   query('status').optional().isIn(STATUSES).withMessage(`status must be one of ${STATUSES.join(', ')}`),
   query('priority').optional().isIn(PRIORITIES).withMessage(`priority must be one of ${PRIORITIES.join(', ')}`),
+  query('sort').optional().isIn(SORTS).withMessage(`sort must be one of ${SORTS.join(', ')}`),
   query('category').optional().isIn(CATEGORIES).withMessage(`category must be one of ${CATEGORIES.join(', ')}`),
   query('organization')
     .optional()

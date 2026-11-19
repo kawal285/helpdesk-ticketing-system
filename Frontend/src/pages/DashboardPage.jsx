@@ -878,6 +878,11 @@ export default function DashboardPage({
 
         {isStaff && !loading && !error && tickets.length > 0 && (
           <div style={{ overflowX: 'auto' }}>
+            <p style={{ margin: '0 0 10px', color: '#5f6878', fontSize: 14 }}>
+              {overdueOnly
+                ? 'Overdue tickets, the most overdue first.'
+                : 'Your queue, most urgent first (P1 to P4), then the nearest deadline.'}
+            </p>
             <table
               style={{
                 width: '100%',

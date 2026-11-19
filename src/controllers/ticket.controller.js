@@ -246,10 +246,16 @@ const listTickets = catchAsync(
       ...queryFilters(req.query, ['status']),
     };
 
+    // Staff get their work queue (most urgent first) unless they ask
+    // otherwise; customers see their newest tickets first.
+    const isStaff = req.user.role === 'agent' || req.user.role === 'admin';
+    const sort = req.query.sort || (isStaff ? 'priority' : 'newest');
+
     const { rows, count } =
       await getProvider().listTickets(filter, {
         limit,
         offset: (page - 1) * limit,
+        sort,
       });
 
     res.status(200).json({
@@ -257,6 +263,7 @@ const listTickets = catchAsync(
       total: count,
       page,
       limit,
+      sort,
     });
   }
 );

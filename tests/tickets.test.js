@@ -530,7 +530,7 @@ describe('ticket organization', () => {
     const fsTicket = await createTicketAs(fsCustomer, { title: 'FS ticket' });
     const opTicket = await createTicketAs(opCustomer, { title: 'OP ticket' });
 
-    const unfiltered = await request(app).get('/tickets').set('Authorization', `Bearer ${adminToken}`);
+    const unfiltered = await request(app).get('/tickets?sort=newest').set('Authorization', `Bearer ${adminToken}`);
     expect(unfiltered.status).toBe(200);
     const ids = unfiltered.body.tickets.map((t) => t.id);
     expect(ids).toEqual(expect.arrayContaining([fsTicket.body.ticket.id, opTicket.body.ticket.id]));

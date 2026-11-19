@@ -6,7 +6,9 @@
 //
 //   createTicket(data)                    -> Ticket
 //   getTicketById(id)                     -> Ticket | null
-//   listTickets(filter, {limit, offset})  -> { rows: Ticket[], count }
+//   listTickets(filter, {limit, offset, sort})  -> { rows: Ticket[], count }
+//     sort: 'newest' (default) or 'priority' (open first, P1 to P4,
+//     then nearest deadline)
 //   getOverdueTickets(filter)             -> Ticket[]
 //   updateTicket(id, changes)             -> Ticket | null
 //
