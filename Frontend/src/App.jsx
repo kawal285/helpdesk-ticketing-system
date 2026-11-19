@@ -10,6 +10,7 @@ import TicketDetailPage from "./pages/TicketDetailPage";
 import AdminUsersPage from "./pages/AdminUsersPage";
 import AiAssistantPage from "./pages/AiAssistantPage";
 import ReportPage from "./pages/ReportPage";
+import KnowledgeGapsPage from "./pages/KnowledgeGapsPage";
 import SettingsPage from "./pages/SettingsPage";
 import AccountPage from "./pages/AccountPage";
 import Sidebar from "./components/Sidebar";
@@ -253,6 +254,8 @@ function App() {
       content = <AdminUsersPage onBack={() => handleNavigate("dashboard")} />;
     } else if (view === "report") {
       content = <ReportPage />;
+    } else if (view === "knowledgeGaps") {
+      content = <KnowledgeGapsPage />;
     } else if (view === "settings") {
       content = <SettingsPage />;
     } else if (view === "tickets") {

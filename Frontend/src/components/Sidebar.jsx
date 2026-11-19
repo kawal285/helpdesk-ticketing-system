@@ -26,6 +26,11 @@ const NAV_ITEMS = [
     roles: ['admin'],
   },
   {
+    key: 'knowledgeGaps',
+    label: 'Knowledge Gaps',
+    roles: ['admin'],
+  },
+  {
     key: 'settings',
     label: 'Settings',
     roles: ['admin'],
