@@ -77,7 +77,10 @@ async function assistUser(question, options = {}) {
       ? true
       : result.smallTalk
         ? false
-        : !result.grounded,
+        : !result.grounded || result.lowConfidence === true,
+
+    // The answer is only a weak match: show "Needs human check".
+    needsHumanCheck: result.lowConfidence === true,
 
     // Lets the frontend show a distinct, more urgent treatment than the
     // ordinary "couldn't find anything" refusal.

@@ -85,6 +85,7 @@ function buildWhere(filter = {}) {
   if (filter.priority !== undefined) where.priority = filter.priority;
   if (filter.category !== undefined) where.category = filter.category;
   if (filter.organization !== undefined) where.organization = filter.organization;
+  if (filter.needsHumanCheck !== undefined) where.needsHumanCheck = filter.needsHumanCheck;
   if (filter.dueBefore !== undefined) where.dueAt = { [Op.lt]: filter.dueBefore };
   if (filter.statusNotIn !== undefined) where.status = { [Op.notIn]: filter.statusNotIn };
 

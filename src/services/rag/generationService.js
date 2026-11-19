@@ -50,6 +50,23 @@ function generate(messages, options = {}) {
   return provider.generate(messages, options);
 }
 
+/*
+ * Like generate, but also returns the token probabilities when the
+ * provider can give them (local Ollama). Other providers return
+ * tokens: null, which means "confidence unknown", never "low".
+ */
+async function generateWithConfidence(messages, options = {}) {
+  if (!Array.isArray(messages) || !messages.length) {
+    throw new Error('generateWithConfidence requires a non-empty messages array.');
+  }
+
+  if (typeof provider.generateWithLogprobs === 'function') {
+    return provider.generateWithLogprobs(messages, options);
+  }
+
+  return { content: await provider.generate(messages, options), tokens: null };
+}
+
 function providerFor(name) {
   const found = providers[name];
 
@@ -137,4 +154,4 @@ async function generateWithAgent(agent, messages, options = {}) {
   }
 }
 
-module.exports = { generate, generateWithAgent, getModelInfo };
+module.exports = { generate, generateWithConfidence, generateWithAgent, getModelInfo };

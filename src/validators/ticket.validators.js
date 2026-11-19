@@ -43,6 +43,7 @@ const createTicketValidator = [
 const listTicketsValidator = [
   query('status').optional().isIn(STATUSES).withMessage(`status must be one of ${STATUSES.join(', ')}`),
   query('priority').optional().isIn(PRIORITIES).withMessage(`priority must be one of ${PRIORITIES.join(', ')}`),
+  query('needsHumanCheck').optional().isIn(['true', 'false']).withMessage('needsHumanCheck must be true or false'),
   query('sort').optional().isIn(SORTS).withMessage(`sort must be one of ${SORTS.join(', ')}`),
   query('category').optional().isIn(CATEGORIES).withMessage(`category must be one of ${CATEGORIES.join(', ')}`),
   query('organization')
@@ -68,6 +69,7 @@ const updateTicketValidator = [
   body('description').optional().trim().notEmpty().withMessage('description cannot be empty'),
   body('category').optional().isIn(CATEGORIES).withMessage(`category must be one of ${CATEGORIES.join(', ')}`),
   priorityBody(),
+  body('needsHumanCheck').optional().isBoolean({ strict: true }).withMessage('needsHumanCheck must be true or false'),
   body('status').optional().isIn(STATUSES).withMessage(`status must be one of ${STATUSES.join(', ')}`),
   body('assigneeId')
     .optional({ nullable: true })

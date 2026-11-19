@@ -2,6 +2,7 @@ const catchAsync = require('../utils/catchAsync');
 const AppError = require('../utils/appError');
 const { computeTicketDueDates } = require('../services/slaTargetService');
 const { withSla, summariseSla, addToSlaSummary } = require('../utils/sla');
+const { humanCheckReasons } = require('../utils/aiConfidence');
 const { DEFAULT_PRIORITY } = require('../utils/ticketFields');
 
 const {
@@ -138,6 +139,14 @@ const createTicket = catchAsync(
     const finalPriority =
       priority || ai.priority || DEFAULT_PRIORITY;
 
+    // "I'm not sure" handoff: if the AI was unsure of a value it chose
+    // (or couldn't classify the ticket), don't trust it silently -- mark
+    // the ticket for a person to check. A value the customer picked
+    // themselves isn't the AI's guess, so its confidence doesn't count.
+    const handoffReasons = humanCheckReasons(ai, {
+      aiDecided: { priority: !priority, category: !category },
+    });
+
     // Start the clock after the AI calls, as close to the insert as possible,
     // so the deadlines line up with the stored createdAt.
     const createdAt = new Date();
@@ -161,6 +170,11 @@ const createTicket = catchAsync(
       aiAnalyzedAt: aiSucceeded
         ? new Date()
         : null,
+
+      aiPriorityConfidence: ai.priorityConfidence ?? null,
+      aiCategoryConfidence: ai.categoryConfidence ?? null,
+      needsHumanCheck: handoffReasons.length > 0,
+      humanCheckReasons: handoffReasons.length > 0 ? handoffReasons : null,
 
       emotion: emotionAnalysis.emotion,
       emotionReason: emotionAnalysis.reason,
@@ -229,7 +243,52 @@ function queryFilters(query, extra = []) {
   ['priority', 'category', 'organization', 'assigneeId', ...extra].forEach((key) => {
     if (query[key]) filter[key] = query[key];
   });
+  if (query.needsHumanCheck === 'true') filter.needsHumanCheck = true;
   return filter;
+}
+
+/*
+ * What happens to the "Needs human check" flag when staff update a
+ * ticket. Staff clear it by setting the priority or category, or by
+ * sending needsHumanCheck: false ("Mark as checked"). The outcome says
+ * whether they kept the AI's answer ('confirmed') or changed it
+ * ('changed') -- that's how we know if handing it over was worth it.
+ * Staff can also flag a ticket by hand with needsHumanCheck: true.
+ */
+function humanCheckChanges(ticket, user, { needsHumanCheck, priority, category }) {
+  const isStaff = user.role === 'agent' || user.role === 'admin';
+  if (!isStaff) return {};
+
+  if (needsHumanCheck === true) {
+    const reasons = ticket.humanCheckReasons || [];
+    return {
+      needsHumanCheck: true,
+      humanCheckReasons: reasons.includes('flagged_by_staff') ? reasons : [...reasons, 'flagged_by_staff'],
+      humanCheckedAt: null,
+      humanCheckedById: null,
+      humanCheckOutcome: null,
+    };
+  }
+
+  const checking =
+    ticket.needsHumanCheck &&
+    (needsHumanCheck === false || priority !== undefined || category !== undefined);
+  if (!checking) return {};
+
+  const finalPriority = priority ?? ticket.priority;
+  const finalCategory = category ?? ticket.category;
+  const keptAi =
+    ticket.aiPriority != null &&
+    ticket.aiCategory != null &&
+    finalPriority === ticket.aiPriority &&
+    finalCategory === ticket.aiCategory;
+
+  return {
+    needsHumanCheck: false,
+    humanCheckedAt: new Date(),
+    humanCheckedById: user.id,
+    humanCheckOutcome: keptAi ? 'confirmed' : 'changed',
+  };
 }
 
 const listTickets = catchAsync(
@@ -332,6 +391,54 @@ const getSlaSummary = catchAsync(
 
 // Open tickets that look like the same problem, for staff to link as
 // duplicates. Only tickets the user can already see are compared.
+// How often tickets were handed to a person, why, and -- for the ones
+// staff have checked -- whether the AI's answer was kept or changed.
+const HANDOFF_BATCH = 500;
+
+const getHandoffSummary = catchAsync(
+  async (req, res) => {
+    const summary = {
+      total: 0,
+      handedOff: 0,
+      waiting: 0,
+      checked: 0,
+      confirmed: 0,
+      changed: 0,
+      reasons: {},
+    };
+    const scope = ticketScopeForUser(req.user);
+
+    if (scope) {
+      for (let offset = 0; ; offset += HANDOFF_BATCH) {
+        const { rows } = await getProvider().listTickets(
+          { ...scope, ...queryFilters(req.query) },
+          { limit: HANDOFF_BATCH, offset, sort: 'newest' }
+        );
+
+        rows.forEach((t) => {
+          summary.total += 1;
+          const reasons = t.humanCheckReasons || [];
+          if (!t.needsHumanCheck && reasons.length === 0) return;
+
+          summary.handedOff += 1;
+          reasons.forEach((r) => {
+            summary.reasons[r] = (summary.reasons[r] || 0) + 1;
+          });
+          if (t.needsHumanCheck) summary.waiting += 1;
+          if (t.humanCheckOutcome) {
+            summary.checked += 1;
+            summary[t.humanCheckOutcome] += 1;
+          }
+        });
+
+        if (rows.length < HANDOFF_BATCH) break;
+      }
+    }
+
+    res.status(200).json({ summary });
+  }
+);
+
 const getSimilarTickets = catchAsync(
   async (req, res, next) => {
     const ticket = await loadAccessibleTicket(req, next);
@@ -387,6 +494,7 @@ const updateTicket = catchAsync(
       assigneeId,
       room,
       parentCaseId,
+      needsHumanCheck,
     } = req.body;
 
     const isStaff =
@@ -395,7 +503,8 @@ const updateTicket = catchAsync(
 
     if (
       (status !== undefined ||
-        assigneeId !== undefined) &&
+        assigneeId !== undefined ||
+        needsHumanCheck !== undefined) &&
       !isStaff
     ) {
       return next(
@@ -508,6 +617,15 @@ const updateTicket = catchAsync(
         changes.assigneeId = assigneeId;
       }
     }
+
+    Object.assign(
+      changes,
+      humanCheckChanges(ticket, req.user, {
+        needsHumanCheck,
+        priority: changes.priority,
+        category: changes.category,
+      })
+    );
 
     const updatedTicket = await getProvider().updateTicket(ticket.id, changes);
 
@@ -779,6 +897,7 @@ module.exports = {
   getOverdueTickets,
   getSlaSummary,
   getSimilarTickets,
+  getHandoffSummary,
   getTicket,
   updateTicket,
   updateTicketStatus,

@@ -5,6 +5,7 @@ const {
   getOverdueTickets,
   getSlaSummary,
   getSimilarTickets,
+  getHandoffSummary,
   getTicket,
   updateTicket,
   updateTicketStatus,
@@ -34,6 +35,13 @@ router.get('/', listTicketsValidator, validate, listTickets);
 // Same filter validation as the list (status, page and limit are ignored here).
 router.get('/overdue', listTicketsValidator, validate, getOverdueTickets);
 router.get('/sla-summary', listTicketsValidator, validate, getSlaSummary);
+router.get(
+  '/handoff-summary',
+  authorize('agent', 'admin'),
+  listTicketsValidator,
+  validate,
+  getHandoffSummary
+);
 router.get('/:id', ticketIdValidator, validate, getTicket);
 router.get(
   '/:id/similar',

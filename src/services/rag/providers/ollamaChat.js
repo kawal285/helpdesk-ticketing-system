@@ -55,7 +55,8 @@ const KEEP_ALIVE = process.env.OLLAMA_KEEP_ALIVE || '30m';
  */
 const NUM_CTX = Number(process.env.OLLAMA_NUM_CTX) || null;
 
-async function generate(messages, overrides = {}) {
+// Calls the chat API and returns Ollama's full JSON reply.
+async function callChat(messages, overrides = {}, { logprobs = false } = {}) {
   // eslint-disable-next-line no-unused-vars
   const { model, maxTokens, think, reasoningEffort, ...ollamaOptions } = overrides;
   const useModel = model || modelName;
@@ -74,6 +75,7 @@ async function generate(messages, overrides = {}) {
         messages,
         stream: false,
         keep_alive: KEEP_ALIVE,
+        ...(logprobs ? { logprobs: true, top_logprobs: 3 } : {}),
         options: {
           temperature,
           num_predict: maxTokens || MAX_TOKENS,
@@ -112,7 +114,25 @@ async function generate(messages, overrides = {}) {
     throw new Error('Ollama returned an empty response.');
   }
 
-  return content.trim();
+  return data;
 }
 
-module.exports = { name: `ollama:${modelName}`, generate };
+async function generate(messages, overrides = {}) {
+  const data = await callChat(messages, overrides);
+  return data.message.content.trim();
+}
+
+/*
+ * Same as generate, plus how likely the model thought each token was.
+ * content is NOT trimmed, so token positions line up with it. Used to
+ * tell how sure the model was of a ticket's priority and category.
+ */
+async function generateWithLogprobs(messages, overrides = {}) {
+  const data = await callChat(messages, overrides, { logprobs: true });
+  return {
+    content: data.message.content,
+    tokens: Array.isArray(data.logprobs) ? data.logprobs : null,
+  };
+}
+
+module.exports = { name: `ollama:${modelName}`, generate, generateWithLogprobs };

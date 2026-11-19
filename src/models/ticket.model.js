@@ -111,6 +111,42 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.INTEGER,
         allowNull: true,
       },
+
+      // "Needs human check" handoff (utils/aiConfidence.js).
+      needsHumanCheck: {
+        type: DataTypes.BOOLEAN,
+        allowNull: false,
+        defaultValue: false,
+      },
+      humanCheckReasons: {
+        type: DataTypes.JSON,
+        allowNull: true,
+        // MariaDB returns JSON columns as strings.
+        get() {
+          const value = this.getDataValue('humanCheckReasons');
+          return typeof value === 'string' ? JSON.parse(value) : value;
+        },
+      },
+      aiPriorityConfidence: {
+        type: DataTypes.FLOAT,
+        allowNull: true,
+      },
+      aiCategoryConfidence: {
+        type: DataTypes.FLOAT,
+        allowNull: true,
+      },
+      humanCheckedAt: {
+        type: DataTypes.DATE,
+        allowNull: true,
+      },
+      humanCheckedById: {
+        type: DataTypes.INTEGER,
+        allowNull: true,
+      },
+      humanCheckOutcome: {
+        type: DataTypes.ENUM('confirmed', 'changed'),
+        allowNull: true,
+      },
     },
     {
       tableName: 'tickets',

@@ -198,6 +198,17 @@ function summariseWebSources(results) {
  * retrieval rather than after it, so a slow web search doesn't add to a
  * fast KB answer's latency on top of its own.
  */
+// How far above the retrieval threshold a match must be to count as a
+// confident answer.
+const DEFAULT_LOW_CONFIDENCE_MARGIN = 0.05;
+
+function lowConfidenceMargin() {
+  const value = Number(process.env.RAG_LOW_CONFIDENCE_MARGIN);
+  return value >= 0 && value < 1 && process.env.RAG_LOW_CONFIDENCE_MARGIN !== undefined
+    ? value
+    : DEFAULT_LOW_CONFIDENCE_MARGIN;
+}
+
 async function ask(rawQuestion, options = {}) {
   const started = Date.now();
 
@@ -321,10 +332,21 @@ async function ask(rawQuestion, options = {}) {
     ? safety.safeFallbackForDangerousAdvice()
     : safety.redactSecrets(rawAnswer);
 
+  // "I'm not sure" handoff: the best knowledge-base match only just
+  // cleared the threshold and no web result backs it up. The answer is
+  // still shown, but marked "Needs human check" with a ticket offered,
+  // instead of being presented as a sure answer. See
+  // docs/ai-handoff-evaluation.md for how the margin was chosen.
+  const lowConfidence =
+    !dangerousAdvice &&
+    !hasWeb &&
+    retrieval.topScore < retrieval.threshold + lowConfidenceMargin();
+
   return {
     answer,
     grounded: true,
     escalated: dangerousAdvice,
+    lowConfidence,
     sources: dangerousAdvice ? [] : [
       ...summariseKbSources(retrieval.relevant),
       ...summariseWebSources(web.results),
