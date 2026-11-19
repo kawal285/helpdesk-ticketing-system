@@ -31,6 +31,10 @@ const {
 
 const { User } = require('../models');
 const { getProvider } = require('../services/ticketProviders');
+const {
+  findSimilarTickets,
+  scheduleIndex,
+} = require('../services/similarTicketService');
 
 /*
  * Loads the ticket in :id through the shared ownership check
@@ -207,6 +211,9 @@ const createTicket = catchAsync(
       });
     }
 
+    // Embed it in the background so similar tickets can be found later.
+    scheduleIndex(ticket);
+
     res.status(201).json({
       ticket: withSla(ticket),
     });
@@ -320,6 +327,28 @@ const getSlaSummary = catchAsync(
     }
 
     res.status(200).json({ summary });
+  }
+);
+
+// Open tickets that look like the same problem, for staff to link as
+// duplicates. Only tickets the user can already see are compared.
+const getSimilarTickets = catchAsync(
+  async (req, res, next) => {
+    const ticket = await loadAccessibleTicket(req, next);
+    if (!ticket) return;
+
+    try {
+      const result = await findSimilarTickets(ticket, req.user);
+      res.status(200).json(result);
+    } catch (error) {
+      console.warn(`[similar-tickets] search failed: ${error.message}`);
+      return next(
+        new AppError(
+          'Similar ticket search is unavailable right now. Please try again later.',
+          503
+        )
+      );
+    }
   }
 );
 
@@ -481,6 +510,10 @@ const updateTicket = catchAsync(
     }
 
     const updatedTicket = await getProvider().updateTicket(ticket.id, changes);
+
+    if (changes.title !== undefined || changes.description !== undefined) {
+      scheduleIndex(updatedTicket);
+    }
 
     if (
       status !== undefined &&
@@ -745,6 +778,7 @@ module.exports = {
   listTickets,
   getOverdueTickets,
   getSlaSummary,
+  getSimilarTickets,
   getTicket,
   updateTicket,
   updateTicketStatus,

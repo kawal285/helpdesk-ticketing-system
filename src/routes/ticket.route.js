@@ -4,6 +4,7 @@ const {
   listTickets,
   getOverdueTickets,
   getSlaSummary,
+  getSimilarTickets,
   getTicket,
   updateTicket,
   updateTicketStatus,
@@ -34,6 +35,13 @@ router.get('/', listTicketsValidator, validate, listTickets);
 router.get('/overdue', listTicketsValidator, validate, getOverdueTickets);
 router.get('/sla-summary', listTicketsValidator, validate, getSlaSummary);
 router.get('/:id', ticketIdValidator, validate, getTicket);
+router.get(
+  '/:id/similar',
+  authorize('agent', 'admin'),
+  ticketIdValidator,
+  validate,
+  getSimilarTickets
+);
 router.patch('/:id', updateTicketValidator, validate, updateTicket);
 router.patch(
   '/:id/status',
