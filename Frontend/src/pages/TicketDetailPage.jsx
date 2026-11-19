@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import SlaTargets from '../components/SlaTargets';
 import SimilarTickets from '../components/SimilarTickets';
+import HumanCheckBanner from '../components/HumanCheckBanner';
 import { AI_CHOICE, priorityLabel } from '../utils/priority';
 
 const STATUSES = [
@@ -614,6 +615,10 @@ export default function TicketDetailPage({
       <div className="ticket-detail-grid">
         <section className="ticket-detail-card">
           <h2>Case details</h2>
+
+          {isStaff && (
+            <HumanCheckBanner ticket={ticket} onChanged={loadEverything} />
+          )}
 
           {!editing ? (
             <>

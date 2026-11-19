@@ -58,6 +58,7 @@ export default function TicketsPage({
   const [overdueOnly, setOverdueOnly] = useState(false);
   // Staff work queue: most urgent first (P1 to P4), done on the server.
   const [sortBy, setSortBy] = useState("priority");
+  const [needsCheckOnly, setNeedsCheckOnly] = useState(false);
   const [agentFilter, setAgentFilter] = useState("");
   const [organizationFilter, setOrganizationFilter] = useState("");
 
@@ -117,6 +118,10 @@ export default function TicketsPage({
       params.set("sort", sortBy);
     }
 
+    if (isStaff && needsCheckOnly) {
+      params.set("needsHumanCheck", "true");
+    }
+
     // Both endpoints apply the agent/organization filters on the server.
     const base =
       overdueOnly && isStaff
@@ -143,7 +148,7 @@ export default function TicketsPage({
     } finally {
       setLoading(false);
     }
-  }, [overdueOnly, agentFilter, organizationFilter, isAdmin, isStaff, sortBy]);
+  }, [overdueOnly, agentFilter, organizationFilter, isAdmin, isStaff, sortBy, needsCheckOnly]);
 
   useEffect(() => {
     loadTickets();
@@ -426,6 +431,24 @@ export default function TicketsPage({
                 Show overdue only
               </label>
 
+              {isStaff && (
+                <label
+                  style={{
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: 7,
+                    fontSize: 14,
+                  }}
+                >
+                  <input
+                    type="checkbox"
+                    checked={needsCheckOnly}
+                    onChange={(event) => setNeedsCheckOnly(event.target.checked)}
+                  />
+                  Needs human check only
+                </label>
+              )}
+
               {isStaff && !overdueOnly && (
                 <label style={{ fontSize: 14 }}>
                   Order:{" "}
@@ -587,6 +610,11 @@ export default function TicketsPage({
                         whiteSpace: "nowrap",
                       }}
                     >
+                      {ticket.needsHumanCheck && (
+                        <span className="handoff-badge" title="The AI wasn't sure; a person should check this ticket">
+                          Needs check
+                        </span>
+                      )}
                       {ticket.title}
                     </td>
                     <td style={{ padding: 12 }}>

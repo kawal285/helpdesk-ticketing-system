@@ -22,6 +22,8 @@ import {
   Timer,
 } from 'lucide-react';
 
+import { reasonText } from '../utils/handoff';
+
 const API_URL = 'http://localhost:4000';
 
 // Validated categorical palette (dataviz skill, references/palette.md) --
@@ -55,6 +57,7 @@ const ASSIGNMENT_COLOURS = {
 export default function ReportPage() {
   const [tickets, setTickets] = useState([]);
   const [slaCounts, setSlaCounts] = useState(null);
+  const [handoff, setHandoff] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
@@ -70,10 +73,16 @@ export default function ReportPage() {
 
         // Target counts come from the server across all tickets, not just
         // the 100 loaded below for the charts and table.
-        const [response, summaryResponse] = await Promise.all([
+        const [response, summaryResponse, handoffResponse] = await Promise.all([
           fetch(`${API_URL}/tickets?limit=100`, { headers }),
           fetch(`${API_URL}/tickets/sla-summary`, { headers }),
+          fetch(`${API_URL}/tickets/handoff-summary`, { headers }),
         ]);
+
+        // Staff only; the report still loads without it.
+        if (handoffResponse.ok) {
+          setHandoff((await handoffResponse.json()).summary);
+        }
 
         const data = await response.json();
         const summaryData = await summaryResponse.json();
@@ -566,6 +575,48 @@ export default function ReportPage() {
                 </table>
               </div>
             </section>
+
+            {handoff && (
+              <section style={{ ...cardStyle, marginBottom: 24 }}>
+                <h2 style={{ color: '#005a9c', marginTop: 0 }}>
+                  AI handoff ("Needs human check")
+                </h2>
+                <p style={{ margin: '0 0 12px', color: '#5f6878' }}>
+                  When the AI isn't sure of a ticket's priority or category it
+                  hands the ticket to a person instead of guessing. Checked
+                  tickets show whether staff kept or changed the AI's answer.
+                </p>
+                <div style={{ overflowX: 'auto' }}>
+                  <table style={{ width: '100%', minWidth: 520, borderCollapse: 'collapse' }}>
+                    <tbody>
+                      {[
+                        ['Tickets', handoff.total],
+                        [
+                          'Handed to a person',
+                          `${handoff.handedOff}${
+                            handoff.total
+                              ? ` (${Math.round((handoff.handedOff / handoff.total) * 100)}%)`
+                              : ''
+                          }`,
+                        ],
+                        ['Still waiting for a check', handoff.waiting],
+                        ['Checked: AI answer kept', handoff.confirmed],
+                        ['Checked: AI answer changed', handoff.changed],
+                        ...Object.entries(handoff.reasons).map(([reason, count]) => [
+                          `Reason: ${reasonText(reason)}`,
+                          count,
+                        ]),
+                      ].map(([label, value]) => (
+                        <tr key={label} style={{ borderBottom: '1px solid #e2e6ea' }}>
+                          <td style={{ padding: 10 }}>{label}</td>
+                          <td style={{ padding: 10, fontWeight: 700 }}>{value}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </section>
+            )}
 
             <section style={cardStyle}>
               <h2

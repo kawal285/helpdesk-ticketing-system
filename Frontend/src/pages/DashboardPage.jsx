@@ -955,6 +955,11 @@ export default function DashboardPage({
                       }}
                       title={ticket.title}
                     >
+                      {ticket.needsHumanCheck && (
+                        <span className="handoff-badge" title="The AI wasn't sure; a person should check this ticket">
+                          Needs check
+                        </span>
+                      )}
                       {ticket.title}
                     </td>
 

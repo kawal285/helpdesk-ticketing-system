@@ -332,6 +332,8 @@ export default function AiAssistantPage({ user, onCreateTicket }) {
 function AnswerCard({ assistant, user, onCreateTicket, onThinkDeeper, busy }) {
   const grounded = assistant.knowledgeBaseMatch;
   const escalated = Boolean(assistant.safetyEscalation);
+  // A weak match: the answer is shown, but a person should confirm it.
+  const needsCheck = assistant.needsHumanCheck === true && !escalated;
 
   // A greeting is answered without the knowledge base, so it is neither
   // "grounded" nor a refusal -- it gets no category tag, no ticket button
@@ -453,6 +455,14 @@ function AnswerCard({ assistant, user, onCreateTicket, onThinkDeeper, busy }) {
           )}
         </div>
 
+        {needsCheck && (
+          <p className="chat__handoff" role="status">
+            <strong>Needs human check.</strong> I'm not sure this matches your
+            problem, so treat it as a possible fix. If it doesn't help, raise
+            a ticket and a person will look at it.
+          </p>
+        )}
+
         <div className="chat__body">
           <AnswerText text={assistant.answer} />
         </div>
@@ -470,15 +480,21 @@ function AnswerCard({ assistant, user, onCreateTicket, onThinkDeeper, busy }) {
               <button
                 type="button"
                 className={`chat__cta${
-                  escalated ? ' chat__cta--escalated' : grounded ? ' chat__cta--secondary' : ''
+                  escalated
+                    ? ' chat__cta--escalated'
+                    : grounded && !needsCheck
+                      ? ' chat__cta--secondary'
+                      : ''
                 }`}
                 onClick={onCreateTicket}
               >
                 {escalated
                   ? 'Raise a ticket now'
-                  : grounded
-                    ? 'Still stuck? Raise a ticket'
-                    : 'Raise a ticket'}
+                  : needsCheck
+                    ? 'Ask a person (raise a ticket)'
+                    : grounded
+                      ? 'Still stuck? Raise a ticket'
+                      : 'Raise a ticket'}
               </button>
             )}
 
