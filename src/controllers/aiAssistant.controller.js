@@ -3,6 +3,7 @@ const AppError = require('../utils/appError');
 const {
   assistUser,
 } = require('../services/aiAssistantService');
+const { logAssistantAnswer } = require('../services/knowledgeGapService');
 
 const MAX_HISTORY_ITEMS = 2;
 const MAX_HISTORY_LENGTH = 300;
@@ -37,6 +38,10 @@ const askAssistant = catchAsync(async (req, res, next) => {
     // must not be able to switch agents.
     thinkDeeper: req.body.thinkDeeper === true,
   });
+
+  // Every answer is logged; ones the knowledge base could not answer
+  // feed the knowledge-gap report. Logging never fails the request.
+  await logAssistantAnswer(req.user, result);
 
   return res.status(200).json({
     assistant: result,
