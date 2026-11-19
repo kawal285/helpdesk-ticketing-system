@@ -159,7 +159,9 @@ function App() {
     } else if (view === "ticketDetail") {
       content = (
         <TicketDetailPage
+          key={selectedTicketId}
           ticketId={selectedTicketId}
+          onOpenTicket={handleSelectTicket}
           user={loggedInUser}
           onBack={() => handleNavigate("tickets")}
         />
@@ -201,7 +203,9 @@ function App() {
     ) {
       content = (
         <TicketDetailPage
+          key={selectedTicketId}
           ticketId={selectedTicketId}
+          onOpenTicket={handleSelectTicket}
           user={loggedInUser}
           onBack={() => handleNavigate("tickets")}
         />
@@ -238,7 +242,9 @@ function App() {
     ) {
       content = (
         <TicketDetailPage
+          key={selectedTicketId}
           ticketId={selectedTicketId}
+          onOpenTicket={handleSelectTicket}
           user={loggedInUser}
           onBack={() => handleNavigate("tickets")}
         />

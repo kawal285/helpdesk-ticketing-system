@@ -985,3 +985,57 @@ textarea {
   font-weight: 600;
   vertical-align: middle;
 }
+
+/* Similar open tickets (duplicate detection) */
+.similar-tickets-note {
+  margin: 0 0 12px;
+  color: #5f6878;
+  font-size: 0.9rem;
+}
+.similar-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 8px;
+}
+.similar-item {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px 14px;
+  padding: 10px 12px;
+  border: 1px solid #e2e6ea;
+  border-radius: 8px;
+}
+.similar-main {
+  flex: 1 1 260px;
+  min-width: 0;
+  display: grid;
+  gap: 2px;
+}
+.similar-meta {
+  color: #5f6878;
+  font-size: 0.85rem;
+}
+.similar-score {
+  font-weight: 700;
+  color: #005a9c;
+  white-space: nowrap;
+}
+.similar-link-button {
+  background: none;
+  border: none;
+  padding: 0;
+  color: #005a9c;
+  cursor: pointer;
+  text-align: left;
+  font: inherit;
+}
+.similar-title {
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+.similar-linked {
+  margin: 0 0 12px;
+}

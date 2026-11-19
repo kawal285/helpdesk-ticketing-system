@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import SlaTargets from '../components/SlaTargets';
+import SimilarTickets from '../components/SimilarTickets';
 import { AI_CHOICE, priorityLabel } from '../utils/priority';
 
 const STATUSES = [
@@ -110,6 +111,7 @@ export default function TicketDetailPage({
   ticketId,
   user,
   onBack,
+  onOpenTicket,
 }) {
   const [ticket, setTicket] = useState(null);
   const [comments, setComments] = useState([]);
@@ -937,6 +939,14 @@ export default function TicketDetailPage({
             </button>
           </div>
         </section>
+      )}
+
+      {isStaff && (
+        <SimilarTickets
+          ticket={ticket}
+          onOpenTicket={onOpenTicket}
+          onChanged={loadEverything}
+        />
       )}
 
       {ticket.aiAnalyzedAt && (
