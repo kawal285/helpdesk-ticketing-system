@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-18T23:29:53.927Z",
+  "generatedAt": "2026-11-19T00:50:31.939Z",
   "model": "ollama:llama3.2",
   "metrics": {
     "category": {
@@ -119,8 +119,8 @@
         },
         "High": {
           "Critical": 4,
-          "High": 6,
-          "Medium": 1,
+          "High": 5,
+          "Medium": 2,
           "Low": 0,
           "Trivial": 0,
           "(none)": 0
@@ -136,9 +136,9 @@
         "Low": {
           "Critical": 0,
           "High": 0,
-          "Medium": 0,
-          "Low": 6,
-          "Trivial": 0,
+          "Medium": 1,
+          "Low": 4,
+          "Trivial": 1,
           "(none)": 0
         },
         "Trivial": {
@@ -158,44 +158,44 @@
           "support": 7
         },
         "High": {
-          "precision": 0.667,
-          "recall": 0.545,
-          "f1": 0.6,
+          "precision": 0.625,
+          "recall": 0.455,
+          "f1": 0.526,
           "support": 11
         },
         "Medium": {
-          "precision": 0.75,
+          "precision": 0.6,
           "recall": 0.75,
-          "f1": 0.75,
+          "f1": 0.667,
           "support": 8
         },
         "Low": {
-          "precision": 0.545,
-          "recall": 1,
-          "f1": 0.706,
+          "precision": 0.444,
+          "recall": 0.667,
+          "f1": 0.533,
           "support": 6
         },
         "Trivial": {
-          "precision": 1,
+          "precision": 0.667,
           "recall": 0.25,
-          "f1": 0.4,
+          "f1": 0.364,
           "support": 8
         }
       },
-      "accuracy": 0.65,
-      "correct": 26,
+      "accuracy": 0.575,
+      "correct": 23,
       "total": 40,
       "macro": {
-        "precision": 0.712,
-        "recall": 0.68,
-        "f1": 0.632
+        "precision": 0.587,
+        "recall": 0.596,
+        "f1": 0.559
       },
       "weighted": {
-        "precision": 0.72,
-        "recall": 0.65,
-        "f1": 0.624
+        "precision": 0.597,
+        "recall": 0.575,
+        "f1": 0.554
       },
-      "kappa": 0.564,
+      "kappa": 0.47,
       "kappaStrength": "moderate"
     },
     "level": {
@@ -215,8 +215,8 @@
         },
         "P2": {
           "P1": 4,
-          "P2": 6,
-          "P3": 1,
+          "P2": 5,
+          "P3": 2,
           "P4": 0,
           "(none)": 0
         },
@@ -230,8 +230,8 @@
         "P4": {
           "P1": 0,
           "P2": 0,
-          "P3": 1,
-          "P4": 13,
+          "P3": 2,
+          "P4": 12,
           "(none)": 0
         }
       },
@@ -243,43 +243,43 @@
           "support": 7
         },
         "P2": {
-          "precision": 0.667,
-          "recall": 0.545,
-          "f1": 0.6,
+          "precision": 0.625,
+          "recall": 0.455,
+          "f1": 0.526,
           "support": 11
         },
         "P3": {
-          "precision": 0.75,
+          "precision": 0.6,
           "recall": 0.75,
-          "f1": 0.75,
+          "f1": 0.667,
           "support": 8
         },
         "P4": {
           "precision": 1,
-          "recall": 0.929,
-          "f1": 0.963,
+          "recall": 0.857,
+          "f1": 0.923,
           "support": 14
         }
       },
-      "accuracy": 0.775,
-      "correct": 31,
+      "accuracy": 0.725,
+      "correct": 29,
       "total": 40,
       "macro": {
-        "precision": 0.754,
-        "recall": 0.77,
-        "f1": 0.755
+        "precision": 0.706,
+        "recall": 0.73,
+        "f1": 0.706
       },
       "weighted": {
-        "precision": 0.788,
-        "recall": 0.775,
-        "f1": 0.776
+        "precision": 0.747,
+        "recall": 0.725,
+        "f1": 0.725
       },
-      "kappa": 0.696,
+      "kappa": 0.631,
       "kappaStrength": "substantial"
     }
   },
   "categoryAccuracy": 82.5,
-  "priorityAccuracy": 65,
+  "priorityAccuracy": 57.5,
   "total": 40,
   "aiUnavailableCount": 0,
   "results": [
@@ -296,7 +296,10 @@
       "priorityCorrect": false,
       "levelCorrect": false,
       "aiUnavailable": false,
-      "ms": 15876
+      "categoryConfidence": 0.9761,
+      "priorityConfidence": 0.9252,
+      "humanCheckReasons": [],
+      "ms": 4030
     },
     {
       "id": 2,
@@ -311,7 +314,10 @@
       "priorityCorrect": true,
       "levelCorrect": true,
       "aiUnavailable": false,
-      "ms": 3447
+      "categoryConfidence": 0.998,
+      "priorityConfidence": 0.6647,
+      "humanCheckReasons": [],
+      "ms": 3393
     },
     {
       "id": 3,
@@ -326,7 +332,10 @@
       "priorityCorrect": true,
       "levelCorrect": true,
       "aiUnavailable": false,
-      "ms": 3480
+      "categoryConfidence": 0.9985,
+      "priorityConfidence": 0.6771,
+      "humanCheckReasons": [],
+      "ms": 3535
     },
     {
       "id": 4,
@@ -341,7 +350,10 @@
       "priorityCorrect": true,
       "levelCorrect": true,
       "aiUnavailable": false,
-      "ms": 3663
+      "categoryConfidence": 0.9993,
+      "priorityConfidence": 0.5189,
+      "humanCheckReasons": [],
+      "ms": 2326
     },
     {
       "id": 5,
@@ -356,7 +368,12 @@
       "priorityCorrect": true,
       "levelCorrect": true,
       "aiUnavailable": false,
-      "ms": 3469
+      "categoryConfidence": 0.8001,
+      "priorityConfidence": 0.3637,
+      "humanCheckReasons": [
+        "low_priority_confidence"
+      ],
+      "ms": 2458
     },
     {
       "id": 6,
@@ -371,7 +388,10 @@
       "priorityCorrect": true,
       "levelCorrect": true,
       "aiUnavailable": false,
-      "ms": 2667
+      "categoryConfidence": 0.9875,
+      "priorityConfidence": 0.6458,
+      "humanCheckReasons": [],
+      "ms": 3062
     },
     {
       "id": 7,
@@ -386,7 +406,12 @@
       "priorityCorrect": false,
       "levelCorrect": false,
       "aiUnavailable": false,
-      "ms": 2482
+      "categoryConfidence": 0.9985,
+      "priorityConfidence": 0.3465,
+      "humanCheckReasons": [
+        "low_priority_confidence"
+      ],
+      "ms": 2527
     },
     {
       "id": 8,
@@ -401,7 +426,10 @@
       "priorityCorrect": true,
       "levelCorrect": true,
       "aiUnavailable": false,
-      "ms": 2124
+      "categoryConfidence": 0.9918,
+      "priorityConfidence": 0.8781,
+      "humanCheckReasons": [],
+      "ms": 2207
     },
     {
       "id": 9,
@@ -416,7 +444,10 @@
       "priorityCorrect": true,
       "levelCorrect": true,
       "aiUnavailable": false,
-      "ms": 1916
+      "categoryConfidence": 0.8745,
+      "priorityConfidence": 0.9522,
+      "humanCheckReasons": [],
+      "ms": 2035
     },
     {
       "id": 10,
@@ -431,7 +462,10 @@
       "priorityCorrect": true,
       "levelCorrect": true,
       "aiUnavailable": false,
-      "ms": 2567
+      "categoryConfidence": 0.6721,
+      "priorityConfidence": 0.5872,
+      "humanCheckReasons": [],
+      "ms": 3054
     },
     {
       "id": 11,
@@ -446,7 +480,10 @@
       "priorityCorrect": true,
       "levelCorrect": true,
       "aiUnavailable": false,
-      "ms": 2628
+      "categoryConfidence": 0.9475,
+      "priorityConfidence": 0.5084,
+      "humanCheckReasons": [],
+      "ms": 3306
     },
     {
       "id": 12,
@@ -461,7 +498,10 @@
       "priorityCorrect": true,
       "levelCorrect": true,
       "aiUnavailable": false,
-      "ms": 3979
+      "categoryConfidence": 0.9837,
+      "priorityConfidence": 0.5916,
+      "humanCheckReasons": [],
+      "ms": 3839
     },
     {
       "id": 13,
@@ -476,7 +516,10 @@
       "priorityCorrect": false,
       "levelCorrect": false,
       "aiUnavailable": false,
-      "ms": 3315
+      "categoryConfidence": 0.8657,
+      "priorityConfidence": 0.9343,
+      "humanCheckReasons": [],
+      "ms": 2585
     },
     {
       "id": 14,
@@ -491,7 +534,10 @@
       "priorityCorrect": true,
       "levelCorrect": true,
       "aiUnavailable": false,
-      "ms": 2738
+      "categoryConfidence": 0.9998,
+      "priorityConfidence": 0.9936,
+      "humanCheckReasons": [],
+      "ms": 2543
     },
     {
       "id": 15,
@@ -506,7 +552,10 @@
       "priorityCorrect": false,
       "levelCorrect": false,
       "aiUnavailable": false,
-      "ms": 3024
+      "categoryConfidence": 0.9809,
+      "priorityConfidence": 0.625,
+      "humanCheckReasons": [],
+      "ms": 4043
     },
     {
       "id": 16,
@@ -521,7 +570,10 @@
       "priorityCorrect": false,
       "levelCorrect": true,
       "aiUnavailable": false,
-      "ms": 2883
+      "categoryConfidence": 0.9938,
+      "priorityConfidence": 0.5769,
+      "humanCheckReasons": [],
+      "ms": 2310
     },
     {
       "id": 17,
@@ -536,7 +588,10 @@
       "priorityCorrect": true,
       "levelCorrect": true,
       "aiUnavailable": false,
-      "ms": 2998
+      "categoryConfidence": 0.952,
+      "priorityConfidence": 0.9711,
+      "humanCheckReasons": [],
+      "ms": 2370
     },
     {
       "id": 18,
@@ -544,14 +599,19 @@
       "expectedCategory": "Software",
       "expectedPriority": "High",
       "predictedCategory": "Software",
-      "predictedPriority": "High",
+      "predictedPriority": "Medium",
       "expectedLevel": "P2",
-      "predictedLevel": "P2",
+      "predictedLevel": "P3",
       "categoryCorrect": true,
-      "priorityCorrect": true,
-      "levelCorrect": true,
+      "priorityCorrect": false,
+      "levelCorrect": false,
       "aiUnavailable": false,
-      "ms": 2648
+      "categoryConfidence": 0.535,
+      "priorityConfidence": 0.3845,
+      "humanCheckReasons": [
+        "low_priority_confidence"
+      ],
+      "ms": 2321
     },
     {
       "id": 19,
@@ -566,7 +626,10 @@
       "priorityCorrect": true,
       "levelCorrect": true,
       "aiUnavailable": false,
-      "ms": 4706
+      "categoryConfidence": 0.977,
+      "priorityConfidence": 0.6782,
+      "humanCheckReasons": [],
+      "ms": 4329
     },
     {
       "id": 20,
@@ -581,7 +644,12 @@
       "priorityCorrect": false,
       "levelCorrect": true,
       "aiUnavailable": false,
-      "ms": 3323
+      "categoryConfidence": 0.4751,
+      "priorityConfidence": 0.5875,
+      "humanCheckReasons": [
+        "low_category_confidence"
+      ],
+      "ms": 3445
     },
     {
       "id": 21,
@@ -596,7 +664,10 @@
       "priorityCorrect": true,
       "levelCorrect": true,
       "aiUnavailable": false,
-      "ms": 3130
+      "categoryConfidence": 0.9991,
+      "priorityConfidence": 0.605,
+      "humanCheckReasons": [],
+      "ms": 2784
     },
     {
       "id": 22,
@@ -611,7 +682,10 @@
       "priorityCorrect": true,
       "levelCorrect": true,
       "aiUnavailable": false,
-      "ms": 2488
+      "categoryConfidence": 0.6138,
+      "priorityConfidence": 0.8331,
+      "humanCheckReasons": [],
+      "ms": 2494
     },
     {
       "id": 23,
@@ -619,14 +693,17 @@
       "expectedCategory": "Network",
       "expectedPriority": "Low",
       "predictedCategory": "Network",
-      "predictedPriority": "Low",
+      "predictedPriority": "Medium",
       "expectedLevel": "P4",
-      "predictedLevel": "P4",
+      "predictedLevel": "P3",
       "categoryCorrect": true,
-      "priorityCorrect": true,
-      "levelCorrect": true,
+      "priorityCorrect": false,
+      "levelCorrect": false,
       "aiUnavailable": false,
-      "ms": 1992
+      "categoryConfidence": 0.72,
+      "priorityConfidence": 0.5067,
+      "humanCheckReasons": [],
+      "ms": 2369
     },
     {
       "id": 24,
@@ -641,7 +718,13 @@
       "priorityCorrect": false,
       "levelCorrect": true,
       "aiUnavailable": false,
-      "ms": 2427
+      "categoryConfidence": 0.4669,
+      "priorityConfidence": 0.4408,
+      "humanCheckReasons": [
+        "low_priority_confidence",
+        "low_category_confidence"
+      ],
+      "ms": 3108
     },
     {
       "id": 25,
@@ -656,7 +739,10 @@
       "priorityCorrect": false,
       "levelCorrect": true,
       "aiUnavailable": false,
-      "ms": 3578
+      "categoryConfidence": 0.8074,
+      "priorityConfidence": 0.6247,
+      "humanCheckReasons": [],
+      "ms": 2976
     },
     {
       "id": 26,
@@ -671,7 +757,10 @@
       "priorityCorrect": false,
       "levelCorrect": false,
       "aiUnavailable": false,
-      "ms": 2853
+      "categoryConfidence": 0.8024,
+      "priorityConfidence": 0.9905,
+      "humanCheckReasons": [],
+      "ms": 3261
     },
     {
       "id": 27,
@@ -686,7 +775,10 @@
       "priorityCorrect": true,
       "levelCorrect": true,
       "aiUnavailable": false,
-      "ms": 2984
+      "categoryConfidence": 0.9894,
+      "priorityConfidence": 0.7181,
+      "humanCheckReasons": [],
+      "ms": 4197
     },
     {
       "id": 28,
@@ -701,7 +793,10 @@
       "priorityCorrect": false,
       "levelCorrect": false,
       "aiUnavailable": false,
-      "ms": 2929
+      "categoryConfidence": 0.9978,
+      "priorityConfidence": 0.7353,
+      "humanCheckReasons": [],
+      "ms": 3123
     },
     {
       "id": 29,
@@ -716,7 +811,10 @@
       "priorityCorrect": true,
       "levelCorrect": true,
       "aiUnavailable": false,
-      "ms": 2515
+      "categoryConfidence": 0.9853,
+      "priorityConfidence": 0.9681,
+      "humanCheckReasons": [],
+      "ms": 2388
     },
     {
       "id": 30,
@@ -731,7 +829,10 @@
       "priorityCorrect": false,
       "levelCorrect": false,
       "aiUnavailable": false,
-      "ms": 3531
+      "categoryConfidence": 0.8971,
+      "priorityConfidence": 0.7438,
+      "humanCheckReasons": [],
+      "ms": 3269
     },
     {
       "id": 31,
@@ -746,7 +847,10 @@
       "priorityCorrect": false,
       "levelCorrect": true,
       "aiUnavailable": false,
-      "ms": 3355
+      "categoryConfidence": 0.5487,
+      "priorityConfidence": 0.5397,
+      "humanCheckReasons": [],
+      "ms": 3698
     },
     {
       "id": 32,
@@ -761,7 +865,10 @@
       "priorityCorrect": true,
       "levelCorrect": true,
       "aiUnavailable": false,
-      "ms": 5583
+      "categoryConfidence": 0.6294,
+      "priorityConfidence": 0.992,
+      "humanCheckReasons": [],
+      "ms": 3247
     },
     {
       "id": 33,
@@ -776,7 +883,10 @@
       "priorityCorrect": false,
       "levelCorrect": false,
       "aiUnavailable": false,
-      "ms": 2610
+      "categoryConfidence": 0.9968,
+      "priorityConfidence": 0.6578,
+      "humanCheckReasons": [],
+      "ms": 3663
     },
     {
       "id": 34,
@@ -791,7 +901,12 @@
       "priorityCorrect": true,
       "levelCorrect": true,
       "aiUnavailable": false,
-      "ms": 2804
+      "categoryConfidence": 0.4642,
+      "priorityConfidence": 0.925,
+      "humanCheckReasons": [
+        "low_category_confidence"
+      ],
+      "ms": 2815
     },
     {
       "id": 35,
@@ -799,14 +914,19 @@
       "expectedCategory": "Hardware",
       "expectedPriority": "Low",
       "predictedCategory": "Other",
-      "predictedPriority": "Low",
+      "predictedPriority": "Trivial",
       "expectedLevel": "P4",
       "predictedLevel": "P4",
       "categoryCorrect": false,
-      "priorityCorrect": true,
+      "priorityCorrect": false,
       "levelCorrect": true,
       "aiUnavailable": false,
-      "ms": 3446
+      "categoryConfidence": 0.4557,
+      "priorityConfidence": 0.5574,
+      "humanCheckReasons": [
+        "low_category_confidence"
+      ],
+      "ms": 2712
     },
     {
       "id": 36,
@@ -821,7 +941,10 @@
       "priorityCorrect": true,
       "levelCorrect": true,
       "aiUnavailable": false,
-      "ms": 3184
+      "categoryConfidence": 0.9441,
+      "priorityConfidence": 0.575,
+      "humanCheckReasons": [],
+      "ms": 2869
     },
     {
       "id": 37,
@@ -836,7 +959,10 @@
       "priorityCorrect": true,
       "levelCorrect": true,
       "aiUnavailable": false,
-      "ms": 2413
+      "categoryConfidence": 0.9354,
+      "priorityConfidence": 0.6356,
+      "humanCheckReasons": [],
+      "ms": 2419
     },
     {
       "id": 38,
@@ -851,7 +977,10 @@
       "priorityCorrect": false,
       "levelCorrect": false,
       "aiUnavailable": false,
-      "ms": 2784
+      "categoryConfidence": 0.991,
+      "priorityConfidence": 0.7539,
+      "humanCheckReasons": [],
+      "ms": 3219
     },
     {
       "id": 39,
@@ -866,7 +995,10 @@
       "priorityCorrect": true,
       "levelCorrect": true,
       "aiUnavailable": false,
-      "ms": 2541
+      "categoryConfidence": 0.9192,
+      "priorityConfidence": 0.655,
+      "humanCheckReasons": [],
+      "ms": 2838
     },
     {
       "id": 40,
@@ -881,7 +1013,10 @@
       "priorityCorrect": true,
       "levelCorrect": true,
       "aiUnavailable": false,
-      "ms": 5352
+      "categoryConfidence": 0.6853,
+      "priorityConfidence": 0.9893,
+      "humanCheckReasons": [],
+      "ms": 4680
     }
   ]
 }

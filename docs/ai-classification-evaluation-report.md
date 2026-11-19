@@ -23,6 +23,21 @@ Priority rules: [priority-criteria.md](./priority-criteria.md).
 | Priority, five levels | 65.0% (26/40) | 0.632 | 0.564 (moderate) |
 | Priority level, P1-P4 | 77.5% (31/40) | 0.755 | 0.696 (substantial) |
 
+**The results move between runs.** The same 40 tickets, same model and
+prompt, run three times on 2026-11-19 (temperature 0.1, so not fully
+fixed):
+
+| Run | Category | Priority (5 levels) | P1-P4 |
+| --- | --- | --- | --- |
+| 1 (table above) | 82.5% | 65.0% | 77.5% |
+| 2 | 85.0% | 62.5% | 75.0% |
+| 3 (current [metrics file](./ai-classification-metrics.md)) | 82.5% | 57.5% | 72.5% |
+
+Category is stable; priority swings by about 7 points. So any single
+run's priority figure should be read as roughly 57-65%, and it is one
+reason the AI now hands unsure tickets to a person
+([ai-handoff.md](./ai-handoff.md)).
+
 What it shows:
 
 - **Software, Network and Account are always found** (recall 1.0).

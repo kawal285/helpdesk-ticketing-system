@@ -172,3 +172,39 @@ describe('evaluateField', () => {
     expect(r.matrix.A.A).toBe(2);
   });
 });
+
+const { handoffSweep } = require('../scripts/ai/classificationStats');
+
+describe('handoffSweep', () => {
+  // conf: how sure the AI was; ok: whether it was right.
+  const results = [
+    { conf: 0.95, ok: true },
+    { conf: 0.9, ok: true },
+    { conf: 0.55, ok: false }, // unsure and wrong: a good handoff
+    { conf: 0.5, ok: true }, // unsure but right: needless handoff
+    { conf: 0.85, ok: false }, // sure but wrong: missed
+    { conf: null, ok: true }, // no confidence: never handed off
+  ];
+
+  it('counts handoffs and whether they were right', () => {
+    const [row] = handoffSweep(results, 'conf', 'ok', [0.6]);
+
+    expect(row).toEqual({
+      cutoff: 0.6,
+      handedOff: 2,
+      handedOffRate: 0.333,
+      rightHandoffs: 1,
+      needlessHandoffs: 1,
+      missedErrors: 1,
+      errorsCaught: 0.5,
+      keptAccuracy: 0.75,
+    });
+  });
+
+  it('hands nothing off at a cut-off of 0', () => {
+    const [row] = handoffSweep(results, 'conf', 'ok', [0]);
+    expect(row.handedOff).toBe(0);
+    expect(row.missedErrors).toBe(2);
+    expect(row.keptAccuracy).toBe(0.667);
+  });
+});

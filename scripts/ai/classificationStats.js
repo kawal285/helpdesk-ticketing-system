@@ -179,3 +179,43 @@ module.exports = {
   evaluateField,
   NONE,
 };
+
+/*
+ * Selective prediction ("I'm not sure" handoff): for each cut-off, which
+ * tickets the AI would hand to a person (confidence below the cut-off)
+ * and whether that was the right call (the AI was in fact wrong).
+ *
+ *   handedOff        tickets sent to a person
+ *   rightHandoffs    ...that the AI had got wrong (good handoffs)
+ *   needlessHandoffs ...that the AI had got right (extra work for staff)
+ *   missedErrors     wrong answers the AI kept (not handed off)
+ *   keptAccuracy     accuracy on the tickets the AI kept
+ *
+ * A ticket with no confidence value (null) is never handed off.
+ */
+function handoffSweep(results, confidenceField, correctField, cutoffs) {
+  const total = results.length;
+  const wrongTotal = results.filter((r) => !r[correctField]).length;
+
+  return cutoffs.map((cutoff) => {
+    const handed = results.filter(
+      (r) => r[confidenceField] != null && r[confidenceField] < cutoff
+    );
+    const kept = results.filter((r) => !handed.includes(r));
+    const rightHandoffs = handed.filter((r) => !r[correctField]).length;
+    const keptCorrect = kept.filter((r) => r[correctField]).length;
+
+    return {
+      cutoff,
+      handedOff: handed.length,
+      handedOffRate: total ? round(handed.length / total) : 0,
+      rightHandoffs,
+      needlessHandoffs: handed.length - rightHandoffs,
+      missedErrors: wrongTotal - rightHandoffs,
+      errorsCaught: wrongTotal ? round(rightHandoffs / wrongTotal) : 0,
+      keptAccuracy: kept.length ? round(keptCorrect / kept.length) : 0,
+    };
+  });
+}
+
+module.exports.handoffSweep = handoffSweep;
