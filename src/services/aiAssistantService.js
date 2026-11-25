@@ -62,6 +62,7 @@ async function assistUser(
 ) {
     const validatedHistory = validateConversationHistory(conversationHistory);
 
+async function assistUser(question, options = {}) {
   if (typeof question !== 'string' || !question.trim()) {
     const error = new Error('A non-empty IT question is required.');
     error.statusCode = 400;
@@ -74,8 +75,18 @@ const result = await ask(cleanQuestion, {
   conversationHistory: validatedHistory,
   role,
 });
+  // history is the user's recent questions in this chat (already cleaned by
+  // the controller). ask() decides whether this question is a follow-up.
+  const result = await ask(cleanQuestion, {
+    history: options.history,
+    // The "Think deeper" button. Only the boolean true switches agents.
+    thinkDeeper: options.thinkDeeper === true,
+  });
 
-  const best = result.sources.length ? result.sources[0] : null;
+  // A web source has no category or article id, so "best match" and the
+  // suggested ticket category come from knowledge-base sources only.
+  const kbSources = result.sources.filter((source) => source.type !== 'web');
+  const best = kbSources.length ? kbSources[0] : null;
 
   return {
     question: cleanQuestion,
@@ -93,10 +104,17 @@ const result = await ask(cleanQuestion, {
     // what makes an answer auditable.
     sources: result.sources,
 
-    suggestedCategory: suggestCategory(result.sources),
+    suggestedCategory: suggestCategory(kbSources),
     suggestedPriority: null,
 
-    shouldCreateTicket: !result.grounded,
+    // A greeting is not a failed answer, so it never suggests a ticket.
+    shouldCreateTicket: result.smallTalk ? false : !result.grounded,
+
+    // Which agent answered, and whether the cloud model failed over to the
+    // local one. The page shows these as the "answered by" badge.
+    agent: result.agent || 'main',
+    fellBack: result.fellBack === true,
+    smallTalk: result.smallTalk === true,
 
     // Retrieval diagnostics. Useful in the UI during the demo and when
     // explaining why a question was refused.

@@ -98,6 +98,27 @@ const allowedViews = {
     "account",
   ],
 };
+    const allowedViews = {
+      customer: [
+        "dashboard",
+        "tickets",
+        "aiAssistant",
+        "newTicket",
+        "ticketDetail",
+        "account",
+      ],
+      agent: ["dashboard", "tickets", "aiAssistant", "ticketDetail", "account"],
+      admin: [
+        "dashboard",
+        "tickets",
+        "aiAssistant",
+        "ticketDetail",
+        "manageUsers",
+        "report",
+        "settings",
+        "account",
+      ],
+    };
 
     const roleViews = allowedViews[loggedInUser.role] || [];
     setView(roleViews.includes(nextView) ? nextView : "dashboard");
@@ -147,6 +168,12 @@ const allowedViews = {
       onCreateTicket={() => handleNavigate("newTicket")}
     />
   );
+      content = (
+        <AiAssistantPage
+          user={loggedInUser}
+          onCreateTicket={() => handleNavigate("newTicket")}
+        />
+      );
     } else if (view === "newTicket") {
       content = (
         <NewTicketPage
@@ -188,22 +215,15 @@ const allowedViews = {
   /* Agent pages */
   if (isAgent) {
     if (view === "account") {
-      content = <AccountPage user={loggedInUser} />; backend-harpreet
-    } else if (view === 'aiAssistant') {
+      content = <AccountPage user={loggedInUser} />;
+    } else if (view === "aiAssistant") {
       content = (
-        <AiAssistantPage
-          user={loggedInUser}
-          onCreateTicket={() =>
-            handleNavigate('newTicket')
-          }
-        />
+        <AiAssistantPage user={loggedInUser} />
       );
     } else if (
-      view === 'ticketDetail' &&
+      view === "ticketDetail" &&
       selectedTicketId
     ) {
-
- main
       content = (
         <TicketDetailPage
           ticketId={selectedTicketId}
@@ -233,21 +253,14 @@ const allowedViews = {
   if (isAdmin) {
     if (view === "account") {
       content = <AccountPage user={loggedInUser} />;
-
-    } else if (view === 'aiAssistant') {
+    } else if (view === "aiAssistant") {
       content = (
-        <AiAssistantPage
-          user={loggedInUser}
-          onCreateTicket={() =>
-            handleNavigate('newTicket')
-          }
-        />
+        <AiAssistantPage user={loggedInUser} />
       );
     } else if (
-      view === 'ticketDetail' &&
+      view === "ticketDetail" &&
       selectedTicketId
     ) {
- main
       content = (
         <TicketDetailPage
           ticketId={selectedTicketId}

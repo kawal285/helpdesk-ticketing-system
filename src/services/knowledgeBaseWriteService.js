@@ -33,6 +33,14 @@ function hash(text) {
   return crypto.createHash('sha256').update(text).digest('hex');
 }
 
+/*
+ * Two saves of the same page should be the same article, even when the URL
+ * differs only by case, a trailing slash or surrounding spaces.
+ */
+function normaliseUrl(url) {
+  return String(url || '').trim().toLowerCase().replace(/\/+$/, '');
+}
+
 function assertLocalJsonProviderActive() {
   const active = process.env.KNOWLEDGE_BASE_PROVIDER || 'local-json';
 
@@ -79,6 +87,20 @@ function createKnowledgeBaseWriteService(filePath = DEFAULT_KB_FILE) {
     const finalCategory = CATEGORIES.includes(category) ? category : 'Other';
 
     const articles = readArticles();
+
+    // Checked before anything is embedded or written, so a duplicate click
+    // costs nothing and leaves the knowledge base exactly as it was.
+    const wantedUrl = normaliseUrl(url);
+    const existing = articles.find(
+      (article) => normaliseUrl(article.sourceUrl) === wantedUrl
+    );
+
+    if (existing) {
+      const error = new Error('That web result is already in the knowledge base.');
+      error.statusCode = 409;
+      throw error;
+    }
+
     const nextId =
       articles.reduce((max, article) => Math.max(max, article.id), 0) + 1;
 

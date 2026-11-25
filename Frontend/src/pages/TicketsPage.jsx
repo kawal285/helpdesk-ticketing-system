@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { ArrowRight, Bot, Flag, Search, SlidersHorizontal } from "lucide-react";
 
 const STATUS_LABELS = {
@@ -95,11 +95,7 @@ export default function TicketsPage({
       .catch(() => setAgents([]));
   }, [isAdmin]);
 
-  useEffect(() => {
-    loadTickets();
-  }, [overdueOnly, agentFilter, organizationFilter]);
-
-  async function loadTickets() {
+  const loadTickets = useCallback(async () => {
     const token = localStorage.getItem("token");
     const params = new URLSearchParams();
 
@@ -151,7 +147,11 @@ export default function TicketsPage({
     } finally {
       setLoading(false);
     }
-  }
+  }, [overdueOnly, agentFilter, organizationFilter, isAdmin, isStaff]);
+
+  useEffect(() => {
+    loadTickets();
+  }, [loadTickets]);
 
   function assigneeLabel(ticket) {
     if (ticket.assignee?.name) return ticket.assignee.name;

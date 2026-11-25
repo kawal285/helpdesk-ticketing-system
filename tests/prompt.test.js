@@ -1,4 +1,8 @@
-const { buildMessages } = require('../src/services/rag/prompt');
+const {
+  SYSTEM_PROMPT,
+  buildMessages,
+  smallTalkMessages,
+} = require('../src/services/rag/prompt');
 
 const KB_MATCH = {
   articleId: 8,
@@ -40,6 +44,14 @@ describe('prompt.buildMessages', () => {
     );
   });
 
+  it('includes an earlier question as context only when one is given', () => {
+    const [, withEarlier] = buildMessages('what else can i do', [KB_MATCH], [], 'my printer is offline');
+    const [, without] = buildMessages('what else can i do', [KB_MATCH], []);
+
+    expect(withEarlier.content).toContain('EARLIER QUESTION (context only)\nmy printer is offline');
+    expect(without.content).not.toContain('EARLIER QUESTION');
+  });
+
   it('defaults webResults to empty so existing two-argument callers still work', () => {
     const [, userMessage] = buildMessages('printer stuck', [KB_MATCH]);
 
@@ -73,3 +85,27 @@ describe('prompt.buildMessages', () => {
   });
 
 
+
+  it('asks for plain text, since the chat page does not render markdown', () => {
+    expect(SYSTEM_PROMPT).toContain('Plain text only');
+  });
+
+  it('adds the extra-care note for the think agent only', () => {
+    const [thinkSystem] = buildMessages('q', [KB_MATCH], [], null, 'think');
+    const [mainSystem] = buildMessages('q', [KB_MATCH], [], null, 'main');
+    const [defaultSystem] = buildMessages('q', [KB_MATCH]);
+
+    expect(thinkSystem.content).toContain('EXTRA CARE');
+    expect(thinkSystem.content).toContain('every fact must still come from the SOURCES');
+    expect(mainSystem.content).not.toContain('EXTRA CARE');
+    expect(defaultSystem.content).not.toContain('EXTRA CARE');
+  });
+
+  it('gives the fast agent a small-talk prompt that forbids IT advice and has no sources', () => {
+    const [system, user] = smallTalkMessages('hi');
+
+    expect(system.content).toContain('Never give IT advice');
+    expect(system.content).not.toContain('SOURCES');
+    expect(user).toEqual({ role: 'user', content: 'hi' });
+  });
+});

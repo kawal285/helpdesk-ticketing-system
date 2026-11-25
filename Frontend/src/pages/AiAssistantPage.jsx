@@ -25,10 +25,26 @@ const STARTERS = [
  * also makes the retrieval step visible to anyone watching a demo.
  */
 const STAGES = [
-  'Searching the knowledge base…',
+  'Searching the knowledge base and the web…',
   'Reading the closest sections…',
   'Writing the answer…',
 ];
+
+// Shown while "Think deeper" is running, which takes longer than a normal
+// answer because it uses the larger reasoning model.
+const DEEP_STAGES = [
+  'Thinking it through carefully…',
+  'Checking the closest sections…',
+  'Writing the answer…',
+];
+
+// What the badge on each answer says. The key is the agent name the server
+// sends back as assistant.agent.
+const AGENT_LABELS = {
+  fast: 'Quick reply',
+  main: 'Standard answer',
+  think: 'Deep reasoning',
+};
 
 /*
  * Confidence ticks. Scores from this embedding model sit in a narrow band
@@ -47,6 +63,7 @@ export default function AiAssistantPage({ user, onCreateTicket }) {
   const [turns, setTurns] = useState([]);
   const [loading, setLoading] = useState(false);
   const [stage, setStage] = useState(0);
+  const [deep, setDeep] = useState(false);
   const [error, setError] = useState('');
 
   const [guideCount, setGuideCount] = useState(null);
@@ -94,15 +111,34 @@ export default function AiAssistantPage({ user, onCreateTicket }) {
     return () => timers.forEach(clearTimeout);
   }, [loading]);
 
-  async function askQuestion(text) {
+  /*
+   * thinkDeeper asks the server to use the reasoning agent for this one
+   * question. beforeIndex is set when an earlier answer is being re-asked:
+   * the history then stops just before that turn, so the question is not
+   * sent as its own context.
+   */
+  async function askQuestion(
+    text,
+    { thinkDeeper = false, beforeIndex = null } = {}
+  ) {
     const trimmed = text.trim();
 
     if (!trimmed || loading) {
       return;
     }
 
+    const priorTurns = beforeIndex === null ? turns : turns.slice(0, beforeIndex);
+
+    // The last couple of questions that got an answer, so a short follow-up
+    // like "what else can I do" is understood. Answers are not sent back.
+    const history = priorTurns
+      .filter((turn) => !turn.failed)
+      .slice(-2)
+      .map((turn) => turn.question);
+
     setQuestion('');
     setError('');
+    setDeep(thinkDeeper);
     setLoading(true);
 
     try {
@@ -121,6 +157,7 @@ export default function AiAssistantPage({ user, onCreateTicket }) {
     ])
     .slice(-10),
 }),
+        body: JSON.stringify({ question: trimmed, history, thinkDeeper }),
       });
 
       const data = await response.json();
@@ -133,7 +170,7 @@ export default function AiAssistantPage({ user, onCreateTicket }) {
 
       setTurns((previous) => [
         ...previous,
-        { question: trimmed, assistant: data.assistant },
+        { question: trimmed, assistant: data.assistant, deeper: thinkDeeper },
       ]);
     } catch (requestError) {
       setError(requestError.message);
@@ -165,10 +202,9 @@ export default function AiAssistantPage({ user, onCreateTicket }) {
         <p className="chat__eyebrow">Otago Polytechnic &middot; IT Helpdesk</p>
         <h1 className="chat__title">Assistant</h1>
         <p className="chat__subtitle">
-          Answers are written from the approved IT documentation and cited
-          back to the section they came from. When the documentation
-          doesn&rsquo;t cover something, the assistant says so instead of
-          guessing.
+          Answers combine the approved IT documentation with live web search,
+          and show every source they used. When neither covers something,
+          the assistant says so instead of guessing.
         </p>
       </header>
 
@@ -183,8 +219,8 @@ export default function AiAssistantPage({ user, onCreateTicket }) {
             <span className="chat__scope-label">Answer cited</span>
           </div>
           <div className="chat__scope-item">
-            <span className="chat__scope-value">0</span>
-            <span className="chat__scope-label">Outside sources</span>
+            <span className="chat__scope-value">Live</span>
+            <span className="chat__scope-label">Web search</span>
           </div>
         </div>
       )}
@@ -245,6 +281,13 @@ export default function AiAssistantPage({ user, onCreateTicket }) {
                 assistant={turn.assistant}
                 user={user}
                 onCreateTicket={onCreateTicket}
+                busy={loading}
+                onThinkDeeper={() =>
+                  askQuestion(turn.question, {
+                    thinkDeeper: true,
+                    beforeIndex: index,
+                  })
+                }
               />
             )}
           </article>
@@ -253,7 +296,7 @@ export default function AiAssistantPage({ user, onCreateTicket }) {
         {loading && (
           <div className="chat__thinking">
             <span className="chat__scanner" />
-            {STAGES[stage]}
+            {(deep ? DEEP_STAGES : STAGES)[stage]}
           </div>
         )}
 
@@ -284,8 +327,9 @@ export default function AiAssistantPage({ user, onCreateTicket }) {
         </div>
 
         <p className="chat__hint">
-          Each question is answered on its own, so include the details every
-          time. Enter sends, Shift + Enter adds a line.
+          Short follow-ups like &ldquo;what else can I do&rdquo; use your
+          previous question for context. Use &ldquo;Think deeper&rdquo; on an
+          answer for harder problems. Enter sends, Shift + Enter adds a line.
         </p>
 
         {error && <p className="chat__error">{error}</p>}
@@ -294,8 +338,22 @@ export default function AiAssistantPage({ user, onCreateTicket }) {
   );
 }
 
-function AnswerCard({ assistant, user, onCreateTicket }) {
+function AnswerCard({ assistant, user, onCreateTicket, onThinkDeeper, busy }) {
   const grounded = assistant.knowledgeBaseMatch;
+
+  // A greeting is answered without the knowledge base, so it is neither
+  // "grounded" nor a refusal -- it gets no category tag, no ticket button
+  // and no "closest match" line.
+  const smallTalk = assistant.smallTalk === true;
+  const agentLabel = AGENT_LABELS[assistant.agent];
+
+  // Deep reasoning only makes sense for a real, grounded answer that has not
+  // already come from the reasoning agent.
+  const canThinkDeeper =
+    grounded &&
+    !smallTalk &&
+    assistant.agent !== 'think' &&
+    typeof onThinkDeeper === 'function';
   const sources = assistant.sources || [];
   const kbSources = sources.filter((source) => source.type !== 'web');
   const webSources = sources.filter((source) => source.type === 'web');
@@ -325,6 +383,13 @@ function AnswerCard({ assistant, user, onCreateTicket }) {
         }),
       });
 
+      // 409 means this page is already in the knowledge base (saved earlier,
+      // by someone else, or by an earlier click) -- not a failure.
+      if (response.status === 409) {
+        setSaveStatus((previous) => ({ ...previous, [source.url]: 'duplicate' }));
+        return;
+      }
+
       if (!response.ok) {
         throw new Error();
       }
@@ -337,13 +402,13 @@ function AnswerCard({ assistant, user, onCreateTicket }) {
 
   return (
     <div
-      className={`chat__answer${grounded ? '' : ' chat__answer--refused'}`}
+      className={`chat__answer${grounded || smallTalk ? '' : ' chat__answer--refused'}`}
     >
       <div className="chat__cap" />
 
       <div className="chat__inner">
         <div className="chat__meta">
-          {grounded ? (
+          {smallTalk ? null : grounded ? (
             assistant.suggestedCategory && (
               <span
                 className="chat__tag"
@@ -358,6 +423,25 @@ function AnswerCard({ assistant, user, onCreateTicket }) {
             </span>
           )}
 
+          {agentLabel && (
+            <span
+              className="chat__agent"
+              data-agent={assistant.agent}
+              title={assistant.model ? `Answered by ${assistant.model}` : undefined}
+            >
+              {agentLabel}
+            </span>
+          )}
+
+          {assistant.fellBack && (
+            <span
+              className="chat__agent chat__agent--backup"
+              title="The cloud model was unavailable, so a local model answered."
+            >
+              Local backup
+            </span>
+          )}
+
           {typeof assistant.ms === 'number' && (
             <span className="chat__timing">
               {(assistant.ms / 1000).toFixed(1)}s
@@ -369,20 +453,37 @@ function AnswerCard({ assistant, user, onCreateTicket }) {
           <AnswerText text={assistant.answer} />
         </div>
 
-        {!grounded && (
+        {!grounded && !smallTalk && (
           <p className="chat__refusal-detail">
             Closest match {assistant.topScore} &middot; needs{' '}
             {assistant.threshold} to answer
           </p>
         )}
 
-        <button
-          type="button"
-          className={`chat__cta${grounded ? ' chat__cta--secondary' : ''}`}
-          onClick={() => onCreateTicket()}
-        >
-          {grounded ? 'Still stuck? Raise a ticket' : 'Raise a ticket'}
-        </button>
+        {((onCreateTicket && !smallTalk) || canThinkDeeper) && (
+          <div className="chat__actions">
+            {onCreateTicket && !smallTalk && (
+              <button
+                type="button"
+                className={`chat__cta${grounded ? ' chat__cta--secondary' : ''}`}
+                onClick={onCreateTicket}
+              >
+                {grounded ? 'Still stuck? Raise a ticket' : 'Raise a ticket'}
+              </button>
+            )}
+
+            {canThinkDeeper && (
+              <button
+                type="button"
+                className="chat__cta chat__cta--secondary"
+                onClick={onThinkDeeper}
+                disabled={busy}
+              >
+                Think deeper
+              </button>
+            )}
+          </div>
+        )}
 
         {grounded && kbSources.length > 0 && (
           <div className="chat__sources">
@@ -450,16 +551,20 @@ function AnswerCard({ assistant, user, onCreateTicket }) {
                   <button
                     type="button"
                     className="chat__save-to-kb"
-                    disabled={saveStatus[source.url] === 'saving'}
+                    disabled={['saving', 'saved', 'duplicate'].includes(
+                      saveStatus[source.url]
+                    )}
                     onClick={() => saveToKnowledgeBase(source)}
                   >
                     {saveStatus[source.url] === 'saved'
                       ? 'Saved to KB'
-                      : saveStatus[source.url] === 'saving'
-                        ? 'Saving…'
-                        : saveStatus[source.url] === 'error'
-                          ? 'Failed, retry?'
-                          : 'Save to knowledge base'}
+                      : saveStatus[source.url] === 'duplicate'
+                        ? 'Already in KB'
+                        : saveStatus[source.url] === 'saving'
+                          ? 'Saving…'
+                          : saveStatus[source.url] === 'error'
+                            ? 'Failed, retry?'
+                            : 'Save to knowledge base'}
                   </button>
                 )}
               </div>
