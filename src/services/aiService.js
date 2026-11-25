@@ -5,7 +5,7 @@ const { analyzeTicket } = require('./aiAnalysisService');
  * for a very short reply, so it normally returns in a few seconds, but the
  * budget allows for a cold model load on the first ticket after a restart.
  */
-const AI_TIMEOUT_MS = Number(process.env.AI_TIMEOUT_MS) || 20000;
+const AI_TIMEOUT_MS = Number(process.env.AI_TIMEOUT_MS) || 60000;
 
 // Promise.race never cancels the loser, so a plain setTimeout here would
 // keep firing (and keep the event loop alive) even after analyzeTicket
