@@ -144,165 +144,46 @@ helpdesk-ticketing-system/
 └── tests/                 # Automated backend tests
 ```
 
-## Requirements
+## Setup
 
-Install the following software before running the project:
+**Full step-by-step guide, with troubleshooting: [docs/setup-guide.md](docs/setup-guide.md).**
+Read it the first time; the short version is below.
 
-- Node.js and npm
-- MySQL, such as the MySQL service included with XAMPP
-- Git
-- Ollama for local AI features
-
-## Download the project
+You need Node.js 20+, Git, XAMPP (for MySQL) and Ollama. **Keep the
+project outside OneDrive**: OneDrive syncing `node_modules` breaks
+`npm install` and Git (the guide explains how to move it).
 
 ```bash
 git clone https://github.com/kawal285/helpdesk-ticketing-system.git
 cd helpdesk-ticketing-system
-```
 
-## Backend setup
-
-Install the backend packages:
-
-```bash
-npm install
-```
-
-Create a `.env` file in the main project folder. Use the environment-variable names expected by `config/config.js` and the existing service files.
-
-Never commit `.env`, database passwords, JWT secrets or external API keys to GitHub.
-
-Example AI configuration:
-
-```env
-Requirements
-
-Install the following software before running the project:
-
-Node.js and npm
-MySQL, such as the MySQL service included with XAMPP
-Git
-Ollama for local AI features
-Download the project
-git clone https://github.com/kawal285/helpdesk-ticketing-system.git
-cd helpdesk-ticketing-system
-Backend setup
-
-Install the backend packages:
-
-npm install
-
-Create a .env file in the main project folder. Use the environment-variable names expected by config/config.js and the existing service files.
-
-Never commit .env, database passwords, JWT secrets or external API keys to GitHub.
-
-Example AI configuration:
-
-EMBEDDING_PROVIDER=ollama
-EMBEDDING_MODEL=nomic-embed-text
-EMBEDDING_DIMENSIONS=768
-
-RAG_SIMILARITY_THRESHOLD=0.59
-RAG_TOP_K=4
-RAG_MAX_PER_ARTICLE=2
-RAG_RELATIVE_CUTOFF=0.06
-
-GENERATION_PROVIDER=ollama
-GENERATION_MODEL=llama3.2
-```
-
-Start MySQL and ensure the development database named in the environment configuration exists.
-
-Run the database migrations:
-
-```bash
-npx sequelize-cli db:migrate
-```
-
-Start the backend:
-
-```bash
-npm run dev
-```
-
-The backend normally runs at:
-
-```text
-http://localhost:4000
-```
-
-Check its health at:
-
-```text
-http://localhost:4000/health
-```
-
-## Ollama setup
-
-Install Ollama from [ollama.com/download](https://ollama.com/download), then close and reopen the terminal.
-
-Download the embedding model:
-
-```bash
-ollama pull nomic-embed-text
-```
-
-Download the generation model:
-
-```bash
+# AI models (Ollama must be running)
 ollama pull llama3.2
-```
+ollama pull nomic-embed-text
+npm run check:ai           # every line should say PASS
 
-Confirm both models are available:
+# Backend: start MySQL in XAMPP and create the databases
+# helpdesk_dev and helpdesk_dev_test first
+cp .env.example .env       # then fill in DB, JWT and admin details
+npm install
+npm run migrate
+npm run seed
+npm run kb:index
+npm run tickets:index
+npm run dev                # http://localhost:4000
 
-```bash
-ollama list
-```
-
-Ollama normally provides its local service at:
-
-```text
-http://localhost:11434
-```
-
-Restart the backend after changing the AI environment configuration.
-
-## Frontend setup
-
-Open another terminal:
-
-```bash
+# Frontend, in a second terminal
 cd Frontend
 npm install
-npm run dev
+npm run dev                # http://localhost:5173
 ```
 
-The frontend normally runs at:
+Run the tests from the main folder with `npm test` (they use the
+`helpdesk_dev_test` database and don't need Ollama). Check the frontend
+with `npm run lint` and `npm run build` in `Frontend`.
 
-```text
-http://localhost:5173
-```
-
-Keep the backend, frontend, MySQL and Ollama services running during the demonstration.
-
-## Build the frontend
-
-```bash
-cd Frontend
-npm run build
-```
-
-The Vite chunk-size message is a performance warning and does not mean that the build failed.
-
-## Run automated tests
-
-From the main project folder:
-
-```bash
-npm test -- --runInBand
-```
-
-The test suite covers areas such as authentication, role-based access, ticket routing, comments, the AI service, health checks and the email service.
+If you see `Access denied for user 'root'@'localhost'`, the Windows
+`MySQL80` service is using MySQL's port: see the guide's step 3.
 
 ## User roles
 
