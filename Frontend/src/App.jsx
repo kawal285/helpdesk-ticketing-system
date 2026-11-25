@@ -78,6 +78,26 @@ function App() {
   function handleNavigate(nextView) {
     if (!loggedInUser) return;
 
+const allowedViews = {
+  customer: [
+    "dashboard",
+    "tickets",
+    "aiAssistant",
+    "newTicket",
+    "ticketDetail",
+    "account",
+  ],
+  agent: ["dashboard", "tickets", "ticketDetail", "account"],
+  admin: [
+    "dashboard",
+    "tickets",
+    "ticketDetail",
+    "manageUsers",
+    "report",
+    "settings",
+    "account",
+  ],
+};
     const allowedViews = {
       customer: [
         "dashboard",
@@ -143,6 +163,11 @@ function App() {
     if (view === "account") {
       content = <AccountPage user={loggedInUser} />;
     } else if (view === "aiAssistant") {
+  content = (
+    <AiAssistantPage
+      onCreateTicket={() => handleNavigate("newTicket")}
+    />
+  );
       content = (
         <AiAssistantPage
           user={loggedInUser}

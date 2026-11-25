@@ -23,6 +23,44 @@ const { ask } = require('./rag/ragService');
 function suggestCategory(sources) {
   return sources.length ? sources[0].category : null;
 }
+function validateConversationHistory(history) {
+  if (!Array.isArray(history)) {
+    const error = new Error('Conversation history must be an array.');
+    error.statusCode = 400;
+    throw error;
+  }
+
+  if (history.length > 10) {
+    const error = new Error('Conversation history cannot contain more than 10 messages.');
+    error.statusCode = 400;
+    throw error;
+  }
+
+  return history.map((message) => {
+    if (
+      !message ||
+      !['user', 'assistant'].includes(message.role) ||
+      typeof message.content !== 'string' ||
+      !message.content.trim() ||
+      message.content.length > 2000
+    ) {
+      const error = new Error('Invalid conversation history message.');
+      error.statusCode = 400;
+      throw error;
+    }
+
+    return {
+      role: message.role,
+      content: message.content.trim(),
+    };
+  });
+}
+async function assistUser(
+  question,
+  conversationHistory = [],
+  role = 'customer'
+) {
+    const validatedHistory = validateConversationHistory(conversationHistory);
 
 async function assistUser(question, options = {}) {
   if (typeof question !== 'string' || !question.trim()) {
@@ -33,6 +71,10 @@ async function assistUser(question, options = {}) {
 
   const cleanQuestion = question.trim();
 
+const result = await ask(cleanQuestion, {
+  conversationHistory: validatedHistory,
+  role,
+});
   // history is the user's recent questions in this chat (already cleaned by
   // the controller). ask() decides whether this question is a follow-up.
   const result = await ask(cleanQuestion, {

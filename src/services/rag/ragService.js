@@ -195,6 +195,26 @@ function summariseWebSources(results) {
 async function ask(question, options = {}) {
   const started = Date.now();
 
+    // Include recent user questions when searching for follow-up answers.
+  const previousUserQuestions = (options.conversationHistory || [])
+    .filter((message) => message.role === 'user')
+    .slice(-2)
+    .map((message) => message.content);
+
+  const searchQuestion = [
+    ...previousUserQuestions,
+    question,
+  ].join('\n');
+
+  const [retrieval, web] =
+    options.webSearch === false
+      ? [
+          await retrieve(searchQuestion, options),
+          { results: [], provider: 'none' },
+        ]
+      : await Promise.all([
+          retrieve(searchQuestion, options),
+          webSearchService.search(searchQuestion),
   // options.agent forces an agent. webSearch:false is the deterministic,
   // offline mode used by the evaluation scripts, so it always uses main.
   // thinkDeeper only counts when it is exactly true.
@@ -220,7 +240,6 @@ async function ask(question, options = {}) {
           retrieve(searchText, options),
           webSearchService.search(searchText),
         ]);
-
   const hasKb = retrieval.hasRelevantContext;
   const hasWeb = web.results.length > 0;
 
@@ -243,6 +262,12 @@ async function ask(question, options = {}) {
   }
 
   const messages = buildMessages(
+  question,
+  retrieval.relevant,
+  web.results,
+  options.conversationHistory || []
+);
+  const answer = await generate(messages);
     question,
     retrieval.relevant,
     web.results,

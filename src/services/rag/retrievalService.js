@@ -161,14 +161,31 @@ function refresh() {
  *       everything, which is what you want while measuring.
  * category: optional metadata filter, e.g. restrict to "Network".
  */
+
+function getAllowedAudiences(role = 'customer') {
+  const normalizedRole = String(role).toLowerCase();
+
+  if (normalizedRole === 'admin' || normalizedRole === 'agent') {
+    return ['All', 'Students', 'Staff'];
+  }
+
+  if (normalizedRole === 'customer') {
+    return ['All', 'Students'];
+  }
+
+  // Unknown roles receive the least privileged access.
+  return ['All'];
+}
+
 async function retrieve(question, options = {}) {
-  const {
-    topK = DEFAULT_TOP_K,
-    threshold = DEFAULT_THRESHOLD,
-    category = null,
-    maxPerArticle = DEFAULT_MAX_PER_ARTICLE,
-    relativeCutoff = DEFAULT_RELATIVE_CUTOFF,
-  } = options;
+ const {
+  topK = DEFAULT_TOP_K,
+  threshold = DEFAULT_THRESHOLD,
+  category = null,
+  maxPerArticle = DEFAULT_MAX_PER_ARTICLE,
+  relativeCutoff = DEFAULT_RELATIVE_CUTOFF,
+  role = 'customer',
+} = options;
 
   if (typeof question !== 'string' || !question.trim()) {
     throw new Error('A question is required.');
@@ -177,10 +194,16 @@ async function retrieve(question, options = {}) {
   const chunks = await loadChunks();
   const queryVector = await embedQuery(question);
 
-  const pool = category
-    ? chunks.filter((chunk) => chunk.category === category)
-    : chunks;
+ const allowedAudiences = getAllowedAudiences(role);
 
+const pool = chunks.filter((chunk) => {
+  const audienceAllowed = allowedAudiences.includes(chunk.audience);
+
+  const categoryAllowed =
+    !category || chunk.category === category;
+
+  return audienceAllowed && categoryAllowed;
+});
   const scored = pool.map((chunk) => ({
     id: chunk.id,
     articleId: chunk.articleId,
@@ -239,4 +262,10 @@ async function retrieve(question, options = {}) {
   };
 }
 
-module.exports = { retrieve, refresh, loadChunks, DEFAULT_TOP_K };
+module.exports = {
+  retrieve,
+  refresh,
+  loadChunks,
+  DEFAULT_TOP_K,
+  getAllowedAudiences,
+};
