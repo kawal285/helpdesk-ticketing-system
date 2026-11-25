@@ -136,20 +136,27 @@ describe('AI self-service assistant API', () => {
    * mapping decided before this can pass for real; re-enable once that
    * lands rather than guessing the mapping here.
    */
-  test.skip("passes the signed-in user's role through to retrieval", async () => {
+   test("passes the signed-in user's role through to retrieval", async () => {
     ask.mockResolvedValue(GROUNDED);
     mockRole = 'agent';
 
     await request(app)
       .post('/ai/assist')
-      .send({ question: 'how do I grant mailbox access', role: 'admin' });
+      .send({
+        question: 'how do I grant mailbox access',
+        role: 'admin',
+      });
 
     expect(ask).toHaveBeenCalledWith(
       'how do I grant mailbox access',
-      { role: 'agent' }
+      {
+        conversationHistory: [],
+        role: 'agent',
+      }
     );
   });
 
+ 
   test('rejects an empty request body', async () => {
     const response = await request(app).post('/ai/assist').send({});
 
@@ -164,5 +171,38 @@ describe('AI self-service assistant API', () => {
 
     expect(response.statusCode).toBe(400);
     expect(ask).not.toHaveBeenCalled();
+  });
+});
+
+const {
+  getAllowedAudiences,
+} = require('../src/services/rag/retrievalService');
+
+describe('Knowledge-base audience access control', () => {
+  test('customers can access All and Students articles only', () => {
+    expect(getAllowedAudiences('customer')).toEqual([
+      'All',
+      'Students',
+    ]);
+  });
+
+  test('agents can access All, Students and Staff articles', () => {
+    expect(getAllowedAudiences('agent')).toEqual([
+      'All',
+      'Students',
+      'Staff',
+    ]);
+  });
+
+  test('admins can access All, Students and Staff articles', () => {
+    expect(getAllowedAudiences('admin')).toEqual([
+      'All',
+      'Students',
+      'Staff',
+    ]);
+  });
+
+  test('unknown roles receive only All articles', () => {
+    expect(getAllowedAudiences('unknown')).toEqual(['All']);
   });
 });

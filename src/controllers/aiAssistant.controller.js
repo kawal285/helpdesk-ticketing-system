@@ -13,7 +13,11 @@ const askAssistant = catchAsync(async (req, res, next) => {
     );
   }
 
- const result = await assistUser(question, conversationHistory);
+const result = await assistUser(
+  question,
+  conversationHistory,
+  req.user.role
+);
 
   return res.status(200).json({
     assistant: result,

@@ -55,7 +55,11 @@ function validateConversationHistory(history) {
     };
   });
 }
-async function assistUser(question, conversationHistory = []) {
+async function assistUser(
+  question,
+  conversationHistory = [],
+  role = 'customer'
+) {
     const validatedHistory = validateConversationHistory(conversationHistory);
 
   if (typeof question !== 'string' || !question.trim()) {
@@ -66,8 +70,9 @@ async function assistUser(question, conversationHistory = []) {
 
   const cleanQuestion = question.trim();
 
-  const result = await ask(cleanQuestion, {
+const result = await ask(cleanQuestion, {
   conversationHistory: validatedHistory,
+  role,
 });
 
   const best = result.sources.length ? result.sources[0] : null;
