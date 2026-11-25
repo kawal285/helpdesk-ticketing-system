@@ -148,7 +148,21 @@ export default function AiAssistantPage({ user, onCreateTicket }) {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${localStorage.getItem('token')}`,
         },
-        body: JSON.stringify({ question: trimmed, history, thinkDeeper }),
+        body: JSON.stringify({
+          question: trimmed,
+          history,
+          thinkDeeper,
+          // Earlier messages so the model can follow the conversation.
+          // Failed turns have no answer, so they are left out; each message
+          // is capped at the server's 2000-character limit.
+          conversationHistory: priorTurns
+            .filter((turn) => !turn.failed && turn.assistant?.answer)
+            .flatMap((turn) => [
+              { role: 'user', content: turn.question.slice(0, 2000) },
+              { role: 'assistant', content: turn.assistant.answer.slice(0, 2000) },
+            ])
+            .slice(-10),
+        }),
       });
 
       const data = await response.json();

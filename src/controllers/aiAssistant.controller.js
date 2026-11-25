@@ -37,6 +37,10 @@ const askAssistant = catchAsync(async (req, res, next) => {
     // Strictly the boolean true -- a string or number from the request body
     // must not be able to switch agents.
     thinkDeeper: req.body.thinkDeeper === true,
+    conversationHistory: req.body.conversationHistory || [],
+    // From the signed-in user, never from the request body, so nobody can
+    // ask for staff-only articles by sending a different role.
+    role: req.user.role,
   });
 
   // Every answer is logged; ones the knowledge base could not answer

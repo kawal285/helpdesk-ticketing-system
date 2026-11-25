@@ -11,6 +11,7 @@
  */
 
 const { ask } = require('./rag/ragService');
+const AppError = require('../utils/appError');
 
 /*
  * Knowledge-base categories are the same five values as ticket categories
@@ -24,6 +25,44 @@ function suggestCategory(sources) {
   return sources.length ? sources[0].category : null;
 }
 
+// Earlier chat messages sent by the page ({ role, content }), checked
+// because they come straight from the request body.
+function validateConversationHistory(history = []) {
+  if (!Array.isArray(history)) {
+    throw new AppError('Conversation history must be an array.', 400);
+  }
+
+  if (history.length > 10) {
+    throw new AppError('Conversation history cannot contain more than 10 messages.', 400);
+  }
+
+  return history.map((message) => {
+    if (
+      !message ||
+      !['user', 'assistant'].includes(message.role) ||
+      typeof message.content !== 'string' ||
+      !message.content.trim() ||
+      message.content.length > 2000
+    ) {
+      throw new AppError('Invalid conversation history message.', 400);
+    }
+
+    return {
+      role: message.role,
+      content: message.content.trim(),
+    };
+  });
+}
+
+/*
+ * options:
+ *   history              the user's last questions (strings), used to
+ *                        understand a short follow-up when searching
+ *   thinkDeeper          the "Think deeper" button (only boolean true)
+ *   conversationHistory  earlier chat messages, given to the model
+ *   role                 the signed-in user's role, which decides which
+ *                        knowledge-base articles they can see
+ */
 async function assistUser(question, options = {}) {
   if (typeof question !== 'string' || !question.trim()) {
     const error = new Error('A non-empty IT question is required.');
@@ -32,6 +71,7 @@ async function assistUser(question, options = {}) {
   }
 
   const cleanQuestion = question.trim();
+  const conversationHistory = validateConversationHistory(options.conversationHistory);
 
   // history is the user's recent questions in this chat (already cleaned by
   // the controller). ask() decides whether this question is a follow-up.
@@ -39,6 +79,8 @@ async function assistUser(question, options = {}) {
     history: options.history,
     // The "Think deeper" button. Only the boolean true switches agents.
     thinkDeeper: options.thinkDeeper === true,
+    conversationHistory,
+    role: options.role || 'customer',
   });
 
   // A web source has no category or article id, so "best match" and the
@@ -103,4 +145,4 @@ async function assistUser(question, options = {}) {
   };
 }
 
-module.exports = { assistUser };
+module.exports = { assistUser, validateConversationHistory };

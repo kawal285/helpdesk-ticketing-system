@@ -264,6 +264,17 @@ async function ask(rawQuestion, options = {}) {
     ? options.history.map((item) => (typeof item === 'string' ? redact(item) : item))
     : options.history;
 
+  // Earlier chat messages for the model. A message that tries to give the
+  // AI instructions is dropped (rather than blocking the whole chat for
+  // the next few turns), and private details are removed from the rest.
+  const conversationHistory = (Array.isArray(options.conversationHistory)
+    ? options.conversationHistory
+    : []
+  )
+    .filter((message) => message && typeof message.content === 'string')
+    .filter((message) => !detectPromptInjection(message.content).detected)
+    .map((message) => ({ role: message.role, content: redact(message.content) }));
+
   // options.agent forces an agent. webSearch:false is the deterministic,
   // offline mode used by the evaluation scripts, so it always uses main.
   // thinkDeeper only counts when it is exactly true.
@@ -317,7 +328,8 @@ async function ask(rawQuestion, options = {}) {
     retrieval.relevant,
     web.results,
     previousQuestion,
-    agentName
+    agentName,
+    conversationHistory
   );
   const generated = await generateWithAgent(getAgent(agentName), messages);
   const rawAnswer = stripCitationMarkers(stripThinkTags(generated.content));
