@@ -1,6 +1,9 @@
 
 const { redact } = require('../utils/privacy');
 
+// Same Ollama address as the rest of the app (OLLAMA_HOST in .env).
+const OLLAMA_HOST = (process.env.OLLAMA_HOST || 'http://127.0.0.1:11434').replace(/\/$/, '');
+
 const ALLOWED_EMOTIONS = [
   'angry',
   'frustrated',
@@ -49,7 +52,7 @@ ${JSON.stringify(redact(message.trim()))}
   let response;
 
   try {
-    response = await fetch('http://127.0.0.1:11434/api/chat', {
+    response = await fetch(`${OLLAMA_HOST}/api/chat`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

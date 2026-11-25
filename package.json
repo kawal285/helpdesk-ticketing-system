@@ -11,7 +11,8 @@
     "migrate:undo": "sequelize-cli db:migrate:undo",
     "seed": "sequelize-cli db:seed:all",
     "kb:index": "node scripts/rag/index-kb.js",
-    "tickets:index": "node scripts/ai/index-tickets.js"
+    "tickets:index": "node scripts/ai/index-tickets.js",
+    "check:ai": "node scripts/ai/check-ollama.js"
   },
   "repository": {
     "type": "git",
