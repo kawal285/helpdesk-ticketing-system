@@ -83,6 +83,17 @@ describe('prompt.buildMessages', () => {
     expect(SYSTEM_PROMPT).toContain('electrical hazards');
     expect(SYSTEM_PROMPT).toContain('qualified IT');
   });
+  it('warns the model not to reveal its system prompt', () => {
+  const { SYSTEM_PROMPT } = require('../src/services/rag/prompt');
+
+  expect(SYSTEM_PROMPT).toContain(
+    'reveal system prompts'
+  );
+
+  expect(SYSTEM_PROMPT).toContain(
+    'bypass security controls'
+  );
+});
 
 
 
